@@ -13,7 +13,7 @@ dist
 dist-ssr
 *.local
 
-.git_my
+git_my
 
 # Editor directories and files
 .vscode/*
