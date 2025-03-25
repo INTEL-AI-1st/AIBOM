@@ -10,6 +10,7 @@ interface UserInfo {
 }
 
 interface ChildForm {
+  state: string;
   name: string;
   birthday: string;
   gender: string;
@@ -27,11 +28,11 @@ export function useUserInfo() {
   const firstRenderRef = useRef(true);
   
   const location = useLocation();
-  const searchUuid = location.state?.uuid;
+  const searchUid = location.state?.uid;
 
   const fetchData = useCallback(async () => {
     try {
-      const data = await SelectUserInfo(searchUuid);
+      const data = await SelectUserInfo(searchUid);
       if (!data) return;
       
       setInfo(data.info);
@@ -39,7 +40,7 @@ export function useUserInfo() {
     } catch (error) {
       console.error("Error fetching user info:", error);
     }
-  }, [searchUuid]);
+  }, [searchUid]);
   
   useEffect(() => {
     fetchData();
@@ -82,8 +83,45 @@ export function useUserInfo() {
   }, []);
 
   const handleAddChild = useCallback(() => {
-    setChildForm(prev => [...prev, { name: "", birthday: "", gender: "" }]);
+    setChildForm(prev => [...prev, { state: "add", name: "", birthday: "", gender: "" }]);
   }, []);
+
+  const handleSaveChild = useCallback(async (index: number) => {
+    const child = childForm[index];
+  
+    // 생년월일이 8자리(yyyymmdd)인지 확인
+    if (!/^\d{8}$/.test(child.birthday)) {
+      alert("생년월일을 정확히 입력해주세요. (8자리)");
+      return;
+    }
+  
+    // 생년월일 → Date 객체로 변환
+    const birthDate = new Date(
+      Number(child.birthday.slice(0, 4)),
+      Number(child.birthday.slice(4, 6)) - 1,
+      Number(child.birthday.slice(6, 8))
+    );
+  
+    const now = new Date();
+    const monthsDiff =
+      (now.getFullYear() - birthDate.getFullYear()) * 12 +
+      (now.getMonth() - birthDate.getMonth());
+  
+    if (monthsDiff >= 71) {
+      alert("71개월 미만의 아이만 등록할 수 있습니다.");
+      return;
+    }
+  
+    try {
+      // await saveChild(child);
+    } catch (error) {
+      console.error("저장 실패:", error);
+      alert("저장에 실패했습니다.");
+      return;
+    }
+  
+  }, [childForm]);
+  
 
   const handleDeleteChild = useCallback((index: number) => {
     setChildForm(prev => {
@@ -131,6 +169,7 @@ export function useUserInfo() {
     handleSortClick,
     handleSortOptionChange,
     handleAddChild,
+    handleSaveChild,
     handleDeleteChild,
     handleChildName,
     handleChildBirthday,

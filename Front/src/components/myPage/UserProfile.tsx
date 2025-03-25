@@ -1,19 +1,13 @@
 import { FaUser } from "react-icons/fa";
-import { 
-  Header, ProfileImg, ProfileWrapper, UserInfo, InfoContainer, SubInfo, BioWrapper, Button, GrayButton
-} from "@styles/ProfileStlyes";
+import { Header, ProfileImg, ProfileWrapper, UserInfo, InfoContainer, SubInfo, BioWrapper, Button, GrayButton} from "@styles/ProfileStlyes";
+import { useUserInfo } from "@hooks/myPage/useUserInfo";
+import Modal from "@components/common/Modal";
+import { ModalProvider } from "@context/ModalContext";
+import MyPage1 from "@pages/MyPage1";
 
-export default function UserProfile({
-  info,
-  isOwner,
-  ProfileUrl,
-  setShowMypage,
-}: {
-  info: { nickName?: string; bio?: string } | null; // null 허용
-  isOwner: boolean;
-  ProfileUrl?: string | null; // null 허용
-  setShowMypage: (show: boolean) => void;
-}) {
+export default function UserProfile() {
+  const { info, isOwner, ProfileUrl, showMypage, setShowMypage } = useUserInfo();
+
   return (
     <>
       <Header>
@@ -28,8 +22,9 @@ export default function UserProfile({
           <InfoContainer>
             <div>{info?.nickName || '이름 없음'}</div>
             <SubInfo>
-              {/* 보호자 추가 버튼에 임시 onClick 핸들러 추가 (추후 실제 로직 구현 필요) */}
-              <GrayButton onClick={() => console.log("보호자 추가 클릭")}>보호자 추가</GrayButton>
+              <GrayButton onClick={() => console.log("보호자 추가 클릭")}>
+                보호자 추가
+              </GrayButton>
             </SubInfo>
           </InfoContainer>
         </UserInfo>
@@ -38,6 +33,12 @@ export default function UserProfile({
         )}
       </Header>
       <BioWrapper>{info?.bio || '자기소개가 없습니다.'}</BioWrapper>
+      
+      <ModalProvider onClose={() => setShowMypage(false)}>
+        <Modal isOpen={showMypage} title="마이페이지">
+          <MyPage1 />
+        </Modal>
+      </ModalProvider>
     </>
   );
 }

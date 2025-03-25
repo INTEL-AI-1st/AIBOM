@@ -1,7 +1,7 @@
 import pool from "@config/db";
 
 export interface User {
-  uuid: string;
+  uid: string;
 }
 
 export const findUserByEmail = async (email: string): Promise<User | null> => {
@@ -37,9 +37,9 @@ export const loginUser = async (email: string, pw: string): Promise<User | null>
   return rows.length ? rows[0] : null;
 };
 
-export const authUser = async (uuid: string, token: string): Promise<void> => {
+export const authUser = async (uid: string, token: string): Promise<void> => {
   const conn = await pool.getConnection();
-  await conn.query("INSERT INTO TB_AUTH_USERS (UUID, TOKEN) values (?, ?)", [uuid, token]);
+  await conn.query("INSERT INTO TB_AUTH_USERS (UID, TOKEN) values (?, ?)", [uid, token]);
   conn.release();
 };
 

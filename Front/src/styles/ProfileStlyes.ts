@@ -50,6 +50,12 @@ export const Button = styled.button`
   padding: 10px 20px;
   font-size: 15px;
   border-radius: 5px;
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.8;
+    pointer-events: none;
+  }
 `;
 
 export const BioWrapper = styled.div`
@@ -77,17 +83,20 @@ export const BodyHeader = styled.div`
 
 const BodyHeaderLine = styled.div`
   display: flex;
-  flex-direction: column;
 `
 
-export const HeaderLeft = styled(BodyHeaderLine)``;
+export const HeaderLeft = styled(BodyHeaderLine)`
+  align-items: end;
+`;
 
 export const HeaderRight = styled(BodyHeaderLine)`
   align-items: center;
+  flex-direction: column;
 `;
 
 export const Title = styled.h2`
   margin: 0;
+  margin-right: 5px;
   font-size: 1.8em;
   color: #333;
 `;
@@ -174,6 +183,14 @@ export const GrayButton = styled.button`
   }
 `;
 
+export const ChildBody = styled.div`
+  display: flex;
+`
+
+export const AvatarContainer = styled.div`
+  margin-right: 5px;
+`
+
 export const InfoForm = styled.div`
   display: flex;
   flex-direction: column;
@@ -204,7 +221,6 @@ export const RadioGroup = styled.div`
   display: flex;
   justify-content: center;
   gap: 24px;
-  margin-top: 10px;
 `;
 
 export const RadioLabel = styled.label`

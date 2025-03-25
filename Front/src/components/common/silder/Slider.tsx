@@ -8,7 +8,7 @@ import SliderItems from "./SliderItem";
 import SliderNav from "./SliderNav";
 
 export interface Chat {
-  uuid: string;
+  uid: string;
   id: string;
   image_url: string;
   title: string;

@@ -3,13 +3,13 @@ import { Request, Response } from "express";
 
 export const selectUserInfo = async (req: Request, res: Response): Promise<void> => {
   try {
-    const uuid = (req as any).user?.uuid;
-    const { seachUuid } = req.body;
+    const uid = (req as any).user?.uid;
+    const { seachUid } = req.body;
     
-    const targetUuid = seachUuid || uuid;
-    const info = await selectInfo(targetUuid);
+    const targetUid = seachUid || uid;
+    const info = await selectInfo(targetUid);
 
-    const isOwner = seachUuid ? seachUuid === uuid : true;
+    const isOwner = seachUid ? seachUid === uid : true;
 
     res.json({ info, isOwner });
   } catch (error) {

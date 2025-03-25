@@ -3,10 +3,8 @@ import { Request, Response } from "express";
 
 export const selectMyInfo = async (req: Request, res: Response): Promise<void> => {
   try {
-    const uuid = (req as any).user?.uuid;
-    const info = await selectInfo(uuid);
-    console.log(uuid);
-    console.log(info);
+    const uid = (req as any).user?.uid;
+    const info = await selectInfo(uid);
     res.json({ info });
   } catch (error) {
     console.error("조회 오류:", error);
@@ -16,9 +14,9 @@ export const selectMyInfo = async (req: Request, res: Response): Promise<void> =
 
 export const upsertMyProfile = async (req: Request, res: Response): Promise<void> => {
   try {
-    const uuid = (req as any).user?.uuid;
+    const uid = (req as any).user?.uid;
     const { profile } = req.body;  
-    const info = await upsertProfile(uuid, profile);
+    const info = await upsertProfile(uid, profile);
     res.json({ info });
   } catch (error) {
     console.error("조회 오류:", error);
@@ -28,8 +26,8 @@ export const upsertMyProfile = async (req: Request, res: Response): Promise<void
 
 export const deleteMyProfile = async (req: Request, res: Response): Promise<void> => {
   try {
-    const uuid = (req as any).user?.uuid;
-    const info = await deleteProfile(uuid);
+    const uid = (req as any).user?.uid;
+    const info = await deleteProfile(uid);
     res.json({ info });
   } catch (error) {
     console.error("조회 오류:", error);
@@ -40,9 +38,9 @@ export const deleteMyProfile = async (req: Request, res: Response): Promise<void
 export const updateMyInfo = async (req: Request, res: Response): Promise<void> => {
   try {
     const { isPw, pw, nickName, bio } = req.body;   
-    const uuid = (req as any).user?.uuid;
+    const uid = (req as any).user?.uid;
 
-    await updateInfo(uuid, isPw, pw, nickName, bio);
+    await updateInfo(uid, isPw, pw, nickName, bio);
 
     res.status(201).json({ message: "저장 성공" });
   } catch (error) {

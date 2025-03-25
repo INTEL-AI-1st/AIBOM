@@ -1,7 +1,4 @@
 import { api } from "../Api";
-import { checkClaudeKey } from "../Claude";
-import { checkGeminiKey } from "../Gemini";
-import { checkOpenAiKey } from "../OpenAi";
 
 interface ApiResponse {
     api: {
@@ -35,19 +32,6 @@ export const CreateMyAPI = async (ai: string, apiKey: string) => {
     throw error;
   }
 };
-
-export const checkApiKeyValidityForAi = (ai: string, apiKey: string) => {
-  if (ai.toLowerCase() === "openai") {
-    return checkOpenAiKey(apiKey);
-  } else if (ai.toLowerCase() === "gemini") {
-    return checkGeminiKey(apiKey);
-  } else if (ai.toLowerCase() === "claude") {
-    return checkClaudeKey(apiKey);
-  } else {
-    return false;
-  }
-}
-
 
 export const toggleChange = async (ai: string) => {
   try {

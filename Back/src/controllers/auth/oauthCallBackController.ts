@@ -164,9 +164,9 @@ const oauthLogin = async (profileData: any, agent: string, res: Response): Promi
       return;
     }
     
-    const uuid = existingUser.uuid;
-    const token = jwt.sign({ uuid: uuid }, JWT_SECRET, { expiresIn: "1h" });
-    await authUser(uuid, token);
+    const uid = existingUser.uid;
+    const token = jwt.sign({ uid: uid }, JWT_SECRET, { expiresIn: "1h" });
+    await authUser(uid, token);
 
     res.cookie('authToken', token, { secure: true, sameSite: 'strict' });
     res.redirect(env.FRONTEND_URL+'/oauth-result?status=success');

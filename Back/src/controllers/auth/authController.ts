@@ -39,9 +39,9 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       res.status(400).json({ message: "존재하지 않는 계정입니다." });
       return;
     }
-    const uuid = user.uuid;
-    const token = jwt.sign({ uuid: uuid }, JWT_SECRET, { expiresIn: "1h" });
-    await authUser(uuid, token);
+    const uid = user.uid;
+    const token = jwt.sign({ uid: uid }, JWT_SECRET, { expiresIn: "1h" });
+    await authUser(uid, token);
     res.json({ token });
   } catch (error) {
     console.error("로그인 오류:", error);

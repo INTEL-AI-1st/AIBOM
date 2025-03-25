@@ -84,6 +84,7 @@ export const ButtonWrapper = styled.div`
 export const ImgButton = styled.button`
     font-size: 0.7rem;
     width: 80px;
+    border-radius: 5px;
 `
 
 export const InfoItem = styled.div`

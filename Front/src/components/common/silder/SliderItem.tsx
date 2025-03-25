@@ -16,10 +16,10 @@ export default function SliderItems({ chat, onClick }: SliderItemsProps) {
   }, [chat.id, onClick]);
 
   const handleCreatorClick = useCallback(() => {
-    if (chat.uuid) {
-      navigate('/profile', { state: { uuid: chat.uuid } });
+    if (chat.uid) {
+      navigate('/profile', { state: { uid: chat.uid } });
     }
-  }, [chat.uuid, navigate]);
+  }, [chat.uid, navigate]);
 
   return (
     <SlideWapper onClick={handleClick}>

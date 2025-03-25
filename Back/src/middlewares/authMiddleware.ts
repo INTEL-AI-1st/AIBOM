@@ -20,8 +20,8 @@ const verifyToken = (req: Request, res: Response, next: NextFunction, extractUse
 export const authenticateJWT = (req: Request, res: Response, next: NextFunction): void => 
   verifyToken(req, res, next, (decoded) => decoded);
 
-export const getUuid = (req: Request, res: Response, next: NextFunction): void => 
+export const getUid = (req: Request, res: Response, next: NextFunction): void => 
   verifyToken(req, res, next, (decoded) => {
-    if (!decoded.uuid) return res.status(400).json({ message: "토큰에 UUID 정보가 없습니다." });
-    return { uuid: decoded.uuid };
+    if (!decoded.uid) return res.status(400).json({ message: "토큰에 UID 정보가 없습니다." });
+    return { uid: decoded.uid };
   });

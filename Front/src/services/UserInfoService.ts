@@ -2,7 +2,7 @@ import { api } from "./Api";
 
 interface InfoResponse {
     info: {
-      uuid: string;
+      uid: string;
       nickName: string;
       profile: string;
       bio: string;
@@ -10,10 +10,10 @@ interface InfoResponse {
     isOwner: boolean;
 }
 
-export const SelectUserInfo = async (seachUuid: string) => {
+export const SelectUserInfo = async (seachUid: string) => {
   try {
     const response = await api.post<InfoResponse>("/userInfo/selectInfo", {
-      seachUuid
+      seachUid
     });
     return response.data;
   } catch (error) {
