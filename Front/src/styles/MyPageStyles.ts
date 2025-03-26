@@ -59,12 +59,11 @@ export const InputWrapper = styled.div`
     overflow: hidden;
 `;
 
-// MyInfo
 export const AvatarWrapper = styled.div`
     display: flex;
     justify-content: center;
     align-items: center;
-    padding-top: 10px;
+    /* padding-top: 10px; */
     font-size: 1.5em;
 `;
 

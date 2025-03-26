@@ -1,14 +1,18 @@
-import { NewChild } from "@hooks/myPage/useChildInfo";
 import { api } from "@services/Api";
 
 export interface ChildForm {
-    info:{
+    info: {
+        uid?: string;
         state: string;
         name: string;
-        ageYears: string;
-        ageMonths: string;
+        birthday: string;
+        gender: string;
+        ageYears?: string;
+        ageMonths?: string;
+        fileName?: string;
     }
 }
+  
 export const SelectChild = async (seachUid: string) => {
     try {
       const response = await api.post<ChildForm>("/myChild/selectChild", {
@@ -21,11 +25,47 @@ export const SelectChild = async (seachUid: string) => {
     }
   }
   
-  export const SaveChild = async (child: NewChild) => {
+  export const SaveChild = async (child: ChildForm) => {
     try {
-        console.log(child);
-      const response = await api.post<NewChild>("/myChild/saveChild", {
+      const response = await api.post<ChildForm>("/myChild/saveChild", {
         child
+      });
+      return response.data;
+    } catch (error) {
+      console.error("create Error:", error);
+      throw error;
+    }
+  }
+
+  export const deleteChild = async (uid: string) => {
+    try {
+        const response = await api.post<ChildForm>("/myChild/deleteChild", {
+            uid
+        });
+        return response.data;
+        } catch (error) {
+        console.error("create Error:", error);
+        throw error;
+        }
+    }
+
+  export const upsertProfile = async (uid: string, fileName: string) => {
+    try {
+      const response = await api.post<ChildForm>("/myChild/upsertProfile", {
+        uid,
+        fileName
+      });
+      return response.data;
+    } catch (error) {
+      console.error("create Error:", error);
+      throw error;
+    }
+  }
+
+  export const deleteProfile = async (uid: string) => {
+    try {
+      const response = await api.post<ChildForm>("/myChild/deleteProfile", {
+        uid,
       });
       return response.data;
     } catch (error) {

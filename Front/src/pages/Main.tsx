@@ -2,6 +2,7 @@ import styled from 'styled-components';
 import Profile from '@components/main/Profile';
 import BodyGraph from '@components/main/BodyGraph';
 import AbilityGraph from '@components/main/AbilityGraph';
+// import TotalAblilty from '@components/main/TotalAbility';
 
 const Container = styled.div`
   display: flex;
@@ -22,6 +23,7 @@ export default function Main() {
         <Profile />
         <AbilityGraph />
       </TopSection>
+      {/* <TotalAblilty/> */}
       <BodyGraph />
     </Container>
   );

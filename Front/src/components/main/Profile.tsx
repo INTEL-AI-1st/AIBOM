@@ -1,3 +1,4 @@
+import { useCallback, useEffect } from "react";
 import styled from "styled-components";
 
 const LeftSection = styled.div`
@@ -28,7 +29,6 @@ const ProfileIcon = styled.div`
   }
 `;
 
-
 const ProfileName = styled.div`
   font-size: 18px;
   font-weight: 500;
@@ -38,11 +38,22 @@ const ProfileName = styled.div`
 `;
 
 export default function Profile() {
+
+    // const fetchData = useCallback(async () => {
+    //     try {
+    //     const data = await SelectChild();
+    //     }
+    //     } catch (error) {
+    //     console.error("Error fetching user info:", error);
+    //     }
+    // }, [searchUid]);
+    
+    // useEffect => {
+    //     fetchData();
+    // }, [fetchData]);
+    
     return (
         <LeftSection>
-          {/* <Header backgroundColor="#ffb9b9">
-            <HeaderText>프로필명</HeaderText>
-          </Header> */}
           <ProfileContent>
             <ProfileIconWrapper>
               <ProfileIcon>
