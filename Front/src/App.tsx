@@ -29,9 +29,9 @@ import Observation from "@pages/Observation";
         { path: "education", element: <Education /> }, 
         { path: "community", element: <Community /> }, 
         { path: "my", element: <MyPage /> },
-        { path: "obser", element: <Observation />}
       ],
     },
+    { path: "obser", element: <Observation />}
   
   ]);
 

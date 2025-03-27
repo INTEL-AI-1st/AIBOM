@@ -1,9 +1,9 @@
 import { useState, useMemo, useCallback, memo, useEffect } from 'react';
 import { useMainContext } from "@context/MainContext";
 import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
-import { RightSection, ColorSection, Headers, Bodys, PerformanceBox, ShapeContainer, ColorBox, ColorWrapper, Color, ColorText, Footer, LockWrapper, LinkP } from '@styles/main/AbilityGraphStyles';
+import { RightSection, ColorSection, Headers, Bodys, PerformanceBox, ShapeContainer, ColorBox, ColorWrapper, Color, ColorText, Footer, LockWrapper, LinkP, TitleWrapper, InfoIconWrapper, Tooltip } from '@styles/main/AbilityGraphStyles';
 import { selectGraph } from '@services/main/AbilityService';
-import { AiFillLock } from 'react-icons/ai';
+import { AiFillLock, AiOutlineInfoCircle } from 'react-icons/ai';
 
 // ===== TYPES =====
 interface ChartData {
@@ -15,6 +15,7 @@ interface PerformanceData {
   id: string;
   title: string;
   color: string;
+  explan?: string;
   data: ChartData[];
   avgData: ChartData[];
 }
@@ -39,8 +40,10 @@ interface AbilityGraphResponseItem {
   ablLab: string;
   score: string;
   avgScore: string;
+  explan?: string;
 }
 
+// ===== PerformanceRadarChart Component =====
 function PerformanceRadarChart({ data, avgData, color }: PerformanceRadarChartProps) {
   const [hovered, setHovered] = useState<'child' | 'avg' | null>(null);
 
@@ -158,13 +161,22 @@ function PerformanceRadarChart({ data, avgData, color }: PerformanceRadarChartPr
   );
 }
 
+// ===== PerformanceCardComponent =====
 const PerformanceCardComponent = memo(function PerformanceCardComponent({ data }: { data: PerformanceData }) {
   const showOverlay = data.data.every(item => isNaN(item.value));
 
   return (
     <ColorSection backgroundColor={data.color}>
       <Headers>
-        <h3>{data.title}</h3>
+        <TitleWrapper>
+          <h3>{data.title}</h3>
+          {data.explan && (
+            <InfoIconWrapper>
+              <AiOutlineInfoCircle size={20} color="#666" />
+              <Tooltip>{data.explan}</Tooltip>
+            </InfoIconWrapper>
+          )}
+        </TitleWrapper>
         <LinkP to={'/'}>더보기 →</LinkP>
       </Headers>
       <Bodys>
@@ -190,6 +202,7 @@ const PerformanceCardComponent = memo(function PerformanceCardComponent({ data }
   );
 });
 
+// ===== Main Component =====
 export default function AbilityGraph() {
   const { selectedChild } = useMainContext();
   const [performanceData, setPerformanceData] = useState<PerformanceData[]>([]);
@@ -218,6 +231,7 @@ export default function AbilityGraph() {
             id: `${curr.ablId}`,
             title: `${curr.ablName} 그래프`,
             color: '',
+            explan: curr.explan || '', // explan 데이터 할당
             data: [],
             avgData: []
           };

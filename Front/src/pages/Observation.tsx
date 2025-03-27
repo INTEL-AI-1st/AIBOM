@@ -1,16 +1,44 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import styled from 'styled-components';
+import { AiOutlineInfoCircle } from 'react-icons/ai';
+import { surveyData } from '@constants/surveyData'; // 데이터 파일 위치에 맞게 수정
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { FaArrowCircleUp } from 'react-icons/fa';
 
-// 네비게이션 스타일
-const Nav = styled.nav`
+// Observation 타입 선언
+interface Observation {
+  play?: string[];
+  life?: string[];
+  activity?: string[];
+}
+
+// SurveyItem 타입 선언
+interface SurveyItem {
+  id: string;
+  domain: string;
+  question: string;
+  options: string[];
+  observation: Observation;
+}
+
+// 네비게이션 스타일 (스크롤 시 고정을 위한 fixed prop 추가)
+const Nav = styled.nav<{ fixed: boolean }>`
+  width: 100%;
   background: #f5f5f5;
-  padding: 10px 0;
-  margin-bottom: 20px;
+  padding: 12px 0;
+  margin-bottom: 30px;
+  position: ${({ fixed }) => (fixed ? 'fixed' : 'static')};
+  top: ${({ fixed }) => (fixed ? '0' : 'auto')};
+  left: ${({ fixed }) => (fixed ? '0' : 'auto')};
+  right: ${({ fixed }) => (fixed ? '0' : 'auto')};
+  z-index: ${({ fixed }) => (fixed ? '1000' : 'auto')};
 `;
 
+// 네비게이션 리스트 스타일
 const NavList = styled.ul`
   display: flex;
-  justify-content: space-around;
+  justify-content: center;
   list-style: none;
   margin: 0;
   padding: 0;
@@ -19,178 +47,349 @@ const NavList = styled.ul`
 const NavItem = styled.li`
   cursor: pointer;
   font-weight: bold;
+  margin: 0 15px;
+  transition: color 0.2s ease-in-out;
   &:hover {
     color: #0077cc;
   }
 `;
 
-// 컨테이너 및 섹션 스타일
+// 기본 컨테이너 및 섹션 스타일
 const Container = styled.div`
   padding: 20px;
-  max-width: 900px;
+  width: 100%;
+  height: 100%;
   margin: 0 auto;
+  /* 네비게이션이 고정되었을 때 콘텐츠가 가려지지 않도록 top margin 추가 */
+  margin-top: 70px;
 `;
 
 const Title = styled.h1`
   text-align: center;
-  margin-bottom: 20px;
-`;
-
-const Section = styled.section`
   margin-bottom: 40px;
+  font-size: 2rem;
+  letter-spacing: 0.5px;
 `;
 
-const SectionTitle = styled.h2`
-  font-size: 1.6rem;
-  margin-bottom: 10px;
+const DomainSection = styled.section`
+  margin-bottom: 50px;
+`;
+
+const DomainTitle = styled.h2`
+  font-size: 1.8rem;
+  margin-bottom: 15px;
   border-bottom: 2px solid #ddd;
-  padding-bottom: 5px;
+  padding-bottom: 10px;
 `;
 
 const Question = styled.div`
-  margin: 20px 0;
+  margin: 25px 0;
+  padding: 15px;
+  background: #fafafa;
+  border-radius: 5px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+`;
+
+const QuestionTitleContainer = styled.div`
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
 `;
 
 const QuestionTitle = styled.h3`
   font-size: 1.2rem;
-  margin-bottom: 10px;
+  margin: 0;
+  line-height: 1.4;
+`;
+
+const InfoIcon = styled(AiOutlineInfoCircle)`
+  margin-left: 10px;
+  cursor: pointer;
+  color: #0077cc;
+  transition: color 0.2s;
+  &:hover {
+    color: #005fa3;
+  }
 `;
 
 const OptionList = styled.div`
   display: flex;
-  justify-content: space-between;
-  max-width: 600px;
+  flex-direction: column;
+  margin-top: 12px;
 `;
 
 const OptionLabel = styled.label`
   display: flex;
-  flex-direction: column;
   align-items: center;
-  cursor: pointer;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+  &:hover {
+    background-color: #f0f0f0;
+  }
 `;
 
 const RadioInput = styled.input`
-  margin-bottom: 5px;
+  margin-right: 10px;
 `;
 
-// 도메인별 설문 문항 데이터 (PDF 내용 참고 예시)
-const surveyData = [
-  {
-    id: 'physical',
-    domain: '신체운동·건강',
-    question: '신체 각 부분의 이름을 안다.',
-    options: [
-      '1. 신체 각 부분의 이름을 알지 못한다.',
-      '2. 도움을 받아 신체 각 부분의 이름을 안다.',
-      '3. 신체 각 부분의 이름을 일부 알 수 있다.',
-      '4. 세부적인 신체 각 부분의 모든 이름을 안다.',
-    ],
-  },
-  {
-    id: 'communication',
-    domain: '의사소통',
-    question: '말이나 이야기를 관심 있게 듣는다.',
-    options: [
-      '1. 교사나 또래의 말이나 이야기를 주의 깊게 듣지 않는다.',
-      '2. 교사의 제안이나 시범이 있으면 타인의 말이나 이야기에 관심을 갖는다.',
-      '3. 교사나 또래의 말을 관심 있게 듣지만 중간에 생각이 떠오르면 곧바로 말한다.',
-      '4. 타인의 말을 끝까지 관심 있게 들으며 적절히 표현한다.',
-    ],
-  },
-  {
-    id: 'social',
-    domain: '사회관계',
-    question: '가족을 소중히 여기는 마음을 나타낸다.',
-    options: [
-      '1. 가족의 일상과 아끼는 마음이 나타나지 않는다.',
-      '2. 도움이 있으면 가족의 일상과 아끼는 마음을 나타낸다.',
-      '3. 가족의 일상과 아끼는 마음이 어느 정도 나타난다.',
-      '4. 스스로 가족의 일상과 아끼는 마음을 나타낸다.',
-    ],
-  },
-  {
-    id: 'art',
-    domain: '예술경험',
-    question: '노래를 즐겨 부른다.',
-    options: [
-      '1. 노래 부르기에 관심을 가지지 않는다.',
-      '2. 교사와 또래가 함께 노래할 때 흥얼거리며 따라 부른다.',
-      '3. 친숙한 노래는 부분적으로 부른다.',
-      '4. 일상생활에서 노래를 즐겨 부른다.',
-    ],
-  },
-  {
-    id: 'nature',
-    domain: '자연탐구',
-    question: '주변 세계와 자연에 대해 지속적으로 호기심을 가진다.',
-    options: [
-      '1. 주변 세계와 자연에 대해 관심을 가지지 않는다.',
-      '2. 도움이 있으면 주변 세계와 자연에 대해 궁금해 한다.',
-      '3. 관심은 있으나 지속되지는 않는다.',
-      '4. 주변 세계와 자연에 대한 호기심을 지속적으로 표현한다.',
-    ],
-  },
-];
+// 슬라이드바(관측사례) 관련 스타일
+const SidebarContainer = styled.div<{ open: boolean }>`
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100%;
+  max-width: 600px;
+  background: #fff;
+  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.2);
+  transform: ${({ open }) => (open ? 'translateX(0)' : 'translateX(100%)')};
+  transition: transform 0.3s ease-in-out;
+  z-index: 1001;
+  padding: 30px;
+  overflow-y: auto;
+`;
 
-const Observation: React.FC = () => {
-  // 각 문항의 선택값을 상태로 관리 (각 도메인별로)
+const Overlay = styled.div<{ open: boolean }>`
+  display: ${({ open }) => (open ? 'block' : 'none')};
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+`;
+
+/** 
+ * 관측사례 제목, 카테고리, 내용 스타일 
+ * 가독성을 높이기 위해 line-height, margin, white-space 등을 조정 
+ */
+const Header = styled.div`
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  font-size: 1.5rem;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 10px;
+`;
+
+const ObservationHeader = styled.h2`
+  font-size: 1.5rem;
+`;
+
+const CloseButton = styled.button`
+  display: block;
+  background: transparent;
+  border: none;
+  font-size: 1.2rem;
+  color: #0077cc;
+  cursor: pointer;
+  &:hover {
+    color: #005fa3;
+  }
+`;
+
+const ObservationCategory = styled.h3`
+  font-size: 1.2rem;
+  margin-bottom: 10px;
+  color: #333;
+`;
+
+const ObservationList = styled.ul`
+  margin: 0 0 20px 20px;
+  padding: 0;
+  line-height: 1.75;
+  list-style-type: decimal;
+`;
+
+const ObservationListItem = styled.li`
+  margin-bottom: 5px;       
+  white-space: pre-line;     
+  word-break: keep-all;    
+`;
+
+// 하단 가운데 최상단 올리는 버튼 스타일
+const ScrollToTop = styled(FaArrowCircleUp)`
+  position: fixed;
+  bottom: 5%;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #ffb9b9;
+  font-size: 2em;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  z-index: 1002;
+  transition: background 0.2s;
+  opacity: 0.7;
+  &:hover {
+    opacity: 1;
+  }
+`;
+
+export default function Observation() {
+  // surveyData를 도메인별로 그룹화 (Record<도메인명, SurveyItem[]>)
+  const groupedData = surveyData.reduce((acc: Record<string, SurveyItem[]>, item: SurveyItem) => {
+    if (!acc[item.domain]) {
+      acc[item.domain] = [];
+    }
+    acc[item.domain].push(item);
+    return acc;
+  }, {});
+
+  // 네비게이션에 표시할 도메인 목록
+  const domainList = Object.keys(groupedData);
+
+  // 설문 답변 상태 (각 문항은 item.id로 관리)
   const [answers, setAnswers] = useState<{ [key: string]: number | null }>(() => {
     const initial: { [key: string]: number | null } = {};
-    surveyData.forEach(item => {
+    surveyData.forEach((item: SurveyItem) => {
       initial[item.id] = null;
     });
     return initial;
   });
 
-  const handleAnswerChange = (domainId: string, value: number) => {
-    setAnswers(prev => ({ ...prev, [domainId]: value }));
+  // 활성화된 관측사례(슬라이드바) 상태
+  const [activeObservation, setActiveObservation] = useState<{ id: string; observation: Observation } | null>(null);
+
+  // 스크롤에 따른 네비게이션 고정 및 스크롤 탑 버튼 상태
+  const [navFixed, setNavFixed] = useState(false);
+  const [showScrollToTop, setShowScrollToTop] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const offset = window.scrollY;
+      if (offset > 150) {
+        setNavFixed(true);
+        setShowScrollToTop(true);
+      } else {
+        setNavFixed(false);
+        setShowScrollToTop(false);
+      }
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const handleAnswerChange = (itemId: string, value: number) => {
+    setAnswers((prev) => ({ ...prev, [itemId]: value }));
   };
 
-  // 네비게이션 클릭 시 해당 섹션으로 스크롤
-  const scrollToSection = (id: string) => {
-    const element = document.getElementById(id);
+  // 네비게이션 클릭 시 해당 도메인 섹션으로 스크롤
+  const scrollToSection = (domain: string) => {
+    const element = document.getElementById(domain);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
     }
   };
 
+  // 최상단 스크롤
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // 슬라이드바 닫기
+  const closeSidebar = () => {
+    setActiveObservation(null);
+  };
+
+  // 1분마다 toastify를 이용해 자동저장 메시지 표시 (우측 상단)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      toast.info('자동저장되었습니다.', {
+        position: 'top-right',
+        autoClose: 2000,
+      });
+    }, 60000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   return (
-    <Container>
-      <Title>KICCE 유아관찰척도 설문</Title>
-      <Nav>
-        <NavList>
-          {surveyData.map(item => (
-            <NavItem key={item.id} onClick={() => scrollToSection(item.id)}>
-              {item.domain}
-            </NavItem>
-          ))}
-        </NavList>
-      </Nav>
+    <>
+      <Container>
+        <Title>KICCE 유아관찰척도 설문</Title>
+        <Nav fixed={navFixed}>
+          <NavList>
+            {domainList.map((domain) => (
+              <NavItem key={domain} onClick={() => scrollToSection(domain)}>
+                {domain}
+              </NavItem>
+            ))}
+          </NavList>
+        </Nav>
 
-      {surveyData.map(item => (
-        <Section key={item.id} id={item.id}>
-          <SectionTitle>{item.domain}</SectionTitle>
-          <Question>
-            <QuestionTitle>{item.question}</QuestionTitle>
-            <OptionList>
-              {item.options.map((option, index) => (
-                <OptionLabel key={index}>
-                  <RadioInput
-                    type="radio"
-                    name={item.id}
-                    value={index + 1}
-                    checked={answers[item.id] === index + 1}
-                    onChange={() => handleAnswerChange(item.id, index + 1)}
+        {domainList.map((domain) => (
+          <DomainSection key={domain} id={domain}>
+            <DomainTitle>{domain}</DomainTitle>
+            {groupedData[domain].map((item: SurveyItem) => (
+              <Question key={item.id}>
+                <QuestionTitleContainer>
+                  <QuestionTitle>{item.question}</QuestionTitle>
+                  <InfoIcon
+                    size={20}
+                    onClick={() => setActiveObservation({ id: item.id, observation: item.observation })}
+                    title="관측사례 보기"
                   />
-                  <span>{option}</span>
-                </OptionLabel>
-              ))}
-            </OptionList>
-          </Question>
-        </Section>
-      ))}
-    </Container>
-  );
-};
+                </QuestionTitleContainer>
+                <OptionList>
+                  {item.options.map((option: string, index: number) => (
+                    <OptionLabel key={index}>
+                      <RadioInput
+                        type="radio"
+                        name={item.id}
+                        value={index + 1}
+                        checked={answers[item.id] === index + 1}
+                        onChange={() => handleAnswerChange(item.id, index + 1)}
+                      />
+                      <span>{option}</span>
+                    </OptionLabel>
+                  ))}
+                </OptionList>
+              </Question>
+            ))}
+          </DomainSection>
+        ))}
+      </Container>
+      
+      {/* 최상단 올리기 버튼 (스크롤이 일정 이상 내려왔을 때만 표시) */}
+      {showScrollToTop && <ScrollToTop onClick={scrollToTop} />}
+      
+      {/* 슬라이드바(관측사례) */}
+      <Overlay open={activeObservation !== null} onClick={closeSidebar} />
+      <SidebarContainer open={activeObservation !== null}>
+        {activeObservation && (
+          <>
+            <Header>
+              <ObservationHeader>관측사례</ObservationHeader>
+              <CloseButton onClick={closeSidebar}>닫기 ×</CloseButton>
+            </Header>
+            {(Object.entries(activeObservation.observation) as [keyof Observation, string[]][]).map(
+              ([category, observations]) => (
+                <div key={category}>
+                  <ObservationCategory>
+                    {category === 'play'
+                      ? '놀이'
+                      : category === 'life'
+                      ? '일상생활'
+                      : '활동'}
+                  </ObservationCategory>
+                  <ObservationList>
+                    {observations.map((text: string, idx: number) => (
+                      <ObservationListItem key={idx}>{text.replace(/\n/g, ' ')}</ObservationListItem>
+                    ))}
+                  </ObservationList>
+                </div>
+              )
+            )}
+          </>
+        )}
+      </SidebarContainer>
 
-export default Observation;
+      {/* toastify 컨테이너 */}
+      <ToastContainer />
+    </>
+  );
+}

@@ -3,6 +3,7 @@ import pool from "@config/db";
 export interface graph {
     ablId: string;
     ablName: string;
+    explan: string;
     ablLabId: string;
     ablLab: string;
     rcdId: string;
@@ -16,6 +17,7 @@ export interface graph {
       `SELECT 
            a.ability_id AS ablId,
            a.ability_name AS ablName,
+           a.explan,
            a.ability_label_id AS ablLabId,
            a.ability_label AS ablLab,
            c.record_id AS rcdId,

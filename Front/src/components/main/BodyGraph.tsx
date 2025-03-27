@@ -7,7 +7,7 @@ const ChartSection = styled.div`
 `;
 
 const ChartContent = styled.div`
-  padding: 20px;
+  padding: 10px;
   background-color: #fffbe5;
 `;
 

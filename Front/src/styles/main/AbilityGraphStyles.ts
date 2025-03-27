@@ -53,6 +53,38 @@ export const ShapeContainer = styled(GrayBox)`
   position: relative;
 `;
 
+export const TitleWrapper = styled.div`
+  display: flex;
+  align-items: center;
+`;
+
+export const InfoIconWrapper = styled.div`
+  position: relative;
+  display: inline-block;
+  margin-left: 8px;
+  cursor: pointer;
+
+  &:hover > div {
+    display: block;
+  }
+`;
+
+export const Tooltip = styled.div`
+  display: none;
+  position: absolute;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #fff;
+  border: 1px solid #ddd;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #333;
+  white-space: nowrap;
+  z-index: 100;
+`;
+
 export const LockWrapper = styled.div`
     position: absolute;
     display: flex;
@@ -112,10 +144,11 @@ export const ColorText = styled.span`
 export const Footer = styled.div`
   display: flex;
   justify-content: end;
-  margin-top: 15px;
+  margin-top: 5px;
 `;
 
 export const LinkP = styled(Link)`
   color: #222;
   text-decoration-line: none;
+  margin-top: 10px;
 `;
