@@ -1,9 +1,11 @@
-import { useState, useMemo, useCallback, memo } from 'react';
+import { useState, useMemo, useCallback, memo, useEffect } from 'react';
+import { useMainContext } from "@context/MainContext";
 import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
+import { AiFillLock } from 'react-icons/ai'; // 락 아이콘 임포트
 import {
-  RightSection, ColorSection, Headers, Bodys, PerformanceBox, ShapeContainer, ColorBox, ColorWrapper, Color, ColorText,
-  Footer
+  RightSection, ColorSection, Headers, Bodys, PerformanceBox, ShapeContainer, ColorBox, ColorWrapper, Color, ColorText, Footer, LockWrapper
 } from '@styles/main/AbilityGraphStyles';
+import { selectGraph } from '@services/main/AbilityService';
 
 // ===== TYPES =====
 interface ChartData {
@@ -32,65 +34,13 @@ interface PerformanceRadarChartProps {
   color: string;
 }
 
-// ===== STATIC DATA =====
-const performanceData: PerformanceData[] = [
-  {
-    title: '행동 발달 그래프',
-    color: '#c1e3ff',
-    data: [
-      { name: '소통', value: 80 },
-      { name: '협동', value: 65 },
-      { name: '리더십', value: 90 },
-      { name: '창의성', value: 75 },
-      { name: '감성', value: 85 },
-      { name: '사고력', value: 70 }
-    ],
-    avgData: [
-      { name: '소통', value: 70 },
-      { name: '협동', value: 60 },
-      { name: '리더십', value: 80 },
-      { name: '창의성', value: 65 },
-      { name: '감성', value: 75 },
-      { name: '사고력', value: 68 }
-    ]
-  },
-  {
-    title: '유아 관찰 그래프',
-    color: '#ffdada',
-    data: [
-      { name: '신체운동', value: 85 },
-      { name: '의사소통', value: 70 },
-      { name: '사회관계', value: 65 },
-      { name: '예술경험', value: 90 },
-      { name: '자연탐구', value: 90 }
-    ],
-    avgData: [
-      { name: '신체운동', value: 80 },
-      { name: '의사소통', value: 65 },
-      { name: '사회관계', value: 60 },
-      { name: '예술경험', value: 85 },
-      { name: '자연탐구', value: 88 }
-    ]
-  },
-  {
-    title: '역량 발달 그래프',
-    color: '#ffd6a5',
-    data: [
-      { name: '신체운동', value: 85 },
-      { name: '생애학습', value: 70 },
-      { name: '자기조절', value: 65 },
-      { name: '사회정서', value: 90 }
-    ],
-    avgData: [
-      { name: '신체운동', value: 82 },
-      { name: '생애학습', value: 68 },
-      { name: '자기조절', value: 70 },
-      { name: '사회정서', value: 88 }
-    ]
-  }
-];
+interface AbilityGraphResponseItem {
+  ablName: string;
+  ablLab: string;
+  score: string;
+  avgScore: string;
+}
 
-// ===== RadarChart Component (일반 함수) =====
 function PerformanceRadarChart({ data, avgData, color }: PerformanceRadarChartProps) {
   const [hovered, setHovered] = useState<'child' | 'avg' | null>(null);
 
@@ -171,27 +121,21 @@ function PerformanceRadarChart({ data, avgData, color }: PerformanceRadarChartPr
           data={combinedData}
           margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
         >
-          <PolarGrid
-            gridType="polygon"
-            radialLines={false}
-            polarRadius={polarRadius}
-          />
+          <PolarGrid gridType="polygon" radialLines={false} polarRadius={polarRadius} />
           <PolarAngleAxis
             dataKey="name"
             axisLine={{ stroke: 'black', strokeWidth: 0.5 }}
             tick={(props: CustomTickProps) =>
               renderCustomAngleAxis({
-                ...props,
+                payload: props.payload,
+                cx: props.cx,
+                cy: props.cy,
                 radius: outerRadius,
                 index: props.index
               })
             }
           />
-          <PolarRadiusAxis
-            domain={[0, 100]}
-            tick={false}
-            axisLine={false}
-          />
+          <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} />
           <Radar
             name="Average"
             dataKey="average"
@@ -214,8 +158,9 @@ function PerformanceRadarChart({ data, avgData, color }: PerformanceRadarChartPr
   );
 }
 
-// ===== Card Component =====
 const PerformanceCardComponent = memo(function PerformanceCardComponent({ data }: { data: PerformanceData }) {
+  const showOverlay = data.data.every(item => isNaN(item.value));
+
   return (
     <ColorSection backgroundColor={data.color}>
       <Headers>
@@ -224,22 +169,80 @@ const PerformanceCardComponent = memo(function PerformanceCardComponent({ data }
       </Headers>
       <Bodys>
         <PerformanceBox>
-          <ShapeContainer style={{ width: '320px', height: '320px' }}>
+          <ShapeContainer style={{ width: '320px', height: '320px', position: 'relative' }}>
+            {showOverlay && (
+              <LockWrapper>
+                <AiFillLock size={50} color='#ddd' />
+              </LockWrapper>
+            )}
             <PerformanceRadarChart data={data.data} avgData={data.avgData} color="#ff5555" />
           </ShapeContainer>
         </PerformanceBox>
       </Bodys>
       <Footer>
-        <p>측정하러 가기 →</p>
+        {data.title !== '역량 발달 그래프' && <p>측정하러 가기 →</p>}
       </Footer>
     </ColorSection>
   );
 });
 
-// ===== Main Component =====
 export default function AbilityGraph() {
+  const { selectedChild } = useMainContext();
+  const [performanceData, setPerformanceData] = useState<PerformanceData[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  
+  const fetchData = useCallback(async () => {
+    const chartColors = ['#c1e3ff', '#ffdada', '#ffd6a5'];
+    if (!selectedChild?.uid) return;
+    setLoading(true);
+    try {
+      const response = await selectGraph(selectedChild.uid);
+      console.log(response);
+      
+      const info = response.info;
+      let data: AbilityGraphResponseItem[] = [];
+      if (Array.isArray(info)) {
+        data = info;
+      } else {
+        console.error('Unexpected data format for response.info:', info);
+      }
+      
+      const grouped = data.reduce((acc: { [key: string]: PerformanceData }, curr: AbilityGraphResponseItem) => {
+        const groupKey = curr.ablName;
+        if (!acc[groupKey]) {
+          acc[groupKey] = {
+            title: `${curr.ablName} 그래프`,
+            color: '',
+            data: [],
+            avgData: []
+          };
+        }
+        // score가 null이면 parseFloat는 NaN을 반환합니다.
+        acc[groupKey].data.push({ name: curr.ablLab, value: parseFloat(curr.score) });
+        acc[groupKey].avgData.push({ name: curr.ablLab, value: parseFloat(curr.avgScore) });
+        return acc;
+      }, {} as { [key: string]: PerformanceData });
+
+      const groupedArray = Object.values(grouped).map((item, index) => ({
+        ...item,
+        color: chartColors[index % chartColors.length]
+      }));
+      setPerformanceData(groupedArray);
+    } catch (error) {
+      console.error('Error fetching ability data:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [selectedChild?.uid]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
   return (
     <RightSection>
+      {loading && <p>Loading...</p>}
+      {!loading && performanceData.length === 0 && <p>데이터가 없습니다.</p>}
       {performanceData.map((item, index) => (
         <PerformanceCardComponent key={index} data={item} />
       ))}

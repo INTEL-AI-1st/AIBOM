@@ -13,10 +13,9 @@ export interface ChildForm {
     }
 }
   
-export const SelectChild = async (seachUid: string) => {
+export const SelectChild = async () => {
     try {
       const response = await api.post<ChildForm>("/myChild/selectChild", {
-        seachUid
       });
       return response.data;
     } catch (error) {

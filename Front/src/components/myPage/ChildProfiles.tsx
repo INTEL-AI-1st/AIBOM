@@ -162,7 +162,7 @@ export default function ChildProfiles() {
                 <>
                     <InfoRow>
                         <span style={{ fontWeight: '500' }}>
-                            {info.name} ({info.gender === '1' ? '남' : '여'})
+                            {info.name} ({info.gender == '1' ? '남' : '여'})
                         </span>
                     </InfoRow>
                     <InfoRow>

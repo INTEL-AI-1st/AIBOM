@@ -1,5 +1,7 @@
-import { useCallback, useEffect } from "react";
+import { FaBaby } from "react-icons/fa";
 import styled from "styled-components";
+import { useMainContext } from "@context/MainContext";
+import { ProfileImg } from "@styles/ProfileStlyes";
 
 const LeftSection = styled.div`
   flex: 1;
@@ -7,16 +9,30 @@ const LeftSection = styled.div`
   border-radius: 0;
 `;
 
+const ButtonList = styled.div`
+  display: flex;
+  gap: 10px;
+  padding: 20px;
+  flex-wrap: wrap;
+`;
+
+const ChildButton = styled.button<{ selected: boolean }>`
+  padding: 8px 12px;
+  border: none;
+  border-radius: 8px;
+  background-color: ${({ selected }) => (selected ? "#007bff" : "#ccc")};
+  color: white;
+`;
+
 const ProfileContent = styled.div`
   display: flex;
-  flex-direction: column;
-  align-items: start;
+  gap: 20px;
   padding: 20px;
-  `;
+`;
 
 const ProfileIconWrapper = styled.div`
   position: relative;
-  `;
+`;
 
 const ProfileIcon = styled.div`
   height: 200px;
@@ -29,39 +45,56 @@ const ProfileIcon = styled.div`
   }
 `;
 
+const ProfileContainer = styled.div``;
+
 const ProfileName = styled.div`
-  font-size: 18px;
-  font-weight: 500;
+  font-size: 32px;
+  font-weight: 900;
   margin-top: 5px;
-  width: 200px;
-  text-align: center;
+`;
+
+const EvalWrapper = styled.div`
+  padding-left: 10px;
 `;
 
 export default function Profile() {
+  const { childInfo, selectedChild, setSelectedChild } = useMainContext();
+  return (
+    <LeftSection>
+      <ButtonList>
+        {childInfo.map((info) => (
+          <ChildButton
+            key={info.uid}
+            selected={info.uid === selectedChild?.uid}
+            onClick={() => setSelectedChild(info)}
+          >
+            {info.name}
+          </ChildButton>
+        ))}
+      </ButtonList>
 
-    // const fetchData = useCallback(async () => {
-    //     try {
-    //     const data = await SelectChild();
-    //     }
-    //     } catch (error) {
-    //     console.error("Error fetching user info:", error);
-    //     }
-    // }, [searchUid]);
-    
-    // useEffect => {
-    //     fetchData();
-    // }, [fetchData]);
-    
-    return (
-        <LeftSection>
+      {selectedChild && (
+        <>
           <ProfileContent>
             <ProfileIconWrapper>
               <ProfileIcon>
-                <img src="child.png" alt="아이 프로필" />
+                {selectedChild.profileUrl ? (
+                  <ProfileImg src={selectedChild.profileUrl} />
+                ) : (
+                  <FaBaby />
+                )}
               </ProfileIcon>
             </ProfileIconWrapper>
-            <ProfileName>아이 이름</ProfileName>
+            <ProfileContainer>
+              <ProfileName>{selectedChild.name}</ProfileName>
+              <p>
+                {selectedChild.ageYears}세 ({selectedChild.ageMonths}개월)
+              </p>
+            </ProfileContainer>
           </ProfileContent>
-        </LeftSection>
-      );
+          <EvalWrapper>ㅇㄹㅇㄹㅇㅁㄹㄴ</EvalWrapper>
+        </>
+      )}
+    </LeftSection>
+  );
 }

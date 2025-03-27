@@ -1,8 +1,8 @@
-import styled from 'styled-components';
-import Profile from '@components/main/Profile';
-import BodyGraph from '@components/main/BodyGraph';
-import AbilityGraph from '@components/main/AbilityGraph';
-// import TotalAblilty from '@components/main/TotalAbility';
+import styled from "styled-components";
+import Profile from "@components/main/Profile";
+import BodyGraph from "@components/main/BodyGraph";
+import AbilityGraph from "@components/main/AbilityGraph";
+import { MainProvider } from "@context/MainContext";
 
 const Container = styled.div`
   display: flex;
@@ -18,13 +18,14 @@ const TopSection = styled.div`
 
 export default function Main() {
   return (
-    <Container>
-      <TopSection>
-        <Profile />
-        <AbilityGraph />
-      </TopSection>
-      {/* <TotalAblilty/> */}
-      <BodyGraph />
-    </Container>
+    <MainProvider>
+      <Container>
+        <TopSection>
+          <Profile />
+          <AbilityGraph />
+        </TopSection>
+        <BodyGraph />
+      </Container>
+    </MainProvider>
   );
 }

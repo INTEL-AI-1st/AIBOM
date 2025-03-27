@@ -1,6 +1,5 @@
 import { deleteChild, deleteProfile, SaveChild, SelectChild, upsertProfile } from '@services/myPage/MyChildService';
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { useLocation } from 'react-router-dom';
 import { getPublicProfileUrl, supabase } from '@services/supabaseClient';
 import { usePopup } from '@hooks/UsePopup';
 
@@ -16,7 +15,7 @@ export interface ChildInfo {
   fileName?: string;
   profileUrl?: string | null;
 }
-interface ApiChild {
+export interface ApiChild {
   uid?: string;
   name: string;
   birthday: string;
@@ -33,9 +32,6 @@ export function useChildInfo() {
   const [showSortOptions, setShowSortOptions] = useState(false);
   const sortRef = useRef<HTMLDivElement | null>(null);
   const { showAlert } = usePopup();
-
-  const { state } = useLocation();
-  const searchUid = state?.uid;
 
   const updateChildAtIndex = (index: number, update: Partial<ChildInfo>) => {
     setChildForm(prev => {
@@ -60,7 +56,7 @@ export function useChildInfo() {
 
   const fetchData = useCallback(async () => {
     try {
-      const data = await SelectChild(searchUid);
+      const data = await SelectChild();
       if (data?.info && Array.isArray(data.info)) {
         const formatted: ChildInfo[] = (data.info as ApiChild[]).map((child) => ({
           uid: child.uid,
@@ -78,7 +74,7 @@ export function useChildInfo() {
     } catch (error) {
       console.error("Error fetching user info:", error);
     }
-  }, [searchUid]);
+  }, []);
 
   useEffect(() => {
     fetchData();

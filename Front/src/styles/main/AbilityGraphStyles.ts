@@ -3,9 +3,10 @@ import styled from 'styled-components';
 export const RightSection = styled.div`
   flex: 2;
   display: flex;
+  flex-wrap: wrap;
   gap: 20px;
   position: relative;
-  overflow: visible;
+  /* overflow: hidden; */
 `;
 
 export const GrayBox = styled.div`
@@ -20,7 +21,7 @@ export const ColorSection = styled.div<{ backgroundColor: string }>`
   background-color: ${props => props.backgroundColor};
   padding: 10px;
   height: 50%;
-  flex: 1;
+  flex: 1 1 calc(33% - 20px);
   position: relative;
 `;
 
@@ -32,6 +33,10 @@ export const Headers = styled.div`
   p {
     margin: 10px 0;
     white-space: nowrap;
+  }
+
+  p:hover{
+    cursor: pointer;
   }
 `;
 
@@ -47,10 +52,22 @@ export const PerformanceBox = styled.div`
 `;
 
 export const ShapeContainer = styled(GrayBox)`
-  width: 250px;
-  height: 250px;
+  max-width: 250px;
   flex-shrink: 0;
   position: relative;
+`;
+
+export const LockWrapper = styled.div`
+    position: absolute;
+    display: flex;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.7);
+    align-items: center;
+    justify-content: center;
+    z-index: 10
 `;
 
 export const ColorBox = styled.div`
@@ -97,6 +114,10 @@ export const ColorText = styled.span`
 `;
 
 export const Footer = styled.div`
-    display: flex;
-    justify-content: end;
+  display: flex;
+  justify-content: end;
+
+  p:hover{
+    cursor: pointer;
+  }
 `;
