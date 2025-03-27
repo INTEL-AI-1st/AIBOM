@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { Link } from 'react-router-dom'
 
 export const RightSection = styled.div`
   flex: 2;
@@ -29,14 +30,9 @@ export const Headers = styled.div`
   display: flex;
   justify-content: space-between;
 
-  h3,
-  p {
+  h3{
     margin: 10px 0;
     white-space: nowrap;
-  }
-
-  p:hover{
-    cursor: pointer;
   }
 `;
 
@@ -116,8 +112,10 @@ export const ColorText = styled.span`
 export const Footer = styled.div`
   display: flex;
   justify-content: end;
+  margin-top: 15px;
+`;
 
-  p:hover{
-    cursor: pointer;
-  }
+export const LinkP = styled(Link)`
+  color: #222;
+  text-decoration-line: none;
 `;

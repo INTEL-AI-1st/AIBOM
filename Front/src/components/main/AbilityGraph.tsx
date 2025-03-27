@@ -1,11 +1,9 @@
 import { useState, useMemo, useCallback, memo, useEffect } from 'react';
 import { useMainContext } from "@context/MainContext";
 import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
-import { AiFillLock } from 'react-icons/ai'; // 락 아이콘 임포트
-import {
-  RightSection, ColorSection, Headers, Bodys, PerformanceBox, ShapeContainer, ColorBox, ColorWrapper, Color, ColorText, Footer, LockWrapper
-} from '@styles/main/AbilityGraphStyles';
+import { RightSection, ColorSection, Headers, Bodys, PerformanceBox, ShapeContainer, ColorBox, ColorWrapper, Color, ColorText, Footer, LockWrapper, LinkP } from '@styles/main/AbilityGraphStyles';
 import { selectGraph } from '@services/main/AbilityService';
+import { AiFillLock } from 'react-icons/ai';
 
 // ===== TYPES =====
 interface ChartData {
@@ -14,6 +12,7 @@ interface ChartData {
 }
 
 interface PerformanceData {
+  id: string;
   title: string;
   color: string;
   data: ChartData[];
@@ -35,6 +34,7 @@ interface PerformanceRadarChartProps {
 }
 
 interface AbilityGraphResponseItem {
+  ablId: string;
   ablName: string;
   ablLab: string;
   score: string;
@@ -165,7 +165,7 @@ const PerformanceCardComponent = memo(function PerformanceCardComponent({ data }
     <ColorSection backgroundColor={data.color}>
       <Headers>
         <h3>{data.title}</h3>
-        <p>더보기 →</p>
+        <LinkP to={'/'}>더보기 →</LinkP>
       </Headers>
       <Bodys>
         <PerformanceBox>
@@ -180,7 +180,11 @@ const PerformanceCardComponent = memo(function PerformanceCardComponent({ data }
         </PerformanceBox>
       </Bodys>
       <Footer>
-        {data.title !== '역량 발달 그래프' && <p>측정하러 가기 →</p>}
+        {data.id === 'A003' ? null : (
+          <LinkP to={data.id === 'A002' ? '/obser' : data.id === 'A001' ? '/' : '#'}>
+            측정하러 가기 →
+          </LinkP>
+        )}
       </Footer>
     </ColorSection>
   );
@@ -211,13 +215,13 @@ export default function AbilityGraph() {
         const groupKey = curr.ablName;
         if (!acc[groupKey]) {
           acc[groupKey] = {
+            id: `${curr.ablId}`,
             title: `${curr.ablName} 그래프`,
             color: '',
             data: [],
             avgData: []
           };
         }
-        // score가 null이면 parseFloat는 NaN을 반환합니다.
         acc[groupKey].data.push({ name: curr.ablLab, value: parseFloat(curr.score) });
         acc[groupKey].avgData.push({ name: curr.ablLab, value: parseFloat(curr.avgScore) });
         return acc;

@@ -10,6 +10,7 @@
   import { ProtectedRoute } from "@components/common/ProtectedRoute";
 import Community from "@pages/Community";
 import Education from "@pages/Education";
+import Observation from "@pages/Observation";
 
   // ----- [라우터 설정] -----
   const router = createBrowserRouter([
@@ -28,6 +29,7 @@ import Education from "@pages/Education";
         { path: "education", element: <Education /> }, 
         { path: "community", element: <Community /> }, 
         { path: "my", element: <MyPage /> },
+        { path: "obser", element: <Observation />}
       ],
     },
   
