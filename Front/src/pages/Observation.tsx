@@ -23,17 +23,17 @@ interface SurveyItem {
 }
 
 // 네비게이션 스타일 (스크롤 시 고정을 위한 fixed prop 추가)
-const Nav = styled.nav<{ fixed: boolean }>`
+const Nav = styled.nav`
   width: 100%;
+  /* height: auto; */
   background: #f5f5f5;
   padding: 12px 0;
   margin-bottom: 30px;
-  position: ${({ fixed }) => (fixed ? 'fixed' : 'static')};
-  top: ${({ fixed }) => (fixed ? '0' : 'auto')};
-  left: ${({ fixed }) => (fixed ? '0' : 'auto')};
-  right: ${({ fixed }) => (fixed ? '0' : 'auto')};
-  z-index: ${({ fixed }) => (fixed ? '1000' : 'auto')};
+  position: sticky;
+  top: 0;
+  z-index: 1000;
 `;
+
 
 // 네비게이션 리스트 스타일
 const NavList = styled.ul`
@@ -56,12 +56,11 @@ const NavItem = styled.li`
 
 // 기본 컨테이너 및 섹션 스타일
 const Container = styled.div`
-  padding: 20px;
+  padding: 10px;
   width: 100%;
-  height: 100%;
+  max-height: 100%;
   margin: 0 auto;
-  /* 네비게이션이 고정되었을 때 콘텐츠가 가려지지 않도록 top margin 추가 */
-  margin-top: 70px;
+  /* margin-top: 70px; */
 `;
 
 const Title = styled.h1`
@@ -255,17 +254,17 @@ export default function Observation() {
   const [activeObservation, setActiveObservation] = useState<{ id: string; observation: Observation } | null>(null);
 
   // 스크롤에 따른 네비게이션 고정 및 스크롤 탑 버튼 상태
-  const [navFixed, setNavFixed] = useState(false);
+  // const [navFixed, setNavFixed] = useState(false);
   const [showScrollToTop, setShowScrollToTop] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
       const offset = window.scrollY;
-      if (offset > 150) {
-        setNavFixed(true);
+      if (offset > 200) {
+        // setNavFixed(true);
         setShowScrollToTop(true);
       } else {
-        setNavFixed(false);
+        // setNavFixed(false);
         setShowScrollToTop(false);
       }
     };
@@ -281,7 +280,10 @@ export default function Observation() {
   const scrollToSection = (domain: string) => {
     const element = document.getElementById(domain);
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+      const yOffset = -50; // 원하는 오프셋
+      const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+  
+      window.scrollTo({ top: y, behavior: 'smooth' });
     }
   };
 
@@ -308,10 +310,10 @@ export default function Observation() {
   }, []);
 
   return (
-    <>
+    <Container>
       <Container>
         <Title>KICCE 유아관찰척도 설문</Title>
-        <Nav fixed={navFixed}>
+        <Nav>
           <NavList>
             {domainList.map((domain) => (
               <NavItem key={domain} onClick={() => scrollToSection(domain)}>
@@ -390,6 +392,6 @@ export default function Observation() {
 
       {/* toastify 컨테이너 */}
       <ToastContainer />
-    </>
+    </Container>
   );
 }
