@@ -1,6 +1,6 @@
 import pool from "@config/db";
 
-export interface info {
+interface info {
     uid: string;
     nickName: string;
     profile: string;

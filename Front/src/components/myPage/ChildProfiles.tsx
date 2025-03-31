@@ -6,7 +6,7 @@ import {
   InfoLabel, InfoInput, RadioGroup, RadioLabel, GenderRadio, GrayButton, 
   ButtonForm, SubInfo, ChildBody, ProfileWrapper, ProfileImg, 
   AvatarContainer
-} from "@styles/ProfileStlyes";
+} from "@styles/main/ProfileStlyes";
 import { AvatarInput, AvatarUpload, AvatarWrapper, ButtonWrapper, ImgButton } from "@styles/MyPageStyles";
 import { useChildInfo } from "@hooks/myPage/useChildInfo";
 import { useUserInfo } from "@hooks/myPage/useUserInfo";

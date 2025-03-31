@@ -1,4 +1,4 @@
-import { deleteChildProfile, deleteMyChild, saveMyChild, selectMyChild, upsertChildProfile } from "@models/myPage/myChildModel";
+import { deleteChildProfile, deleteMyChild, PR_MyChild, selectMyChild, upsertChildProfile } from "@models/myPage/myChildModel";
 import { Request, Response } from "express";
 
 export const selectChild = async (req: Request, res: Response): Promise<void> => {
@@ -16,7 +16,7 @@ export const saveChild = async (req: Request, res: Response): Promise<void> => {
   try {
     const uid = (req as any).user?.uid;
     const { child } = req.body;  
-    const info = await saveMyChild(uid, child.info);
+    const info = await PR_MyChild(uid, child.info);
     res.json({ info });
   } catch (error) {
     console.error("저장 오류:", error);

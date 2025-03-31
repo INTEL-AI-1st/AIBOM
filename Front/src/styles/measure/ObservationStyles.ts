@@ -98,14 +98,35 @@ export const OptionLabel = styled.label`
   margin-bottom: 8px;
   border: 1px solid #ddd;
   border-radius: 4px;
-  transition: background-color 0.2s;
+  transition: background-color 0.2s;  
   &:hover {
     background-color: #f0f0f0;
+  }
+  span {
+    margin-left: 8px;
+
   }
 `;
 
 export const RadioInput = styled.input`
-  margin-right: 10px;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border: 2px solid #ccc;
+  border-radius: 50%;
+  outline: none;
+  display: inline-block;
+  position: relative;
+  vertical-align: middle;
+  margin: 0px;
+
+  &:checked {
+    background-color: #ffb9b9;
+    border: 3px solid white;
+    box-shadow: 0 0 0 1.6px #ffb9b9;
+  }
 `;
 
 export const SidebarContainer = styled.div<{ open: boolean }>`
@@ -198,14 +219,13 @@ export const ScrollToTop = styled(FaArrowCircleUp)`
 `;
 
 export const BtnForm = styled.div`
-    display: flex;
-    justify-content: center;
-    gap: 10px;
     text-align: center;
-    margin: 20px 0;
+    margin-bottom: 5px;
 `;
 
 export const Btn = styled.button`
+    /* padding: 20px; */
+    font-size: 1.5em;
     border-radius: 5px;
 `;
 

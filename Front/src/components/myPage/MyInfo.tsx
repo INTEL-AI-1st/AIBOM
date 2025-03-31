@@ -5,8 +5,8 @@ import { ApiContainer, ButtonDiv, AvatarWrapper, AvatarUpload, AvatarInput,
 import { useMyInfo } from "@hooks/UseMyPage";
 import PasswordInput, { PasswordForm } from "../common/Password";
 import { FaUser } from "react-icons/fa";
-import { ProfileImg, ProfileWrapper } from "@styles/ProfileStlyes";
-import { getPublicProfileUrl } from "@services/supabaseClient";
+import { ProfileImg, ProfileWrapper } from "@styles/main/ProfileStlyes";
+import { getPublicProfileUrl } from "@services/common/supabaseClient";
 
 export default function MyInfo() {
   const { info, setInfo,

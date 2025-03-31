@@ -44,12 +44,12 @@ export const PopupImage = styled.img`
 
 export const ButtonGroup = styled.div`
   display: flex;
-  gap: 10px;
+  gap: 20px;
   justify-content: center;
 `;
 
 export const Button = styled.button`
   padding: 10px 20px;
   font-size: 24px;
-  border-radius: 0px 35px 35px 35px;
+  border-radius: 15px;
 `;

@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { usePopup } from "./UsePopup";
 import { selectMyInfo, upsertMyProfile, updateMyInfo, deleteMyProfile } from "@services/myPage/MyInfoService";
 import { usePasswordValidation } from "./UsePasswordValidation";
-import { supabase } from "@services/supabaseClient";
+import { supabase } from "@services/common/supabaseClient";
 import { useModalContext } from "@context/ModalContext";
 
 interface UserInfo {

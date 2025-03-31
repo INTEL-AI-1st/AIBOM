@@ -9,31 +9,52 @@ import {
   ObservationCategory, ObservationHeader, ObservationList, ObservationListItem, OptionLabel, OptionList, 
   Overlay, Question, QuestionTitle, QuestionTitleContainer, RadioInput, ScrollToTop, SidebarContainer, Title, 
   ToastCon
-} from '@styles/ObservationStyles';
+} from '@styles/measure/ObservationStyles';
 import { useMainContext } from '@context/MainContext';
+import { saveObservation, selectObservation, upsertObservation } from '@services/measure/ObservationService';
+import { usePopup } from '@hooks/UsePopup';
 
-// Observation 타입 선언
 interface Observation {
   play?: string[];
   life?: string[];
   activity?: string[];
 }
 
-// SurveyItem 타입 선언
 interface SurveyItem {
-  id: string;
+  questId: string;
   domain: string;
+  abilityLabelId: string;
   question: string;
   options: string[];
   observation: Observation;
 }
 
-const AUTO_SAVE_TOAST_ID = 'auto-save-toast';
-
 export default function Observation() {
   const { selectedChild } = useMainContext();
+  const { showConfirm, showAlert } = usePopup();
   const [activeObservation, setActiveObservation] = useState<{ id: string; observation: Observation } | null>(null);
   const [showScrollToTop, setShowScrollToTop] = useState(false);
+
+  useEffect(() => {
+    const fetchObservation = async () => {
+      if (!selectedChild?.uid) return;
+      try {
+        const savedData = await selectObservation(selectedChild.uid);
+        if (savedData && savedData.info && Array.isArray(savedData.info)) {
+          const newAnswers = savedData.info.reduce((acc, observation) => {
+            acc[observation.questId] = observation.score;
+            return acc;
+          }, {});
+          setAnswers(prev => ({ ...prev, ...newAnswers }));
+        }
+      } catch (error) {
+        console.error('Error fetching observation:', error);
+      }
+    };
+  
+    fetchObservation();
+  }, [selectedChild?.uid]);
+  
 
   const groupedData = useMemo(() => {
     return surveyData.reduce((acc: Record<string, SurveyItem[]>, item: SurveyItem) => {
@@ -47,11 +68,10 @@ export default function Observation() {
 
   const domainList = useMemo(() => Object.keys(groupedData), [groupedData]);
 
-  // 설문 답변 상태 (각 문항은 item.id로 관리)
   const [answers, setAnswers] = useState<{ [key: string]: number | null }>(() => {
     const initial: { [key: string]: number | null } = {};
     surveyData.forEach((item: SurveyItem) => {
-      initial[item.id] = null;
+      initial[item.questId] = null;
     });
     return initial;
   });
@@ -71,9 +91,15 @@ export default function Observation() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [handleScroll]);
 
-  const handleAnswerChange = useCallback((itemId: string, value: number) => {
-    setAnswers((prev) => ({ ...prev, [itemId]: value }));
-  }, []);
+  const handleAnswerChange = useCallback(
+    async (abilityLabelId: string, itemId: string, value: number) => {
+      setAnswers((prev) => ({ ...prev, [itemId]: value }));
+      if (!selectedChild?.uid) return;
+  
+      await upsertObservation(selectedChild.uid, abilityLabelId, itemId, value);
+    },
+    [selectedChild?.uid]
+  );
 
   const scrollToSection = useCallback((domain: string) => {
     const element = document.getElementById(domain);
@@ -84,7 +110,6 @@ export default function Observation() {
     }
   }, []);
 
-  // 특정 문항으로 스크롤 (문항에 id={`question-${item.id}`} 를 부여)
   const scrollToQuestion = useCallback((questionId: string) => {
     const element = document.getElementById(`question-${questionId}`);
     if (element) {
@@ -102,32 +127,26 @@ export default function Observation() {
     setActiveObservation(null);
   }, []);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (!toast.isActive(AUTO_SAVE_TOAST_ID)) {
-        toast.info('자동저장되었습니다.', {
-          toastId: AUTO_SAVE_TOAST_ID,
-          position: 'top-right',
-          autoClose: 1000,
-        });
-      }
-    }, 60000);
-  
-    return () => clearInterval(interval);
-  }, []);
-
-  const handleSave = useCallback(() => {
-    const unanswered = surveyData.filter(item => answers[item.id] === null);
+  const handleSave = useCallback(async () => {
+    const unanswered = surveyData.filter(item => answers[item.questId] === null);
     if (unanswered.length > 0) {
       toast.info('체크하지 않은 문항이 존재합니다.', {
         position: 'top-right',
         autoClose: 1000,
       });
-      scrollToQuestion(unanswered[0].id);
+      scrollToQuestion(unanswered[0].questId);
     } else {
-      alert('저장되었습니다.');
+      const confirm = await showConfirm({ message: "측정하면 체크한 항목들이 전부 사라집니다. 진행하시겠습니까?" });
+      if (confirm) {
+        if (!selectedChild?.uid) return;
+        
+        const msg = await saveObservation(selectedChild.uid);
+        console.log(msg);
+        showAlert({ message: msg.msg });
+      }
     }
-  }, [answers, scrollToQuestion]);
+  }, [selectedChild?.uid, answers, scrollToQuestion, showConfirm, showAlert]);
+  
 
   return (
     <Container>
@@ -143,18 +162,18 @@ export default function Observation() {
           </NavList>
         </Nav>
         <p>이름: {selectedChild?.name}</p>
-        <p>※ 저장되어 있는 문항은 다음 달이 되면 초기화 됩니다.</p>
+        <p>※ 문항을 선택할 때 마다 데이터는 저장됩니다.</p>
 
         {domainList.map((domain) => (
           <DomainSection key={domain} id={domain}>
             <DomainTitle>{domain}</DomainTitle>
             {groupedData[domain].map((item: SurveyItem) => (
-              <Question key={item.id} id={`question-${item.id}`}>
+              <Question key={item.questId} id={`question-${item.questId}`}>
                 <QuestionTitleContainer>
                   <QuestionTitle>{item.question}</QuestionTitle>
                   <InfoIcon
                     size={20}
-                    onClick={() => setActiveObservation({ id: item.id, observation: item.observation })}
+                    onClick={() => setActiveObservation({ id: item.questId, observation: item.observation })}
                     title="관측사례 보기"
                     />
                 </QuestionTitleContainer>
@@ -163,10 +182,10 @@ export default function Observation() {
                     <OptionLabel key={index}>
                       <RadioInput
                         type="radio"
-                        name={item.id}
+                        name={item.questId}
                         value={index + 1}
-                        checked={answers[item.id] === index + 1}
-                        onChange={() => handleAnswerChange(item.id, index + 1)}
+                        checked={answers[item.questId] === index + 1}
+                        onChange={() => handleAnswerChange(item.abilityLabelId, item.questId, index + 1)}
                         />
                       <span>{option}</span>
                     </OptionLabel>
@@ -213,7 +232,6 @@ export default function Observation() {
         </SidebarContainer>
 
         <BtnForm>
-          <Btn onClick={handleSave}>저장</Btn>
           <Btn onClick={handleSave}>측정하기</Btn>
         </BtnForm>
 

@@ -1,6 +1,6 @@
 import pool from "@config/db";
 
-export interface graph {
+interface graph {
     ablId: string;
     ablName: string;
     explan: string;
@@ -9,7 +9,7 @@ export interface graph {
     rcdId: string;
     score: number;
     avgScore: number;
-   }
+}
 
    export const selectChildGraph = async (uid: string): Promise<graph | null> => {
     const conn = await pool.getConnection();
@@ -43,17 +43,7 @@ export interface graph {
       [uid]
     );
     conn.release();
-  
-    // BigInt 값을 문자열로 변환
-    const safeRows = rows.map((row: any) => {
-      for (const key in row) {
-        if (typeof row[key] === 'bigint') {
-          row[key] = row[key].toString();
-        }
-      }
-      return row;
-    });
-  
-    return safeRows.length ? safeRows : null;
+
+    return rows.length ? rows : null;
   };
   

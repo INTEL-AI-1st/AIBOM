@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { SelectChild } from "@services/myPage/MyChildService";
-import { getPublicProfileUrl } from "@services/supabaseClient";
+import { getPublicProfileUrl } from "@services/common/supabaseClient";
 import { ApiChild } from "@hooks/myPage/useChildInfo";
 
 interface ChildInfo {

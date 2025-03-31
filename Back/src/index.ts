@@ -9,6 +9,8 @@ import abilityRoutes from "@routes/main/abilityRoutes";
 import myInfoRoutes from "@routes/myPage/myInfoRoutes";
 import myChildRoutes from "@routes/myPage/myChildRoutes";
 
+import observationRoutes from "@routes/measure/observationRoutes";
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -26,6 +28,8 @@ app.use("/ability", abilityRoutes)
 app.use("/userInfo", userInfoRoutes);
 app.use("/myInfo", myInfoRoutes);
 app.use("/myChild", myChildRoutes);
+
+app.use("/obser", observationRoutes);
 
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);

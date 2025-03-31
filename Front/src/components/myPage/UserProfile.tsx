@@ -1,5 +1,5 @@
 import { FaUser } from "react-icons/fa";
-import { Header, ProfileImg, ProfileWrapper, UserInfo, InfoContainer, SubInfo, BioWrapper, Button, GrayButton} from "@styles/ProfileStlyes";
+import { Header, ProfileImg, ProfileWrapper, UserInfo, InfoContainer, SubInfo, BioWrapper, Button, GrayButton} from "@styles/main/ProfileStlyes";
 import { useUserInfo } from "@hooks/myPage/useUserInfo";
 import Modal from "@components/common/Modal";
 import { ModalProvider } from "@context/ModalContext";

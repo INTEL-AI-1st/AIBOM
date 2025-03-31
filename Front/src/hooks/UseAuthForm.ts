@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { registerUser, loginUser } from '@services/AuthService';
+import { registerUser, loginUser } from '@services/auth/AuthService';
 import { usePopup } from "./UsePopup";
 import { usePasswordValidation } from "./UsePasswordValidation";
 import Cookies from "js-cookie";

@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import { GrLogout } from "react-icons/gr";
-import { logoutUser } from "@services/AuthService";
+import { logoutUser } from "@services/auth/AuthService";
 import { useNavigate } from "react-router-dom";
 
 const HeaderWrapper = styled.div`

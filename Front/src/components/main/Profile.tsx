@@ -1,7 +1,7 @@
 import { FaBaby } from "react-icons/fa";
 import styled from "styled-components";
 import { useMainContext } from "@context/MainContext";
-import { ProfileImg } from "@styles/ProfileStlyes";
+import { ProfileImg } from "@styles/main/ProfileStlyes";
 
 const LeftSection = styled.div`
   flex: 1;

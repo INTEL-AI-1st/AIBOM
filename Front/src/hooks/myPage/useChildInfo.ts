@@ -1,6 +1,6 @@
 import { deleteChild, deleteProfile, SaveChild, SelectChild, upsertProfile } from '@services/myPage/MyChildService';
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { getPublicProfileUrl, supabase } from '@services/supabaseClient';
+import { getPublicProfileUrl, supabase } from '@services/common/supabaseClient';
 import { usePopup } from '@hooks/UsePopup';
 
 export interface ChildInfo {

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { SelectUserInfo } from "@services/UserInfoService";
-import { getPublicProfileUrl } from "@services/supabaseClient";
+import { SelectUserInfo } from "@services/myPage/UserInfoService";
+import { getPublicProfileUrl } from "@services/common/supabaseClient";
 import { useLocation } from "react-router-dom";
 
 export interface UserInfo {

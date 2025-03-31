@@ -1,6 +1,6 @@
 import pool from "@config/db";
 
-export interface child {
+interface child {
   name: string;
   birthday: string;
   gender: string;
@@ -27,7 +27,7 @@ export const selectMyChild = async (uid: string): Promise<child | null> => {
     return rows.length ? rows : null;
 };
 
-export const saveMyChild = async (uid: string, child: child): Promise<void> => {
+export const PR_MyChild = async (uid: string, child: child): Promise<void> => {
     const conn = await pool.getConnection();
     await conn.query(
         `CALL AddChildProfile(?, ?, ?, ?, ?)`,

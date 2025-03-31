@@ -1,6 +1,6 @@
 import pool from "@config/db";
 
-export interface User {
+interface User {
   uid: string;
 }
 

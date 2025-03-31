@@ -1,8 +1,9 @@
 export const surveyData = [
   // [신체운동·건강]
   {
-    id: "physical_1",
+    questId: "physical_1",
     domain: "신체운동·건강",
+    abilityLabelId: "L001",
     question: "신체 각 부분의 이름을 안다.",
     options: [
       "신체 각 부분의 이름을 알지 못한다.",
@@ -40,8 +41,9 @@ export const surveyData = [
     }
   },
   {
-    id: "physical_2",
+    questId: "physical_2",
     domain: "신체운동·건강",
+    abilityLabelId: "L001",
     question: "신체를 조절하여 움직인다.",
     options: [
       "신체를 조절하여 움직이는 데 어려움을 갖는다.",
@@ -74,8 +76,9 @@ export const surveyData = [
     }
   },
   {
-    id: "physical_3",
+    questId: "physical_3",
     domain: "신체운동·건강",
+    abilityLabelId: "L001",
     question: "기본 운동(기초적인 이동 운동, 제자리 운동, 도구를 이용한 운동)을 한다.",
     options: [
       "기본 운동(기초적인 이동운동, 제자리 운동, 오구를 이용한 운동)을 수행하는 데 어려움이 있다.",
@@ -107,8 +110,9 @@ export const surveyData = [
     }
   },
   {
-    id: "physical_4",
+    questId: "physical_4",
     domain: "신체운동·건강",
+    abilityLabelId: "L001",
     question: "실내외 신체활동에 자발적으로 참여한다.",
     options: [
       "실내외 신체활동에 참여하지 않는다.",
@@ -135,9 +139,10 @@ export const surveyData = [
     }
   },
   {
-    id: "physical_5",
+    questId: "physical_5",
     domain: "신체운동·건강",
-    question: "5. 자신의 몸과 주변을 깨끗이 한다.",
+    abilityLabelId: "L001",
+    question: "자신의 몸과 주변을 깨끗이 한다.",
     options: [
       "자신의 몸과 주변을 깨끗이 하는 데 관심을 가지지 않는다.",
       "도움을 받으면 자신의 몸과 주변을 깨끗이 하는 데 관심을 갖는다.",
@@ -169,9 +174,10 @@ export const surveyData = [
     }
   },
   {
-    id: "physical_6",
+    questId: "physical_6",
     domain: "신체운동·건강",
-    question: "6. 몸에 좋은 음식을 알고 즐겁게 먹는다.",
+    abilityLabelId: "L001",
+    question: "몸에 좋은 음식을 알고 즐겁게 먹는다.",
     options: [
       "몸에 좋은 음식에 관심을 갖지 않고 먹지 않는다.",
       "도움을 받으면 몸에 좋은 음식에 관심을 갖고 먹는다.",
@@ -210,9 +216,10 @@ export const surveyData = [
     }
   },
   {
-    id: "physical_7",
+    questId: "physical_7",
     domain: "신체운동·건강",
-    question: "7. 하루 일과에서 적당한 휴식을 취한다.",
+    abilityLabelId: "L001",
+    question: "하루 일과에서 적당한 휴식을 취한다.",
     options: [
       "하루 일과에서 휴식을 취하지 않는다.",
       "도움을 받으면 하루 일과에서 적당한 휴식을 취한다.",
@@ -253,9 +260,10 @@ export const surveyData = [
     }
   },
   {
-    id: "physical_8",
+    questId: "physical_8",
     domain: "신체운동·건강",
-    question: "8. 질병을 예방하는 방법을(알고) 실천한다.",
+    abilityLabelId: "L001",
+    question: "질병을 예방하는 방법을(알고) 실천한다.",
     options: [
       "질병을 예방 방법을 모른다.",
       "질병을 예방하는 방법을 알지만 실천하지 않는다.",
@@ -292,9 +300,10 @@ export const surveyData = [
     }
   },
   {
-    id: "physical_9",
+    questId: "physical_9",
     domain: "신체운동·건강",
-    question: "9. 일상에서 안전하게 놀이하고 생활한다.",
+    abilityLabelId: "L001",
+    question: "일상에서 안전하게 놀이하고 생활한다.",
     options: [
       "일상에서 안전하게 놀이하거나 생활하지 못한다.",
       "도움을 받으면 일상에서 안전하게 놀이하고 생활하는 방법에 관심을 갖는다.",
@@ -339,9 +348,10 @@ export const surveyData = [
     }
   },
   {
-    id: "physical_10",
+    questId: "physical_10",
     domain: "신체운동·건강",
-    question: "10. TV, 컴퓨터, 스마트폰 등을 바르게 사용한다.",
+    abilityLabelId: "L001",
+    question: "TV, 컴퓨터, 스마트폰 등을 바르게 사용한다.",
     options: [
       "TV, 컴퓨터, 스마트폰 등을 바르게 사용하지 않는다.",
       "TV, 컴퓨터, 스마트폰 등을 바르게 사용하는 방법에 대해 관심을 가진다.",
@@ -373,9 +383,10 @@ export const surveyData = [
     }
   },
   {
-    id: "physical_11",
+    questId: "physical_11",
     domain: "신체운동·건강",
-    question: "1교통안전 규칙을 지킨다.",
+    abilityLabelId: "L001",
+    question: "교통안전 규칙을 지킨다.",
     options: [
       "교통안전 규칙을 지키지 못한다.",
       "도움을 받으면 교통안전 규칙을 지킨다.",
@@ -413,9 +424,10 @@ export const surveyData = [
     }
   },
   {
-    id: "physical_12",
+    questId: "physical_12",
     domain: "신체운동·건강",
-    question: "1위험한 상황(안전사고, 화재, 재난, 학대, 유괴 등)에서 도움을 요청한다.",
+    abilityLabelId: "L001",
+    question: "위험한 상황(안전사고, 화재, 재난, 학대, 유괴 등)에서 도움을 요청한다.",
     options: [
       "위험 상황을 모른다.",
       "도움을 받으면 위험 상황을 안다.",
@@ -457,8 +469,9 @@ export const surveyData = [
 
   // [의사소통]
   {
-    id: "communication_1",
+    questId: "communication_1",
     domain: "의사소통",
+    abilityLabelId: "L002",
     question: "말이나 이야기를 관심 있게 듣는다.",
     options: [
       "교사나 또래의 말이나 이야기를 주의 깊게 듣지 않는다.",
@@ -495,8 +508,9 @@ export const surveyData = [
     }
   },
   {
-    id: "communication_2",
+    questId: "communication_2",
     domain: "의사소통",
+    abilityLabelId: "L002",
     question: "자신의 경험, 느낌, 생각을 말한다.",
     options: [
       "자신의 경험이나 느낌, 생각을 말할 차례가 되었을 때, 생각이 안난다며 말하지 않는다.",
@@ -532,8 +546,9 @@ export const surveyData = [
     }
   },
   {
-    id: "communication_3",
+    questId: "communication_3",
     domain: "의사소통",
+    abilityLabelId: "L002",
     question: "상황에 적절한 단어를 사용하여 말한다.",
     options: [
       "상황에 적절한 단어 사용에 어려움이 있다.",
@@ -573,8 +588,9 @@ export const surveyData = [
     }
   },
   {
-    id: "communication_4",
+    questId: "communication_4",
     domain: "의사소통",
+    abilityLabelId: "L002",
     question: "상대방이 하는 이야기를 듣고 적절하게 말한다.",
     options: [
       "상대방이 하는 이야기를 듣고 관련해서 말하지 못한다.",
@@ -616,8 +632,9 @@ export const surveyData = [
     }
   },
   {
-    id: "communication_5",
+    questId: "communication_5",
     domain: "의사소통",
+    abilityLabelId: "L002",
     question: "상황에 맞는 바른 태도로 듣고 말한다.",
     options: [
       "교사나 또래의 말에 집중하지 못하고 주변 사물을 만지작거리거나, 엉뚱한 말을 한다.",
@@ -659,8 +676,9 @@ export const surveyData = [
     }
   },
   {
-    id: "communication_6",
+    questId: "communication_6",
     domain: "의사소통",
+    abilityLabelId: "L002",
     question: "고운 말을 사용한다.",
     options: [
       "또래에게 속어를 사용하거나 공격적인 언어를 사용해 말한다.",
@@ -697,8 +715,9 @@ export const surveyData = [
     }
   },
   {
-    id: "communication_7",
+    questId: "communication_7",
     domain: "의사소통",
+    abilityLabelId: "L002",
     question: "말이 글로, 글이 말로 바뀌는 것을 안다.",
     options: [
       "소리나 말을 글자로 표현하거나, 글자를 읽으면 나는 소리에 관심을 가지지 않는다.",
@@ -737,8 +756,9 @@ export const surveyData = [
     }
   },
   {
-    id: "communication_8",
+    questId: "communication_8",
     domain: "의사소통",
+    abilityLabelId: "L002",
     question: "주변의 상징, 글자 등의 읽기에 관심을 가진다.",
     options: [
       "주변에서 접하는 도로 표지판, 안내문, 간판 등의 상징이나 글자에 관심을 가지지 않는다.",
@@ -778,8 +798,9 @@ export const surveyData = [
     }
   },
   {
-    id: "communication_9",
+    questId: "communication_9",
     domain: "의사소통",
+    abilityLabelId: "L002",
     question: "자신의 생각을 글자와 비슷한 형태로 표현한다.",
     options: [
       "글자와 비슷한 형태로 표현하는 것에 관심을 가지지 않는다.",
@@ -818,8 +839,9 @@ export const surveyData = [
     }
   },
   {
-    id: "communication_10",
+    questId: "communication_10",
     domain: "의사소통",
+    abilityLabelId: "L002",
     question: "책에 관심을 가지고 상상하기를 즐긴다.",
     options: [
       "책을 보거나 이야기 듣기에 관심을 가지지 않는다.",
@@ -853,8 +875,9 @@ export const surveyData = [
     }
   },
   {
-    id: "communication_11",
+    questId: "communication_11",
     domain: "의사소통",
+    abilityLabelId: "L002",
     question: "동화, 동시에서 말의 재미를 느낀다.",
     options: [
       "교사가 들려주는 동화, 동시에 흥미를 보이지 않는다.",
@@ -893,8 +916,9 @@ export const surveyData = [
     }
   },
   {
-    id: "communication_12",
+    questId: "communication_12",
     domain: "의사소통",
+    abilityLabelId: "L002",
     question: "말놀이와 이야기 짓기를 즐긴다",
     options: [
       "그림책의 장면이나, 친구의 이야기를 듣고 이어서 이야기 짓기를 어려워한다.",
@@ -933,8 +957,9 @@ export const surveyData = [
   },
   // [사회관계]
   {
-    id: "social_1",
+    questId: "social_1",
     domain: "사회관계",
+    abilityLabelId: "L003",
     question: "자신의 특성을 알고 소중히 여긴다.",
     options: [
       "자신의 특성을 알지 못한다.",
@@ -972,8 +997,9 @@ export const surveyData = [
     }
   },
   {
-    id: "social_2",
+    questId: "social_2",
     domain: "사회관계",
+    abilityLabelId: "L003",
     question: "자신의 감정을 알고 상황에 맞게 표현한다.",
     options: [
       "자신의 감정을 알지 못한다.",
@@ -1013,8 +1039,9 @@ export const surveyData = [
     }
   },
   {
-    id: "social_3",
+    questId: "social_3",
     domain: "사회관계",
+    abilityLabelId: "L003",
     question: "혼자서 할 수 있는 일을 스스로 한다.",
     options: [
       "혼자서 할 수 있는 일을 스스로 하지 않는다.",
@@ -1045,8 +1072,9 @@ export const surveyData = [
     }
   },
   {
-    id: "social_4",
+    questId: "social_4",
     domain: "사회관계",
+    abilityLabelId: "L003",
     question: "가족을 소중히 여기는 마음을 나타낸다.",
     options: [
       "가족의 일상과 아끼는 마음이 나타나지 않는다.",
@@ -1085,8 +1113,9 @@ export const surveyData = [
     }
   },
   {
-    id: "social_5",
+    questId: "social_5",
     domain: "사회관계",
+    abilityLabelId: "L003",
     question: "친구를 도우며 사이좋게 지낸다.",
     options: [
       "친구를 도와주지 않는다.",
@@ -1120,8 +1149,9 @@ export const surveyData = [
     }
   },
   {
-    id: "social_6",
+    questId: "social_6",
     domain: "사회관계",
+    abilityLabelId: "L003",
     question: "혼자서 할 수 있는 일을 스스로 한다.",
     options: [
       "혼자서 할 수 있는 일을 스스로 하지 않는다.",
@@ -1152,8 +1182,9 @@ export const surveyData = [
     }
   },
   {
-    id: "social_7",
+    questId: "social_7",
     domain: "사회관계",
+    abilityLabelId: "L003",
     question: "다른 사람의 감정, 생각, 행동을 알고 존중한다.(감정 인식, 공감)",
     options: [
       "다른 사람의 감정이나 생각, 행동을 알지 못한다.",
@@ -1190,8 +1221,9 @@ export const surveyData = [
     }
   },
   {
-    id: "social_8",
+    questId: "social_8",
     domain: "사회관계",
+    abilityLabelId: "L003",
     question: "친구와 어른께 예의 바른 행동을 한다.",
     options: [
       "친구와 어른에 대한 예의 바른 행동을 하지 않는다.",
@@ -1227,8 +1259,9 @@ export const surveyData = [
     }
   },
   {
-    id: "social_9",
+    questId: "social_9",
     domain: "사회관계",
+    abilityLabelId: "L003",
     question: "약속과 규칙을 지킨다.",
     options: [
       "약속과 규칙을 지키지 않는다.",
@@ -1264,8 +1297,9 @@ export const surveyData = [
     }
   },
   {
-    id: "social_10",
+    questId: "social_10",
     domain: "사회관계",
+    abilityLabelId: "L003",
     question: "내가 살고 있는 곳에 대해 궁금한 것을 알아본다.",
     options: [
       "내가 살고 있는 곳에 대해 궁금해 하지 않는다.",
@@ -1302,8 +1336,9 @@ export const surveyData = [
     }
   },
   {
-    id: "social_11",
+    questId: "social_11",
     domain: "사회관계",
+    abilityLabelId: "L003",
     question: "우리나라에 대해 자랑스럽게 여긴다.",
     options: [
       "우리나라의 옛날과 현대를 나타내는 것(놀이, 음식, 물건 등)에 대해 관심을 가지지 않는다.",
@@ -1340,8 +1375,9 @@ export const surveyData = [
     }
   },
   {
-    id: "social_12",
+    questId: "social_12",
     domain: "사회관계",
+    abilityLabelId: "L003",
     question: "다양한 문화에 관심을 가진다.",
     options: [
       "다양한 문화에 관심을 가지지 않는다.",
@@ -1381,8 +1417,9 @@ export const surveyData = [
 
   // [예술경험]
   {
-    id: "art_1",
+    questId: "art_1",
     domain: "예술경험",
+    abilityLabelId: "L004",
     question: "자연과 일상생활에서 아름다움을 찾고 즐긴다.",
     options: [
         "자연과 일상생활에서 아름다움에 관심을 가지지 않는다.",
@@ -1419,8 +1456,9 @@ export const surveyData = [
     }
   },
   {
-      id: "art_2",
+      questId: "art_2",
       domain: "예술경험",
+      abilityLabelId: "L004",
       question: "예술적 요소에 관심을 갖고 찾아본다.",
       options: [
         "예술적 요소에 관심을 가지지 않는다.",
@@ -1458,8 +1496,9 @@ export const surveyData = [
       }
     },
   {
-    id: "art_3",
+    questId: "art_3",
     domain: "예술경험",
+    abilityLabelId: "L004",
     question: "노래를 즐겨 부른다.",
     options: [
       "노래 부르기에 관심을 가지지 않는다.",
@@ -1494,8 +1533,9 @@ export const surveyData = [
   },
 
   {
-    id: "art_4",
+    questId: "art_4",
     domain: "예술경험",
+    abilityLabelId: "L004",
     question: "신체, 사물, 악기의 소리를 탐색하여 간단한 리듬 만들기를 즐긴다.",
     options: [
       "신체나 악기에서 나는 소리와 리듬에 관심을 가지지 않는다.",
@@ -1525,8 +1565,9 @@ export const surveyData = [
     }
   },
   {
-    id: "art_5",
+    questId: "art_5",
     domain: "예술경험",
+    abilityLabelId: "L004",
     question: "신체나 도구를 이용해 움직임과 춤으로 자신의 느낌을 표현한다.",
     options: [
       "신체나 도구를 이용하여 움직임과 춤으로 표현하는 것에 관심을 가지지 않는다.",
@@ -1557,8 +1598,9 @@ export const surveyData = [
   },
 
   {
-    id: "art_6",
+    questId: "art_6",
     domain: "예술경험",
+    abilityLabelId: "L004",
     question: "다양한 자료와 도구를 이용해 자신의 생각과 느낌을 표현한다.",
     options: [
       "다양한 미술재료와 도구를 사용하는 것에 관심을 가지지 않는다.",
@@ -1589,8 +1631,9 @@ export const surveyData = [
   },
 
   {
-    id: "art_7",
+    questId: "art_7",
     domain: "예술경험",
+    abilityLabelId: "L004",
     question: "자신의 경험이나 이야기를 극놀이로 표현한다.",
     options: [
       "극놀이에 관심을 가지지 않는다.",
@@ -1621,8 +1664,9 @@ export const surveyData = [
   },
 
   {
-    id: "art_8",
+    questId: "art_8",
     domain: "예술경험",
+    abilityLabelId: "L004",
     question: "다양한 예술을 감상하며 상상하기를 즐긴다.",
     options: [
       "예술을 감상하는 데 관심을 가지지 않는다.",
@@ -1653,8 +1697,9 @@ export const surveyData = [
   },    
 
   {
-    id: "art_9",
+    questId: "art_9",
     domain: "예술경험",
+    abilityLabelId: "L004",
     question: "서로 다른 예술 표현을 존중한다.",
     options: [
       "서로 다른 예술 표현에 관심을 가지지 않는다.",
@@ -1685,8 +1730,9 @@ export const surveyData = [
   },
 
   {
-    id: "art_10",
+    questId: "art_10",
     domain: "예술경험",
+    abilityLabelId: "L004",
     question: "우리나라 전통 예술에 관심을 갖고 친숙해진다.",
     options: [
       "우리나라 전통예술에 관심을 가지지 않는다.",
@@ -1722,8 +1768,9 @@ export const surveyData = [
 
   // [자연탐구]
   {
-    id: "natural_1",
+    questId: "natural_1",
     domain: "자연탐구",
+    abilityLabelId: "L005",
     question: "주변 세계와 자연에 대해 지속적으로 호기심을 가진다.",
     options: [
       "주변 세계와 자연에 대해 관심을 가지지 않는다.",
@@ -1766,8 +1813,9 @@ export const surveyData = [
     }
   },
   {
-      id: "natural_2",
+      questId: "natural_2",
       domain: "자연탐구",
+      abilityLabelId: "L005",
       question: "궁금한 것을 탐구하는 과정에 즐겁게 참여한다.",
       options: [
         "궁금한 것을 탐구하는 과정에 관심을 가지지 않는다.",
@@ -1810,8 +1858,9 @@ export const surveyData = [
       }
     },
   {
-      id: "natural_3",
+      questId: "natural_3",
       domain: "자연탐구",
+      abilityLabelId: "L005",
       question: "탐구과정에서 서로 다른 생각에 관심을 가진다.",
       options: [
         "탐구과정에서 자신과 다른 생각에 대한 관심을 가지지 않는다.",
@@ -1854,8 +1903,9 @@ export const surveyData = [
       }
     },
     {
-      id: "natural_4",
+      questId: "natural_4",
       domain: "자연탐구",
+      abilityLabelId: "L005",
       question: "물체와 물질의 특성(크기, 모양, 색, 냄새, 소리, 질감 등)과 변화를 여러가지 방법으로 탐색한다.",
       options: [
         "물체와 물질의 특성이나 변화에 관심을 가지지 않는다.",
@@ -1897,8 +1947,9 @@ export const surveyData = [
       }
     },
     {
-      id: "natural_5",
+      questId: "natural_5",
       domain: "자연탐구",
+      abilityLabelId: "L005",
       question: "물체를 세어 수량을 알아본다.",
       options: [
         "10개 이하의 물체를 세어 수량을 알아보는데 어려움이 있다",
@@ -1936,8 +1987,9 @@ export const surveyData = [
       }
     },
     {
-      id: "natural_6",
+      questId: "natural_6",
       domain: "자연탐구",
+      abilityLabelId: "L005",
       question: "물체의 위치와 방향, 모양을 알고 구별한다.",
       options: [
         "물체의 위치와 방향, 모양을 구별하지 못한다.",
@@ -1979,8 +2031,9 @@ export const surveyData = [
       }
     },
     {
-      id: "natural_7",
+      questId: "natural_7",
       domain: "자연탐구",
+      abilityLabelId: "L005",
       question: "일상에서 길이, 크기, 무게 등의 속성을 비교한다.",
       options: [
         "일상에서 길이, 크기, 무게 등의 속성을 비교하는 것을 어려워한다.",
@@ -2021,8 +2074,9 @@ export const surveyData = [
       }
     },
     {
-      id: "natural_8",
+      questId: "natural_8",
       domain: "자연탐구",
+      abilityLabelId: "L005",
       question: "주변에서 반복되는 규칙을 찾는다.",
       options: [
         "주변에서 반복되는 규칙을 찾는 것에 관심을 가지지 않는다.",
@@ -2064,8 +2118,9 @@ export const surveyData = [
       }
     },
     {
-      id: "natural_9",
+      questId: "natural_9",
       domain: "자연탐구",
+      abilityLabelId: "L005",
       question: "일상에서 모은 자료를 기준에 따라 분류한다.",
       options: [
         "일상에서 모은 자료를 분류하지 못한다.",
@@ -2106,8 +2161,9 @@ export const surveyData = [
       }
     },
     {
-      id: "natural_10",
+      questId: "natural_10",
       domain: "자연탐구",
+      abilityLabelId: "L005",
       question: "도구와 기계에 대해 관심을 가진다.",
       options: [
         "도구나 기계에 관심을 가지지 않는다.",
@@ -2148,8 +2204,9 @@ export const surveyData = [
       }
     },
     {
-      id: "natural_11",
+      questId: "natural_11",
       domain: "자연탐구",
+      abilityLabelId: "L005",
       question: "주변의 동식물에 관심을 가진다.",
       options: [
         "주변 동식물에 관심을 가지지 않는다.",
@@ -2187,8 +2244,9 @@ export const surveyData = [
       }
     },
     {
-      id: "natural_12",
+      questId: "natural_12",
       domain: "자연탐구",
+      abilityLabelId: "L005",
       question: "생명과 자연환경을 소중히 여긴다.",
       options: [
         "생명과 자연환경을 소중히 여기지 않는다.",
@@ -2229,8 +2287,9 @@ export const surveyData = [
       }
     },
     {
-      id: "natural_13",
+      questId: "natural_13",
       domain: "자연탐구",
+      abilityLabelId: "L005",
       question: "날씨와 계절의 변화를 생활과 관련짓는다.",
       options: [
         "날씨와 계절의 변화에 관심을 가지지 않는다.",
