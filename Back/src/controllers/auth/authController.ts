@@ -41,7 +41,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     }
     const uid = user.uid;
     const token = jwt.sign({ uid: uid }, JWT_SECRET, { expiresIn: "1h" });
-    await authUser(uid, token);
+    // await authUser(uid, token); //운영일 때 주석해제
     res.json({ token });
   } catch (error) {
     console.error("로그인 오류:", error);

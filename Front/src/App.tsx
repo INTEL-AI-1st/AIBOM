@@ -11,6 +11,7 @@
 import Community from "@pages/Community";
 import Education from "@pages/Education";
 import Observation from "@pages/Observation";
+import { MainProvider } from "@context/MainContext";
 
   // ----- [라우터 설정] -----
   const router = createBrowserRouter([
@@ -31,7 +32,7 @@ import Observation from "@pages/Observation";
         { path: "my", element: <MyPage /> },
       ],
     },
-    { path: "obser", element: <Observation />}
+      { path: "obser", element: <Observation />}
   
   ]);
 
@@ -39,7 +40,9 @@ import Observation from "@pages/Observation";
     return (
       <StyledWrapper>
         <PopupProvider>
-          <RouterProvider router={router} />
+          <MainProvider>
+            <RouterProvider router={router} />
+          </MainProvider>
         </PopupProvider>
       </StyledWrapper>
     );

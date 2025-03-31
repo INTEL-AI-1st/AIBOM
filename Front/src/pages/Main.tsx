@@ -2,7 +2,6 @@ import styled from "styled-components";
 import Profile from "@components/main/Profile";
 import BodyGraph from "@components/main/BodyGraph";
 import AbilityGraph from "@components/main/AbilityGraph";
-import { MainProvider } from "@context/MainContext";
 
 const Container = styled.div`
   display: flex;
@@ -22,7 +21,6 @@ const TopSection = styled.div`
 
 export default function Main() {
   return (
-    <MainProvider>
       <Container>
         <TopSection>
           <Profile />
@@ -30,6 +28,5 @@ export default function Main() {
         </TopSection>
         <BodyGraph />
       </Container>
-    </MainProvider>
   );
 }
