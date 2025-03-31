@@ -1,6 +1,6 @@
 import { api } from "@services/common/Api";
 
-export interface ObserResponse {
+interface ObserResponse {
     info: {
         abilityLabelId: string;
         questId: string;
@@ -8,8 +8,11 @@ export interface ObserResponse {
     }
 }
 
-export interface MsgResponse {
-    msg: string;
+interface MsgResponse {
+    info:{
+        state: string;
+        msg: string;
+    }[];
 }
   
 export const selectObservation = async (uid: string) => {

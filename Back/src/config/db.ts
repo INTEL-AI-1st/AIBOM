@@ -11,6 +11,7 @@ const pool = mariadb.createPool({
   database: isDev ? env.DEV_DB_NAME : env.PROP_DB_NAME,
   connectionLimit: 10,
   acquireTimeout: 20000,
+  bigNumberStrings: true,
 });
 
 export default pool;

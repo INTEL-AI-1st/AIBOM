@@ -6,6 +6,11 @@ interface obser {
     score: number;
 }
 
+interface msgStatus {
+  state: string;
+  msg: string;
+}
+
 export const selectChildObservation = async (uid: string): Promise<obser | null> => {
     const conn = await pool.getConnection();
     const rows = await conn.query(
@@ -46,17 +51,16 @@ export const upsertChildObservation = async (uid: string, abilityLabelId: string
     }
 };
       
-export const PR_Observation = async (uid: string): Promise<string> => {
+export const PR_Observation = async (uid: string): Promise<msgStatus> => {
   const conn = await pool.getConnection();
   try {
-    const [rows] = await conn.query(
+    const rows = await conn.query(
       `CALL InsertChildAbilityObservation(?, 'A002')`,
       [uid]
     );
 
-    const msg: string = rows[0].Message;
+    return rows[0];
   } finally {
     conn.release();
-    return msg;
   }
 };

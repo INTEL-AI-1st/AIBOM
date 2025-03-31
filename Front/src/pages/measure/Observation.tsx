@@ -2,17 +2,15 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { surveyData } from '@constants/surveyData';
-import { 
-  Btn,
-  BtnForm,
-  CloseButton, Container, DomainSection, DomainTitle, Header, InfoIcon, Nav, NavItem, NavList, 
+import {
+  Title, CloseButton, Container, DomainSection, DomainTitle, Header, InfoIcon, Nav, NavItem, NavList, 
   ObservationCategory, ObservationHeader, ObservationList, ObservationListItem, OptionLabel, OptionList, 
-  Overlay, Question, QuestionTitle, QuestionTitleContainer, RadioInput, ScrollToTop, SidebarContainer, Title, 
-  ToastCon
+  Overlay, Question, QuestionTitle, QuestionTitleContainer, RadioInput, ScrollToTop, SidebarContainer, ToastCon, Btn, BtnForm
 } from '@styles/measure/ObservationStyles';
 import { useMainContext } from '@context/MainContext';
 import { saveObservation, selectObservation, upsertObservation } from '@services/measure/ObservationService';
 import { usePopup } from '@hooks/UsePopup';
+import { useNavigate } from "react-router-dom";
 
 interface Observation {
   play?: string[];
@@ -31,6 +29,7 @@ interface SurveyItem {
 
 export default function Observation() {
   const { selectedChild } = useMainContext();
+  const navigate = useNavigate();
   const { showConfirm, showAlert } = usePopup();
   const [activeObservation, setActiveObservation] = useState<{ id: string; observation: Observation } | null>(null);
   const [showScrollToTop, setShowScrollToTop] = useState(false);
@@ -140,12 +139,13 @@ export default function Observation() {
       if (confirm) {
         if (!selectedChild?.uid) return;
         
-        const msg = await saveObservation(selectedChild.uid);
-        console.log(msg);
-        showAlert({ message: msg.msg });
+        const data = await saveObservation(selectedChild.uid);
+        await showAlert({ message: data.info[0].msg });
+        if(data.info[0].state === '0000')
+          navigate("/");
       }
     }
-  }, [selectedChild?.uid, answers, scrollToQuestion, showConfirm, showAlert]);
+  }, [selectedChild?.uid, answers, scrollToQuestion, showConfirm, showAlert, navigate]);
   
 
   return (
