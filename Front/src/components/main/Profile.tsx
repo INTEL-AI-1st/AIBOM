@@ -91,7 +91,7 @@ export default function Profile() {
                     {selectedChild.profileUrl ? (
                     <ProfileImg src={selectedChild.profileUrl} />
                     ) : (
-                    <FaBaby />
+                    <FaBaby size={200} color="666"/>
                     )}
                 </ProfileIcon>
                 </ProfileIconWrapper>

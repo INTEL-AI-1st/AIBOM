@@ -2,6 +2,7 @@ import { deleteChild, deleteProfile, SaveChild, SelectChild, upsertProfile } fro
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { getPublicProfileUrl, supabase } from '@services/common/supabaseClient';
 import { usePopup } from '@hooks/UsePopup';
+import { useMainContext } from '@context/MainContext';
 
 export interface ChildInfo {
   uid?: string;
@@ -32,6 +33,7 @@ export function useChildInfo() {
   const [showSortOptions, setShowSortOptions] = useState(false);
   const sortRef = useRef<HTMLDivElement | null>(null);
   const { showAlert } = usePopup();
+  const { refreshChildData } = useMainContext();
 
   const updateChildAtIndex = (index: number, update: Partial<ChildInfo>) => {
     setChildForm(prev => {
@@ -153,6 +155,7 @@ export function useChildInfo() {
           state: "R",
         });
         showAlert({ message: "데이터가 저장되었습니다." });
+        refreshChildData();
       } catch (error) {
         console.error("저장 실패:", error);
         showAlert({ message: "데이터 저장에 실패했습니다." });
@@ -176,6 +179,7 @@ export function useChildInfo() {
         }
         await deleteChild(child.uid);
         showAlert({ message: "데이터가 삭제하였습니다." });
+        refreshChildData();
       } catch (error) {
         console.error("삭제 실패:", error);
       } finally {
@@ -204,8 +208,8 @@ export function useChildInfo() {
     const index = getIndex(sortedIndex);
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 1024 * 1024) {
-      alert("파일 크기가 1MB 이상입니다. 다른 파일을 선택하세요.");
+    if (file.size > 2048 * 2048) {
+      alert("파일 크기가 2MB 이상입니다. 다른 파일을 선택하세요.");
       return;
     }
     const randomCode = Math.random().toString(36).substring(2, 8);

@@ -44,6 +44,10 @@ export const SubInfo = styled.div`
   font-size: 0.8rem;
   font-weight: 400; 
   color: #aaa;
+
+  @media (max-width: 768px) {
+    font-size: .6em;
+  }
 `
 
 export const Button = styled.button`
@@ -99,6 +103,10 @@ export const Title = styled.h2`
   margin-right: 5px;
   font-size: 1.8em;
   color: #333;
+
+  @media (max-width: 480px) {
+    font-size: 1.3em;
+  }
 `;
 
 export const Sorting = styled.p<{ showSortOptions: boolean }>`
@@ -185,6 +193,7 @@ export const GrayButton = styled.button`
 
 export const ChildBody = styled.div`
   display: flex;
+  
 `
 
 export const AvatarContainer = styled.div`
@@ -196,6 +205,10 @@ export const InfoForm = styled.div`
   flex-direction: column;
   gap: 16px;
   font-size: 1.2rem;
+  
+  @media (max-width: 480px) {
+    font-size: 0.8rem;
+  }
 `;
 
 export const InfoRow = styled.div`
@@ -207,6 +220,10 @@ export const InfoRow = styled.div`
 export const InfoLabel = styled.label`
   min-width: 120px;
   font-weight: 500;
+
+  @media (max-width: 480px) {
+    min-width: 60px;
+  }
 `;
 
 export const InfoInput = styled.input`

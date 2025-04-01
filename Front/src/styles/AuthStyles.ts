@@ -4,6 +4,9 @@ import { Wrapper } from "./MainStyles";
 
 export const MyWrapper = styled(Wrapper)`
   width: 480px;
+  @media (max-width: 768px) {
+    max-width: 380px;
+  }
 `;
 
 export const Container = styled.div`

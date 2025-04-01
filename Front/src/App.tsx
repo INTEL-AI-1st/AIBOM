@@ -13,6 +13,7 @@ import Education from "@pages/Education";
 import Observation from "@pages/measure/Observation";
 import { MainProvider } from "@context/MainContext";
 import Report from "@pages/Report";
+import Behavioral from "@pages/measure/Behavioral";
 
   // ----- [라우터 설정] -----
   const router = createBrowserRouter([
@@ -37,6 +38,13 @@ import Report from "@pages/Report";
       element: (
         <ProtectedRoute>
           <Observation />
+        </ProtectedRoute>
+      )
+    },
+    { path: "pose", 
+      element: (
+        <ProtectedRoute>
+          <Behavioral />
         </ProtectedRoute>
       )
     },
