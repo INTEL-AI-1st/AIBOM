@@ -26,7 +26,7 @@ const ChartContainer = styled.div`
   height: 120px;
   background-color: #f0f0f0;
   border-radius: 0;
-  padding: 10px;
+  /* padding: 10px; */
 `;
 
 const ChartTitle = styled.div`

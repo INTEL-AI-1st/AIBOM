@@ -7,7 +7,12 @@ export const RightSection = styled.div`
   flex-wrap: wrap;
   gap: 20px;
   position: relative;
-  /* overflow: hidden; */
+  
+  &.compact-mode {
+    gap: 0;
+    flex-direction: column;
+    flex-wrap: nowrap;
+  }
 `;
 
 export const GrayBox = styled.div`
@@ -21,23 +26,39 @@ export const GrayBox = styled.div`
 export const ColorSection = styled.div<{ backgroundColor: string }>`
   background-color: ${props => props.backgroundColor};
   padding: 10px;
-  height: 50%;
   flex: 1 1 calc(33% - 20px);
   position: relative;
+  
+  .compact-mode & {
+    flex: 1 1 100%;
+    height: auto;
+    margin-bottom: 20px;
+  }
 `;
 
 export const Headers = styled.div`
   display: flex;
   justify-content: space-between;
 
-  h3{
+  h3 {
     margin: 10px 0;
     white-space: nowrap;
+  }
+  
+  .compact-mode & {
+    h3 {
+      font-size: 1.1rem;
+    }
   }
 `;
 
 export const Bodys = styled.div`
   display: flex;
+  
+  .compact-mode & {
+    justify-content: center;
+    margin: 15px 0;
+  }
 `;
 
 export const PerformanceBox = styled.div`
@@ -51,6 +72,12 @@ export const ShapeContainer = styled(GrayBox)`
   max-width: 250px;
   flex-shrink: 0;
   position: relative;
+  
+  .compact-mode & {
+    width: 300px !important;
+    height: 300px !important;
+    max-width: 100%;
+  }
 `;
 
 export const TitleWrapper = styled.div`
@@ -87,16 +114,16 @@ export const Tooltip = styled.div`
 `;
 
 export const LockWrapper = styled.div`
-    position: absolute;
-    display: flex;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.7);
-    align-items: center;
-    justify-content: center;
-    z-index: 10
+  position: absolute;
+  display: flex;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.7);
+  align-items: center;
+  justify-content: center;
+  z-index: 10
 `;
 
 export const ColorBox = styled.div`
@@ -113,6 +140,10 @@ export const ColorBox = styled.div`
   background: white;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   z-index: 2;
+  
+  .compact-mode & {
+    width: 110px;
+  }
 `;
 
 export const ColorWrapper = styled.div`

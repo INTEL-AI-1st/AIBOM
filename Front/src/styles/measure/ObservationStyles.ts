@@ -4,15 +4,20 @@ import { FaArrowCircleUp } from 'react-icons/fa';
 import { styled } from 'styled-components';
 
 export const Container = styled.div`
-  padding: 10px;
   width: 100%;
   max-height: 100%;
   margin: 0 auto;
+  `;
+
+export const SubContainer = styled.div``;
+
+export const DomainContainer = styled.div`
+  padding: 10px;
 `;
 
 export const Title = styled.h1`
   text-align: center;
-  margin-bottom: 40px;
+  margin-block: 40px;
   font-size: 2rem;
   letter-spacing: 0.5px;
 `;
@@ -45,7 +50,8 @@ export const NavItem = styled.li`
 `;
 
 export const DomainSection = styled.section`
-  margin-bottom: 50px;
+  margin-bottom: 20px;
+  padding: 10px;
 `;
 
 export const DomainTitle = styled.h2`
@@ -104,7 +110,6 @@ export const OptionLabel = styled.label`
   }
   span {
     margin-left: 8px;
-
   }
 `;
 
@@ -120,8 +125,8 @@ export const RadioInput = styled.input`
   display: inline-block;
   position: relative;
   vertical-align: middle;
-  margin: 0px;
-
+  margin: 0 0 3px 0;
+  
   &:checked {
     background-color: #ffb9b9;
     border: 3px solid white;

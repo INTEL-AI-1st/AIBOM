@@ -3,8 +3,8 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { surveyData } from '@constants/surveyData';
 import {
-  Title, CloseButton, Container, DomainSection, DomainTitle, Header, InfoIcon, Nav, NavItem, NavList, 
-  ObservationCategory, ObservationHeader, ObservationList, ObservationListItem, OptionLabel, OptionList, 
+  Container, SubContainer, DomainContainer, Title, DomainSection, DomainTitle, Header, InfoIcon, Nav, NavItem, NavList, 
+  CloseButton, ObservationCategory, ObservationHeader, ObservationList, ObservationListItem, OptionLabel, OptionList, 
   Overlay, Question, QuestionTitle, QuestionTitleContainer, RadioInput, ScrollToTop, SidebarContainer, ToastCon, Btn, BtnForm
 } from '@styles/measure/ObservationStyles';
 import { useMainContext } from '@context/MainContext';
@@ -103,7 +103,7 @@ export default function Observation() {
   const scrollToSection = useCallback((domain: string) => {
     const element = document.getElementById(domain);
     if (element) {
-      const yOffset = -50;
+      const yOffset = -20;
       const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
       window.scrollTo({ top: y, behavior: 'smooth' });
     }
@@ -150,7 +150,7 @@ export default function Observation() {
 
   return (
     <Container>
-      <Container>
+      <SubContainer>
         <Title>KICCE 유아관찰척도 설문</Title>
         <Nav>
           <NavList>
@@ -161,41 +161,47 @@ export default function Observation() {
             ))}
           </NavList>
         </Nav>
-        <p>이름: {selectedChild?.name}</p>
-        <p>※ 문항을 선택할 때 마다 데이터는 저장됩니다.</p>
+        
+        <DomainContainer>
+          <p>이름: {selectedChild?.name}</p>
+          <p>※ 문항을 선택할 때 마다 데이터는 저장됩니다.</p>
 
-        {domainList.map((domain) => (
-          <DomainSection key={domain} id={domain}>
-            <DomainTitle>{domain}</DomainTitle>
-            {groupedData[domain].map((item: SurveyItem) => (
-              <Question key={item.questId} id={`question-${item.questId}`}>
-                <QuestionTitleContainer>
-                  <QuestionTitle>{item.question}</QuestionTitle>
-                  <InfoIcon
-                    size={20}
-                    onClick={() => setActiveObservation({ id: item.questId, observation: item.observation })}
-                    title="관측사례 보기"
-                    />
-                </QuestionTitleContainer>
-                <OptionList>
-                  {item.options.map((option: string, index: number) => (
-                    <OptionLabel key={index}>
-                      <RadioInput
-                        type="radio"
-                        name={item.questId}
-                        value={index + 1}
-                        checked={answers[item.questId] === index + 1}
-                        onChange={() => handleAnswerChange(item.abilityLabelId, item.questId, index + 1)}
-                        />
-                      <span>{option}</span>
-                    </OptionLabel>
-                  ))}
-                </OptionList>
-              </Question>
-            ))}
-          </DomainSection>
-        ))}
+          {domainList.map((domain) => (
+            <DomainSection key={domain} id={domain}>
+              <DomainTitle>{domain}</DomainTitle>
+              {groupedData[domain].map((item: SurveyItem) => (
+                <Question key={item.questId} id={`question-${item.questId}`}>
+                  <QuestionTitleContainer>
+                    <QuestionTitle>{item.question}</QuestionTitle>
+                    <InfoIcon
+                      size={20}
+                      onClick={() => setActiveObservation({ id: item.questId, observation: item.observation })}
+                      title="관측사례 보기"
+                      />
+                  </QuestionTitleContainer>
+                  <OptionList>
+                    {item.options.map((option: string, index: number) => (
+                      <OptionLabel key={index}>
+                        <RadioInput
+                          type="radio"
+                          name={item.questId}
+                          value={index + 1}
+                          checked={answers[item.questId] === index + 1}
+                          onChange={() => handleAnswerChange(item.abilityLabelId, item.questId, index + 1)}
+                          />
+                        <span>{option}</span>
+                      </OptionLabel>
+                    ))}
+                  </OptionList>
+                </Question>
+              ))}
+            </DomainSection>
+          ))}
 
+        <BtnForm>
+          <Btn onClick={handleSave}>측정하기</Btn>
+        </BtnForm>
+        </DomainContainer>
         {showScrollToTop && <ScrollToTop onClick={scrollToTop} />}
 
         {/* 슬라이드바(관측사례) */}
@@ -231,12 +237,8 @@ export default function Observation() {
           )}
         </SidebarContainer>
 
-        <BtnForm>
-          <Btn onClick={handleSave}>측정하기</Btn>
-        </BtnForm>
-
         <ToastCon />
-      </Container>
+      </SubContainer>
     </Container>
   );
 }

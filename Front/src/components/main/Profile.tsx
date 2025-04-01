@@ -2,6 +2,8 @@ import { FaBaby } from "react-icons/fa";
 import styled from "styled-components";
 import { useMainContext } from "@context/MainContext";
 import { ProfileImg } from "@styles/main/ProfileStlyes";
+import { useNavigate } from 'react-router-dom';
+import { useEffect } from "react";
 
 const LeftSection = styled.div`
   flex: 1;
@@ -58,43 +60,51 @@ const EvalWrapper = styled.div`
 `;
 
 export default function Profile() {
-  const { childInfo, selectedChild, setSelectedChild } = useMainContext();
-  return (
-    <LeftSection>
-      <ButtonList>
-        {childInfo.map((info) => (
-          <ChildButton
-            key={info.uid}
-            selected={info.uid === selectedChild?.uid}
-            onClick={() => setSelectedChild(info)}
-          >
-            {info.name}
-          </ChildButton>
-        ))}
-      </ButtonList>
+    const { loading, childInfo, selectedChild, setSelectedChild } = useMainContext();
+    const navigate = useNavigate();
+    
+    useEffect(() => {
+        if(!loading && childInfo.length == 0){
+          navigate('/community');
+        }
+    }, [childInfo.length, navigate, loading]);
 
-      {selectedChild && (
-        <>
-          <ProfileContent>
-            <ProfileIconWrapper>
-              <ProfileIcon>
-                {selectedChild.profileUrl ? (
-                  <ProfileImg src={selectedChild.profileUrl} />
-                ) : (
-                  <FaBaby />
-                )}
-              </ProfileIcon>
-            </ProfileIconWrapper>
-            <ProfileContainer>
-              <ProfileName>{selectedChild.name}</ProfileName>
-              <p>
-                {selectedChild.ageYears}세 ({selectedChild.ageMonths}개월)
-              </p>
-            </ProfileContainer>
-          </ProfileContent>
-          <EvalWrapper>ㅇㄹㅇㄹㅇㅁㄹㄴ</EvalWrapper>
-        </>
-      )}
-    </LeftSection>
-  );
+    return (
+        <LeftSection>
+        <ButtonList>
+            {childInfo.map((info) => (
+            <ChildButton
+                key={info.uid}
+                selected={info.uid === selectedChild?.uid}
+                onClick={() => setSelectedChild(info)}
+            >
+                {info.name}
+            </ChildButton>
+            ))}
+        </ButtonList>
+
+        {selectedChild && (
+            <>
+            <ProfileContent>
+                <ProfileIconWrapper>
+                <ProfileIcon>
+                    {selectedChild.profileUrl ? (
+                    <ProfileImg src={selectedChild.profileUrl} />
+                    ) : (
+                    <FaBaby />
+                    )}
+                </ProfileIcon>
+                </ProfileIconWrapper>
+                <ProfileContainer>
+                <ProfileName>{selectedChild.name}</ProfileName>
+                <p>
+                    {selectedChild.ageYears}세 ({selectedChild.ageMonths}개월)
+                </p>
+                </ProfileContainer>
+            </ProfileContent>
+            <EvalWrapper>ㅇㄹㅇㄹㅇㅁㄹㄴ</EvalWrapper>
+            </>
+        )}
+        </LeftSection>
+    );
 }

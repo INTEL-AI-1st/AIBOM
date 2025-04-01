@@ -12,6 +12,7 @@ import Community from "@pages/Community";
 import Education from "@pages/Education";
 import Observation from "@pages/measure/Observation";
 import { MainProvider } from "@context/MainContext";
+import Report from "@pages/Report";
 
   // ----- [라우터 설정] -----
   const router = createBrowserRouter([
@@ -32,13 +33,20 @@ import { MainProvider } from "@context/MainContext";
         { path: "my", element: <MyPage /> },
       ],
     },
-      { path: "obser", 
-        element: (
-          <ProtectedRoute>
-            <Observation />
-          </ProtectedRoute>
-        )
-      }
+    { path: "obser", 
+      element: (
+        <ProtectedRoute>
+          <Observation />
+        </ProtectedRoute>
+      )
+    },
+    { path: "report", 
+      element: (
+        <ProtectedRoute>
+          <Report />
+        </ProtectedRoute>
+      )
+    }
   
   ]);
 

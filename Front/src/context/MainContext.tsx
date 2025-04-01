@@ -14,6 +14,7 @@ interface ChildInfo {
 }
 
 interface ChildContextType {
+  loading: boolean;
   childInfo: ChildInfo[];
   selectedChild: ChildInfo | null;
   setSelectedChild: React.Dispatch<React.SetStateAction<ChildInfo | null>>;
@@ -34,10 +35,13 @@ export const useMainContext = () => {
 export const MainProvider = ({ children }: { children: ReactNode }) => {
   const [childInfo, setChildInfo] = useState<ChildInfo[]>([]);
   const [selectedChild, setSelectedChild] = useState<ChildInfo | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const refreshChildData = async () => {
     try {
+      setLoading(true);
       const data = await SelectChild();
+
       if (data?.info && Array.isArray(data.info)) {
         const formatted: ChildInfo[] = data.info.map((child: ApiChild) => ({
           uid: child.uid,
@@ -53,6 +57,8 @@ export const MainProvider = ({ children }: { children: ReactNode }) => {
       }
     } catch (error) {
       console.error("Error fetching child info:", error);
+    }finally{
+      setLoading(false);
     }
   };
 
@@ -61,7 +67,7 @@ export const MainProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   return (
-    <ChildContext.Provider value={{ childInfo, selectedChild, setSelectedChild, refreshChildData }}>
+    <ChildContext.Provider value={{ loading, childInfo, selectedChild, setSelectedChild, refreshChildData }}>
       {children}
     </ChildContext.Provider>
   );

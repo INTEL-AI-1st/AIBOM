@@ -4,7 +4,6 @@ import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadius
 import { RightSection, ColorSection, Headers, Bodys, PerformanceBox, ShapeContainer, ColorBox, ColorWrapper, Color, ColorText, Footer, LockWrapper, LinkP, TitleWrapper, InfoIconWrapper, Tooltip } from '@styles/main/AbilityGraphStyles';
 import { selectGraph } from '@services/main/AbilityService';
 import { AiFillLock, AiOutlineInfoCircle } from 'react-icons/ai';
-import { useNavigate } from 'react-router-dom';
 
 // ===== TYPES =====
 interface ChartData {
@@ -53,71 +52,45 @@ interface AbilityGraphResponseItem {
 }
 
 // ===== ColorLegend Component =====
-const ColorLegend = memo(({ onHoverChild, onHoverAvg, onHoverEnd }: {
-  onHoverChild: () => void;
-  onHoverAvg: () => void;
-  onHoverEnd: () => void;
-}) => {
-  return (
-    <ColorBox>
-      <ColorWrapper
-        onMouseEnter={onHoverChild}
-        onMouseLeave={onHoverEnd}
-      >
-        <Color color="#ffb9b9" />
-        <ColorText>아이 그래프</ColorText>
-      </ColorWrapper>
-      <ColorWrapper
-        onMouseEnter={onHoverAvg}
-        onMouseLeave={onHoverEnd}
-      >
-        <Color color="#90ee90" />
-        <ColorText>평균 그래프</ColorText>
-      </ColorWrapper>
-    </ColorBox>
-  );
-});
+const ColorLegend = memo(({ onHoverChild, onHoverAvg, onHoverEnd }: { 
+  onHoverChild: () => void; 
+  onHoverAvg: () => void; 
+  onHoverEnd: () => void; 
+}) => (
+  <ColorBox>
+    <ColorWrapper onMouseEnter={onHoverChild} onMouseLeave={onHoverEnd}>
+      <Color color="#ffb9b9" />
+      <ColorText>아이 그래프</ColorText>
+    </ColorWrapper>
+    <ColorWrapper onMouseEnter={onHoverAvg} onMouseLeave={onHoverEnd}>
+      <Color color="#90ee90" />
+      <ColorText>평균 그래프</ColorText>
+    </ColorWrapper>
+  </ColorBox>
+));
 
 // ===== CustomAngleAxis Component =====
-const CustomAngleAxis = memo(({ 
+const CustomAngleAxis = memo(({
   payload, 
   cx, 
   cy, 
   radius, 
   index, 
   data, 
-  hovered 
-}: CustomTickProps & { 
-  data: CombinedChartData[]; 
-  hovered: 'child' | 'avg' | null; 
-}) => {
+  hovered
+}: CustomTickProps & { data: CombinedChartData[]; hovered: 'child' | 'avg' | null; }) => {
   const angle = (Math.PI * 2 * index) / data.length - Math.PI / 2;
-  const labelX = cx + (radius + 20) * Math.cos(angle);
-  const labelY = cy + (radius + 20) * Math.sin(angle);
-  const valueY = labelY + 14;
-  const value = hovered === 'avg' 
-    ? data[index].average 
-    : data[index].performance;
+  const labelX = cx + (radius + 30) * Math.cos(angle);
+  const labelY = cy + (radius + 30) * Math.sin(angle);
+  const valueY = labelY + 20;
+  const value = hovered === 'avg' ? data[index].average : data[index].performance;
 
   return (
     <g>
-      <text
-        x={labelX}
-        y={labelY}
-        textAnchor="middle"
-        dominantBaseline="central"
-        fontSize={12}
-        fill="#333"
-      >
+      <text x={labelX} y={labelY} textAnchor="middle" dominantBaseline="central" fontSize={15} fill="#333">
         {payload.value}
       </text>
-      <text
-        x={labelX}
-        y={valueY}
-        textAnchor="middle"
-        fontSize={10}
-        fill="#666"
-      >
+      <text x={labelX} y={valueY} textAnchor="middle" fontSize={13} fill="#666">
         {value}
       </text>
     </g>
@@ -127,34 +100,24 @@ const CustomAngleAxis = memo(({
 // ===== PerformanceRadarChart Component =====
 const PerformanceRadarChart = memo(function PerformanceRadarChart({ data, avgData, color }: PerformanceRadarChartProps) {
   const [hovered, setHovered] = useState<'child' | 'avg' | null>(null);
-
-  // 차트 크기 및 반경 설정
   const outerRadius = 80;
   const polarRadius = [0, 20, 40, 60, outerRadius];
 
-  // 데이터 통합
-  const combinedData = useMemo(() => {
-    return data.map((item, index) => ({
+  const combinedData = useMemo(() => 
+    data.map((item, index) => ({
       name: item.name,
       performance: item.value,
       average: avgData[index]?.value ?? item.value
-    }));
-  }, [data, avgData]);
+    })), [data, avgData]
+  );
 
   const handleHoverChild = useCallback(() => setHovered('child'), []);
   const handleHoverAvg = useCallback(() => setHovered('avg'), []);
   const handleHoverEnd = useCallback(() => setHovered(null), []);
 
-  const renderCustomAngleAxis = useCallback(
-    (props: CustomTickProps) => (
-      <CustomAngleAxis 
-        {...props} 
-        data={combinedData} 
-        hovered={hovered} 
-      />
-    ),
-    [combinedData, hovered]
-  );
+  const renderCustomAngleAxis = useCallback((props: CustomTickProps) => (
+    <CustomAngleAxis {...props} data={combinedData} hovered={hovered} />
+  ), [combinedData, hovered]);
 
   return (
     <>
@@ -163,7 +126,6 @@ const PerformanceRadarChart = memo(function PerformanceRadarChart({ data, avgDat
         onHoverAvg={handleHoverAvg}
         onHoverEnd={handleHoverEnd}
       />
-
       <ResponsiveContainer width={300} height={300}>
         <RadarChart
           outerRadius={outerRadius}
@@ -209,20 +171,17 @@ const PerformanceRadarChart = memo(function PerformanceRadarChart({ data, avgDat
 
 // ===== PerformanceCard Component =====
 const PerformanceCard = memo(function PerformanceCard({ data }: { data: PerformanceData }) {
-  const showOverlay = useMemo(() => 
-    data.data.every(item => isNaN(item.value)),
-    [data.data]
-  );
-  
-  // 외부 링크 설정
-  const getLink = useCallback(() => {
-    if (data.id === 'A003' || data.status === '1') return null;
-    if (data.id === 'A002') return '/obser';
-    if (data.id === 'A001') return '/';
-    return '#';
+  const showOverlay = useMemo(() => data.data.every(item => isNaN(item.value)), [data.data]);
+
+  const headerLink = useMemo(() => {
+    if (data.id === 'A003' || data.status === '0') return null;
+    return data.id === 'A002' ? '/report' : data.id === 'A001' ? '/' : '#';
   }, [data.id, data.status]);
 
-  const linkPath = useMemo(() => getLink(), [getLink]);
+  const footerLink = useMemo(() => {
+    if (data.id === 'A003' || data.status === '1') return null;
+    return data.id === 'A002' ? '/obser' : data.id === 'A001' ? '/' : '#';
+  }, [data.id, data.status]);
 
   return (
     <ColorSection backgroundColor={data.color}>
@@ -236,7 +195,7 @@ const PerformanceCard = memo(function PerformanceCard({ data }: { data: Performa
             </InfoIconWrapper>
           )}
         </TitleWrapper>
-        <LinkP to="/">더보기 →</LinkP>
+        {headerLink && <LinkP to={headerLink}>더보기 →</LinkP>}
       </Headers>
       <Bodys>
         <PerformanceBox>
@@ -251,30 +210,74 @@ const PerformanceCard = memo(function PerformanceCard({ data }: { data: Performa
         </PerformanceBox>
       </Bodys>
       <Footer>
-        {linkPath && (
-          <LinkP to={linkPath}>
-            측정하러 가기 →
-          </LinkP>
-        )}
+        {footerLink && <LinkP to={footerLink}>측정하러 가기 →</LinkP>}
       </Footer>
     </ColorSection>
   );
 });
+
+// ===== ChartSelector Component =====
+const ChartSelector = memo(({ options, value, onChange }: {
+  options: { id: string; title: string }[];
+  value: number;
+  onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+}) => (
+  <div style={{ 
+    marginBottom: '20px', 
+    width: '100%' 
+  }}>
+    <select 
+      onChange={onChange}
+      value={value}
+      style={{
+        width: '100%',
+        padding: '10px',
+        borderRadius: '5px',
+        border: '1px solid #ddd',
+        fontSize: '16px'
+      }}
+    >
+      {options.map((option, index) => (
+        <option key={`option-${option.id}-${index}`} value={index}>
+          {option.title}
+        </option>
+      ))}
+    </select>
+  </div>
+));
 
 // ===== Main Component =====
 export default function AbilityGraph() {
   const { selectedChild } = useMainContext();
   const [performanceData, setPerformanceData] = useState<PerformanceData[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-  const navigate = useNavigate();
-  
+  const [isCompact, setIsCompact] = useState<boolean>(false);
+  const [selectedChartIndex, setSelectedChartIndex] = useState<number>(0);
   const chartColors = useMemo(() => ['#c1e3ff', '#ffdada', '#ffd6a5'], []);
 
+  useEffect(() => {
+    const checkScreenSize = () => {
+      console.log(window.innerWidth);
+      setIsCompact(window.innerWidth < 768);
+    };
+    
+    checkScreenSize(); 
+    window.addEventListener('resize', checkScreenSize);
+    
+    return () => {
+      window.removeEventListener('resize', checkScreenSize);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isCompact) {
+      setSelectedChartIndex(0);
+    }
+  }, [isCompact]);
+
   const processResponse = useCallback((data: AbilityGraphResponseItem[]) => {
-    // 데이터 그룹화 및 처리
-    const grouped = data.reduce((acc: { [key: string]: PerformanceData }, curr) => {
+    const grouped = data.reduce((acc: Record<string, PerformanceData>, curr) => {
       const groupKey = curr.ablName;
-      
       if (!acc[groupKey]) {
         acc[groupKey] = {
           id: curr.ablId,
@@ -286,19 +289,10 @@ export default function AbilityGraph() {
           status: curr.status || '0'
         };
       }
-      
-      acc[groupKey].data.push({ 
-        name: curr.ablLab, 
-        value: parseFloat(curr.score) 
-      });
-      
-      acc[groupKey].avgData.push({ 
-        name: curr.ablLab, 
-        value: parseFloat(curr.avgScore) 
-      });
-      
+      acc[groupKey].data.push({ name: curr.ablLab, value: parseFloat(curr.score) });
+      acc[groupKey].avgData.push({ name: curr.ablLab, value: parseFloat(curr.avgScore) });
       return acc;
-    }, {});
+    }, {} as Record<string, PerformanceData>);
 
     return Object.values(grouped).map((item, index) => ({
       ...item,
@@ -307,37 +301,34 @@ export default function AbilityGraph() {
   }, [chartColors]);
 
   const fetchData = useCallback(async () => {
-    if (!selectedChild?.uid) {
-      navigate('/community');
-      return;
-    }
+    if (!selectedChild?.uid) return;
     setLoading(true);
     try {
       const response = await selectGraph(selectedChild.uid);
-      
-      if (!response?.info) {
-        throw new Error('No data received');
-      }
-      const info = response.info;
-      let data: AbilityGraphResponseItem[] = [];
-      if (Array.isArray(info)) {
-        data = info;
-        const processedData = processResponse(data);
-        setPerformanceData(processedData);
-      } else {
-        console.error('Unexpected data format for response.info:', info);
-      }
+      if (!response?.info) throw new Error('No data received');
+      const info = Array.isArray(response.info) ? response.info : [];
+      const processedData = processResponse(info);
+      setPerformanceData(processedData);
     } catch (error) {
       console.error('Error fetching ability data:', error);
       setPerformanceData([]);
     } finally {
       setLoading(false);
     }
-  }, [selectedChild?.uid, processResponse, navigate]);
+  }, [selectedChild?.uid, processResponse]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  const handleSelectChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedChartIndex(Number(e.target.value));
+  }, []);
+
+  const selectorOptions = useMemo(() => 
+    performanceData.map(item => ({ id: item.id, title: item.title })),
+    [performanceData]
+  );
 
   if (loading) {
     return (
@@ -347,6 +338,25 @@ export default function AbilityGraph() {
     );
   }
 
+  if (isCompact) {
+    // 컴팩트 모드일 때 셀렉트박스와 선택된 하나의 차트만 표시
+    return (
+      <RightSection className="compact-mode">
+        {performanceData.length > 0 && (
+          <>
+            <ChartSelector 
+              options={selectorOptions} 
+              value={selectedChartIndex} 
+              onChange={handleSelectChange} 
+            />
+            <PerformanceCard key={`selected-${performanceData[selectedChartIndex].id}`} data={performanceData[selectedChartIndex]} />
+          </>
+        )}
+      </RightSection>
+    );
+  }
+
+  // 일반 모드일 때 모든 차트 표시
   return (
     <RightSection>
       {performanceData.map((item, index) => (
