@@ -58,7 +58,7 @@ export const appleLogin = async (req: Request, res: Response): Promise<void> => 
   const clientId = env.APPLE_CLIENT_ID as string;
   const redirectUri =
     env.APPLE_REDIRECT_URI ||
-    "http://localhost:5173/oauth/apple";
+    `"${CALL_BACK_URL}/apple"`;
   const state = generateRandomState();
   const scope = "name email";
   const responseType = "code id_token";

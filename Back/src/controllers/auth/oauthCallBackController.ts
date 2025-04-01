@@ -144,7 +144,7 @@ export const appleCallBack = async (req: Request, res: Response): Promise<void> 
   
     const clientId = env.NAVER_CLIENT_ID;
     const clientSecret = env.NAVER_CLIENT_SECRET;
-    const redirectUri = 'http://localhost:5000/oauth/kakaoCallBack';
+    const redirectUri = `${CALL_BACK_URL}/oauth/kakaoCallBack`;
   };
 
 /** 
