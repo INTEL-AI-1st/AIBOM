@@ -313,12 +313,12 @@ export default function Community() {
 
   // 글작성 버튼 클릭 시 "/write" 경로로 이동
   const handleWrite = () => {
-    navigate('/write');
+    navigate('write');
   };
 
   // 글 아이템 클릭 시 해당 cid를 가지고 "/post/:cid"로 이동
   const handlePostClick = (cid: string) => {
-    navigate(`/post/${cid}`);
+    navigate(`post/${cid}`);
   };
 
   return (

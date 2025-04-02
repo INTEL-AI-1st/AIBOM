@@ -1,5 +1,5 @@
 import { Suspense, lazy } from "react";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { createBrowserRouter, RouterProvider, Outlet } from "react-router-dom";
 import styled from "styled-components";
 import { PopupProvider } from "@components/common/Popup";
 import { ProtectedRoute } from "@components/ProtectedRoute";
@@ -29,45 +29,31 @@ const router = createBrowserRouter([
   { path: "/login", element: <Login /> },
   { path: "/register", element: <Register /> },
   { path: "/oauth-result", element: <OAuthResult /> },
+
+  // Protected routes (인증이 필요한 경로)
   {
-    path: "/",
     element: (
       <ProtectedRoute>
-        <Home />
+        <Outlet />
       </ProtectedRoute>
     ),
     children: [
-      { index: true, element: <Main /> },
-      { path: "education", element: <Education /> },
-      { path: "community", element: <Community /> },
-      { path: "community/write", element: <Write /> },
-      { path: "community/post", element: <Post /> },
-      { path: "my", element: <MyPage /> },
+      {
+        path: "/",
+        element: <Home />,
+        children: [
+          { index: true, element: <Main /> },
+          { path: "education", element: <Education /> },
+          { path: "community", element: <Community /> },
+          { path: "community/write", element: <Write /> },
+          { path: "community/post", element: <Post /> },
+          { path: "my", element: <MyPage /> },
+        ],
+      },
+      { path: "/obser", element: <Observation /> },
+      { path: "/pose", element: <Behavioral /> },
+      { path: "/report", element: <Report /> },
     ],
-  },
-  {
-    path: "/obser",
-    element: (
-      <ProtectedRoute>
-        <Observation />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: "/pose",
-    element: (
-      <ProtectedRoute>
-        <Behavioral />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: "/report",
-    element: (
-      <ProtectedRoute>
-        <Report />
-      </ProtectedRoute>
-    ),
   },
 ]);
 
@@ -75,13 +61,11 @@ const App = () => {
   return (
     <StyledWrapper>
       <PopupProvider>
-      <ProtectedRoute>
-        <MainProvider>
           <Suspense fallback={<div>Loading...</div>}>
-            <RouterProvider router={router} />
+            <MainProvider>
+              <RouterProvider router={router} />
+            </MainProvider>
           </Suspense>
-        </MainProvider>
-        </ProtectedRoute>
       </PopupProvider>
     </StyledWrapper>
   );

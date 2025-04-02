@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { supabase } from '@services/common/supabaseClient';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 const Container = styled.div`
   max-width: 800px;
@@ -90,19 +90,54 @@ const DeleteButton = styled.button`
   justify-content: center;
 `;
 
+// 이미지 상태: 새로 업로드하는 경우 file 값 존재, 기존 이미지는 file 없이 preview 값만 존재하며 isNew는 false
+type ImageItem = {
+  file?: File;
+  preview: string;
+  isNew: boolean;
+};
+
 export default function WritePost() {
+  const { id } = useParams<{ id: string }>(); // id가 있으면 수정 페이지로 판단
   const [title, setTitle] = useState('');
   const [comment, setComment] = useState('');
-  // images: 배열로 { file, preview } 저장
-  const [images, setImages] = useState<{ file: File; preview: string }[]>([]);
+  const [images, setImages] = useState<ImageItem[]>([]);
   const navigate = useNavigate();
+
+  // 수정 시, 기존 데이터 불러오기
+  useEffect(() => {
+    if (id) {
+      (async () => {
+        const { data, error } = await supabase
+          .from('community')
+          .select('*')
+          .eq('cid', id)
+          .single();
+        if (error) {
+          console.error('게시글 불러오기 실패:', error.message);
+        } else if (data) {
+          setTitle(data.title);
+          setComment(data.comment);
+          // image_urls가 배열로 저장되어 있다고 가정, 기존 이미지들은 isNew=false
+          if (data.image_urls && Array.isArray(data.image_urls)) {
+            const existingImages = data.image_urls.map((url: string) => ({
+              preview: url,
+              isNew: false,
+            }));
+            setImages(existingImages);
+          }
+        }
+      })();
+    }
+  }, [id]);
 
   // 파일 입력 변경 시, 선택된 파일들을 미리보기로 추가
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      const filesArray = Array.from(e.target.files).map((file) => ({
+      const filesArray: ImageItem[] = Array.from(e.target.files).map((file) => ({
         file,
         preview: URL.createObjectURL(file),
+        isNew: true,
       }));
       setImages((prev) => [...prev, ...filesArray]);
     }
@@ -112,35 +147,34 @@ export default function WritePost() {
   const handleDeleteImage = (index: number) => {
     setImages((prev) => {
       const newImages = [...prev];
-      // 메모리 누수 방지를 위해 생성한 URL 해제
       URL.revokeObjectURL(newImages[index].preview);
       newImages.splice(index, 1);
       return newImages;
     });
   };
 
-  // 모든 이미지를 업로드 후, public URL 배열 반환
-  const uploadImages = async (): Promise<string[]> => {
+  // 새 이미지들만 업로드 후, public URL 배열 반환
+  const uploadNewImages = async (): Promise<string[]> => {
     const uploadedUrls: string[] = [];
-    for (const img of images) {
-      const fileExt = img.file.name.split('.').pop();
+    for (const img of images.filter((img) => img.isNew && img.file)) {
+      const fileExt = img.file!.name.split('.').pop();
       const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
       const filePath = fileName;
 
       const { error: uploadError } = await supabase.storage
-        .from('post-images')
-        .upload(filePath, img.file);
+        .from('communites')
+        .upload(filePath, img.file!);
 
       if (uploadError) {
         console.error('이미지 업로드 실패:', uploadError.message);
         continue;
       }
 
-      const { publicURL } = supabase.storage
-        .from('post-images')
+      const { data } = supabase.storage
+        .from('communites')
         .getPublicUrl(filePath);
-      if (publicURL) {
-        uploadedUrls.push(publicURL);
+      if (data?.publicUrl) {
+        uploadedUrls.push(data.publicUrl);
       }
     }
     return uploadedUrls;
@@ -149,29 +183,53 @@ export default function WritePost() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const imageUrls = await uploadImages();
+    // 새로 업로드할 이미지의 URL 가져오기
+    const newImageUrls = await uploadNewImages();
+    // 기존 이미지들 (isNew === false)의 preview는 이미 URL임
+    const existingImageUrls = images
+      .filter((img) => !img.isNew)
+      .map((img) => img.preview);
+    const imageUrls = [...existingImageUrls, ...newImageUrls];
 
-    // 커뮤니티 테이블에 글 작성 내용 저장
-    // imageUrls 필드는 여러 이미지 URL을 저장하도록 JSON 배열로 처리
-    const { error } = await supabase.from('community').insert([
-      {
-        title,
-        comment,
-        imageUrls, // 다수 이미지 URL 배열
-        // uid, nickName 등 추가 필드가 필요하면 함께 추가하세요.
-      },
-    ]);
-
-    if (error) {
-      console.error('글 작성 실패:', error.message);
+    // uid와 nickName은 실제 사용자 정보로 대체 (예시 값 사용)
+    if (id) {
+      // 수정: community 테이블 update
+      const { error } = await supabase
+        .from('community')
+        .update({
+          title,
+          comment,
+          image_urls: imageUrls,
+          // uid, nickName 등 필요한 필드는 그대로 유지하거나 업데이트
+        })
+        .eq('cid', id);
+      if (error) {
+        console.error('글 수정 실패:', error.message);
+      } else {
+        navigate('/');
+      }
     } else {
-      navigate('/');
+      // 작성: community 테이블 insert
+      const { error } = await supabase.from('community').insert([
+        {
+          title,
+          comment,
+          image_urls: imageUrls,
+          uid: 'example-uid', // 실제 uid 값으로 대체
+          nickName: 'example-nickName', // 실제 nickName 값으로 대체
+        },
+      ]);
+      if (error) {
+        console.error('글 작성 실패:', error.message);
+      } else {
+        navigate('/');
+      }
     }
   };
 
   return (
     <Container>
-      <Title>글 작성</Title>
+      <Title>{id ? '글 수정' : '글 작성'}</Title>
       <Form onSubmit={handleSubmit}>
         <Input
           type="text"
@@ -198,7 +256,6 @@ export default function WritePost() {
             {images.map((img, index) => (
               <ImagePreviewItem
                 key={index}
-                // 업로드된 이미지 수에 따라 width를 동적으로 계산하여 모두 보이도록 함
                 style={{ width: `${100 / images.length}%` }}
               >
                 <PreviewImage src={img.preview} alt="미리보기" />
@@ -209,7 +266,7 @@ export default function WritePost() {
             ))}
           </ImagePreviewContainer>
         )}
-        <Button type="submit">작성 완료</Button>
+        <Button type="submit">{id ? '수정 완료' : '작성 완료'}</Button>
       </Form>
     </Container>
   );
