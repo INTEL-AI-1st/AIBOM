@@ -1,21 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { supabase } from '@services/common/supabaseClient';
+import { AiOutlineLike } from 'react-icons/ai';
+import { BiChat } from 'react-icons/bi';
+import { useNavigate } from 'react-router-dom';
 
 interface Post {
   cid: string;
-  name: string;
+  title: string;
+  uid: string;
+  nickName: string;
   comment: string;
   created_at: string;
   updated_at: string;
-  title: string;
+  likeCount?: number;
+  chatCount?: number;
+  imageUrl?: string; // 선택적 이미지 URL 필드 추가
 }
 
 /* 메인 컨테이너 */
 const Container = styled.div`
-  max-width: 800px;
-  margin: 2rem auto;
-  padding: 2rem;
+  max-width: 1200px;
   background-color: #f8f9fa;
   border-radius: 8px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
@@ -111,11 +116,25 @@ const PostList = styled.ul`
 
 /* 글 아이템(li) */
 const PostItem = styled.li`
+  width: 1000px;
   background-color: #fff;
   border: 1px solid #dee2e6;
   margin-bottom: 1rem;
   padding: 1rem;
   border-radius: 4px;
+  transition: box-shadow 0.3s ease;
+  cursor: pointer;
+
+  &:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+`;
+
+/* 글 헤더 (타이틀과 작성자: 양 끝 배치) */
+const PostHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 `;
 
 /* 글 제목 */
@@ -126,24 +145,71 @@ const PostTitle = styled.strong`
 
 /* 작성자 */
 const PostAuthor = styled.div`
-  margin-top: 0.25rem;
   font-size: 0.9rem;
   color: #495057;
 `;
 
-/* 글 내용 */
-const PostContent = styled.div`
+/* 글 내용과 이미지 영역을 감싸는 컨테이너 */
+const PostBody = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-top: 0.5rem;
+`;
+
+/* 글 내용: 한 줄만 표시하고 넘치면 ... 처리, 가용 공간 채우기 */
+const PostContent = styled.div`
+  flex: 1;
   font-size: 1rem;
   line-height: 1.4;
   color: #495057;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+
+/* 이미지 래퍼: 우측에 고정 크기로 배치 */
+const ImageWrapper = styled.div`
+  width: 150px;
+  height: 100px;
+  margin-left: 1rem;
+  flex-shrink: 0;
+`;
+
+/* 이미지 스타일 */
+const PostImage = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 4px;
+`;
+
+/* 글 푸터 (날짜와 액션 영역: 좋아요, 채팅) */
+const PostFooter = styled.div`
+  margin-top: 0.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 `;
 
 /* 작성일 */
 const PostDate = styled.div`
-  margin-top: 0.5rem;
   font-size: 0.8rem;
   color: #868e96;
+`;
+
+/* 액션 버튼 래퍼 (좋아요, 채팅 아이콘) */
+const PostActions = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+`;
+
+/* 아이콘과 숫자 높이 맞추기 위한 액션 아이템 */
+const ActionItem = styled.span`
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
 `;
 
 /* 페이지네이션 래퍼 */
@@ -173,7 +239,9 @@ const PageButton = styled.button<{ active?: boolean }>`
   }
 `;
 
-const CommunityPage: React.FC = () => {
+export default function Community() {
+  const navigate = useNavigate();
+
   // 글 목록
   const [posts, setPosts] = useState<Post[]>([]);
   // 현재 페이지
@@ -193,7 +261,6 @@ const CommunityPage: React.FC = () => {
     const start = (page - 1) * pageSize;
     const end = start + pageSize - 1;
 
-    // 검색어가 있을 경우, 제목(title) 또는 작성자(name) 등에서 검색하는 예시
     let query = supabase.from('community').select('*', { count: 'exact' });
     if (searchQuery) {
       query = query.ilike('title', `%${searchQuery}%`);
@@ -230,7 +297,7 @@ const CommunityPage: React.FC = () => {
   // 페이지 당 표시 개수 변경
   const handlePageSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setPageSize(Number(e.target.value));
-    setPage(1); // 페이지 사이즈를 바꾸면 첫 페이지로 이동
+    setPage(1);
   };
 
   // 검색어 입력 핸들러
@@ -238,17 +305,20 @@ const CommunityPage: React.FC = () => {
     setSearchQuery(e.target.value);
   };
 
-  // 검색 버튼 클릭 (검색어 상태에 따라 fetchData가 실행됨)
+  // 검색 버튼 클릭
   const handleSearch = () => {
     setPage(1);
     fetchData();
   };
 
-  // 글작성 버튼 클릭 (작성 페이지로 이동하는 로직을 추가하세요)
+  // 글작성 버튼 클릭 시 "/write" 경로로 이동
   const handleWrite = () => {
-    // 예시: '/write' 라우트로 이동 (react-router-dom 사용 시)
-    // history.push('/write');
-    console.log('글작성 버튼 클릭');
+    navigate('/write');
+  };
+
+  // 글 아이템 클릭 시 해당 cid를 가지고 "/post/:cid"로 이동
+  const handlePostClick = (cid: string) => {
+    navigate(`/post/${cid}`);
   };
 
   return (
@@ -278,13 +348,30 @@ const CommunityPage: React.FC = () => {
 
       <PostList>
         {posts.map((post) => (
-          <PostItem key={post.cid}>
-            <PostTitle>{post.title}</PostTitle>
-            <PostAuthor>작성자: {post.name}</PostAuthor>
-            <PostContent>내용: {post.comment}</PostContent>
-            <PostDate>
-              작성일: {new Date(post.created_at).toLocaleString()}
-            </PostDate>
+          <PostItem key={post.cid} onClick={() => handlePostClick(post.cid)}>
+            <PostHeader>
+              <PostTitle>{post.title}</PostTitle>
+              <PostAuthor>{post.nickName}</PostAuthor>
+            </PostHeader>
+            <PostBody>
+              <PostContent>{post.comment}</PostContent>
+              {post.imageUrl && (
+                <ImageWrapper>
+                  <PostImage src={post.imageUrl} alt="Post image" />
+                </ImageWrapper>
+              )}
+            </PostBody>
+            <PostFooter>
+              <PostDate>{new Date(post.created_at).toLocaleString()}</PostDate>
+              <PostActions>
+                <ActionItem>
+                  <AiOutlineLike /> {post.likeCount || 0}
+                </ActionItem>
+                <ActionItem>
+                  <BiChat /> {post.chatCount || 0}
+                </ActionItem>
+              </PostActions>
+            </PostFooter>
           </PostItem>
         ))}
       </PostList>
@@ -313,6 +400,4 @@ const CommunityPage: React.FC = () => {
       )}
     </Container>
   );
-};
-
-export default CommunityPage;
+}

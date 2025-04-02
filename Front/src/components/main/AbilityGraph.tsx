@@ -257,7 +257,6 @@ export default function AbilityGraph() {
 
   useEffect(() => {
     const checkScreenSize = () => {
-      console.log(window.innerWidth);
       setIsCompact(window.innerWidth < 768);
     };
     
