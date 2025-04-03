@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { Wrapper } from "./MainStyles";
+import { Wrapper } from "./main/MainStyles";
 
 export const HomeWrapper = styled(Wrapper)`
   flex-direction: column;

@@ -1,5 +1,5 @@
 import { FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
-import { Input, InputWrapper, IconWrapper, PwContainer, PwDiv, PwIcon } from "@styles/AuthStyles";
+import { Input, InputWrapper, IconWrapper, PwContainer, PwDiv, PwIcon } from "@styles/auth/AuthStyles";
 import { FaCircle, FaCircleXmark, FaCircleCheck } from "react-icons/fa6";
 
 interface PasswordInputProps {

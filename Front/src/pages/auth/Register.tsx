@@ -1,4 +1,4 @@
-import { InputWrapper, Input, Button, Form, IconWrapper, Container, StyledLink, MyWrapper } from "@styles/AuthStyles";
+import { InputWrapper, Input, Button, Form, IconWrapper, Container, StyledLink, MyWrapper } from "@styles/auth/AuthStyles";
 import { FaUser, FaEnvelope, FaIdCard, FaBirthdayCake } from "react-icons/fa";
 import { useRegisterForm, useOAuthData } from "@hooks/UseAuthForm";
 import PasswordInput, { PasswordForm } from "@components/common/Password";

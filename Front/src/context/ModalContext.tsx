@@ -7,6 +7,7 @@ interface ModalContextType {
 
 const ModalContext = createContext<ModalContextType | undefined>(undefined);
 
+// eslint-disable-next-line
 export const useModalContext = () => {
   const context = useContext(ModalContext);
   if (!context) {

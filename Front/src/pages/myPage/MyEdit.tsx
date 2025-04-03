@@ -1,9 +1,9 @@
-import { Section, SectionHeader, Content, MyPageContainer } from '@styles/MyPageStyles';
+import { Section, SectionHeader, Content, MyPageContainer } from '@styles/myPage/MyPageStyles';
 import MyInfo from '@components/myPage/MyInfo';
 import { TbCaretDownFilled, TbCaretUpFilled } from "react-icons/tb";
 import { useState, useEffect } from 'react';
 
-export default function MyPage1() {
+export default function MyEdit() {
  const [showInfo, setShowInfo] = useState(true);
 
   const [infoMaxHeight, setInfoMaxHeight] = useState("0px");
@@ -22,9 +22,6 @@ export default function MyPage1() {
           <Content maxHeight={infoMaxHeight}>
             <MyInfo />
           </Content>
-        </Section>
-
-        <Section>
         </Section>
       </MyPageContainer>
   );

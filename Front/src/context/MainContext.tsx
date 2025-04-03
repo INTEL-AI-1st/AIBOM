@@ -1,8 +1,15 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
 import { SelectChild } from "@services/myPage/MyChildService";
 import { getPublicProfileUrl } from "@services/common/supabaseClient";
 import { ApiChild } from "@hooks/myPage/useChildInfo";
+import { getUser } from "@services/auth/AuthService";
 
+
+interface User {
+  uid: string;
+  nickName: string;
+  profileUrl?: string;
+}
 interface ChildInfo {
   uid?: string;
   name: string;
@@ -17,12 +24,14 @@ interface ChildContextType {
   loading: boolean;
   childInfo: ChildInfo[];
   selectedChild: ChildInfo | null;
+  userInfo: User | undefined;
   setSelectedChild: React.Dispatch<React.SetStateAction<ChildInfo | null>>;
   refreshChildData: () => void;
 }
 
 const ChildContext = createContext<ChildContextType | undefined>(undefined);
 
+// eslint-disable-next-line
 export const useMainContext = () => {
     const context = useContext(ChildContext);
     if (!context) {
@@ -34,6 +43,7 @@ export const useMainContext = () => {
   
 export const MainProvider = ({ children }: { children: ReactNode }) => {
   const [childInfo, setChildInfo] = useState<ChildInfo[]>([]);
+  const [userInfo, setUserInfo] = useState<User>();
   const [selectedChild, setSelectedChild] = useState<ChildInfo | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -66,8 +76,28 @@ export const MainProvider = ({ children }: { children: ReactNode }) => {
     refreshChildData();
   }, []);
 
+  const fetchUserData = useCallback(async () => {
+    try {
+      const data = await getUser();
+      if (!data.info) return;
+      const user = data.info;
+      const updatedUser = {
+        ...user,
+        profileUrl: user.profileUrl ? (getPublicProfileUrl(user.profileUrl) ?? undefined) : undefined,
+      };
+      setUserInfo(updatedUser);
+    } catch (error) {
+      console.error("Error fetching user info:", error);
+    }
+  }, []);
+  
+
+  useEffect(() => {
+    fetchUserData();
+  }, [fetchUserData]);
+
   return (
-    <ChildContext.Provider value={{ loading, childInfo, selectedChild, setSelectedChild, refreshChildData }}>
+    <ChildContext.Provider value={{ loading, childInfo, userInfo, selectedChild, setSelectedChild, refreshChildData }}>
       {children}
     </ChildContext.Provider>
   );

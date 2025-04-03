@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import env from "@config/config";
-import { findUserByEmail, createUser, loginUser, authUser, findUserByNickName } from "@models/auth/authModel";
+import { findUserByEmail, createUser, loginUser, authUser, findUserByNickName, getMyUser } from "@models/auth/authModel";
 
 const JWT_SECRET = env.JWT_SECRET || "default_secret";
 
@@ -52,3 +52,17 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 export const auth = async (req: Request, res: Response): Promise<void> => {
   res.status(200).json({ message: "정상 토큰" });
 };
+
+export const getUser = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userUid = (req as any).user?.uid;
+    const { uid } = req.body;
+    const targetUid = uid || userUid;
+    
+    const info = await getMyUser(targetUid);
+    res.json({ info });
+  } catch (error) {
+    console.error("조회 오류:", error);
+    res.status(500).json({ message: "서버 오류 발생" });
+  }
+}

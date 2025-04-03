@@ -50,3 +50,19 @@ export const findNickname = async (nickName: string): Promise<User | null> => {
   conn.release();
   return rows.length ? rows[0] : null;
 };
+
+export const getMyUser =async (uid: string): Promise<User | null> => {
+  const conn = await pool.getConnection();
+  const rows = await conn.query(
+    `SELECT
+            u.uid, 
+            u.nick_name as nickName, 
+            p.PROFILE AS profileUrl 
+       FROM TB_USERS u 
+  LEFT JOIN TB_USER_PROFILES p 
+         ON u.UID = p.UID 
+      WHERE u.uid = ?`,
+     [uid]);
+  conn.release();
+  return rows.length ? rows[0] : null;
+};

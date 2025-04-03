@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import styled from "styled-components";
-import { Wrapper } from "./MainStyles";
+import { Wrapper } from "@styles/main/MainStyles";
 
 export const MyWrapper = styled(Wrapper)`
   width: 480px;

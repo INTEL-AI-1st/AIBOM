@@ -1,8 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
-import { supabase } from '@services/common/supabaseClient';
-import { useParams, useNavigate } from 'react-router-dom';
-import { AiOutlineLike } from 'react-icons/ai';
+import { getPublicProfileUrl, supabase } from '@services/common/supabaseClient';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { AiOutlineLike, AiOutlineEye, AiOutlineLeft, AiOutlineRight } from 'react-icons/ai';
+import { ActionButtons, AuthorInfo, Button, CommentForm, CommentInput, CommentItem, CommentsSection, 
+  Container, ErrorMessage, Footer, FooterItem, ImageContainer, LeftArrow, LikeButton, ModalContent, ModalOverlay, 
+  PostContainer, PostContent, PostImage, RightArrow, Title } from '@styles/community/PostStyles';
+import { useMainContext } from '@context/MainContext';
+import { FaAngleLeft } from 'react-icons/fa6';
+import { timeStamp } from '@components/common/TimeStamp';
+import { usePopup } from '@hooks/UsePopup';
+import { FaUser } from 'react-icons/fa';
+import { ProfileImg, ProfileWrapper } from '@styles/main/ProfileStlyes';
+import { getUser } from '@services/auth/AuthService';
 
 interface Post {
   cid: string;
@@ -10,10 +19,11 @@ interface Post {
   uid: string;
   nickName: string;
   comment: string;
-  created_at: string;
-  updated_at: string;
+  created_at: number;
+  updated_at: number;
   likeCount?: number;
-  imageUrls?: string[]; // 여러 이미지 URL 배열
+  view_count?: number;
+  image_urls?: string[];
 }
 
 interface Comment {
@@ -22,261 +32,285 @@ interface Comment {
   uid: string;
   nickName: string;
   comment: string;
+  image_urls?: string[]; // 댓글에 이미지가 있을 경우를 위한 필드
   created_at: string;
 }
 
-const Container = styled.div`
-  max-width: 800px;
-  margin: 2rem auto;
-  padding: 2rem;
-`;
-
-const PostContainer = styled.div`
-  background-color: #fff;
-  border: 1px solid #dee2e6;
-  border-radius: 8px;
-  padding: 1.5rem;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-  margin-bottom: 2rem;
-`;
-
-const Title = styled.h1`
-  font-size: 2rem;
-  margin-bottom: 0.5rem;
-  color: #343a40;
-`;
-
-const AuthorInfo = styled.div`
-  font-size: 0.9rem;
-  color: #868e96;
-  margin-bottom: 1rem;
-`;
-
-const PostContent = styled.div`
-  font-size: 1rem;
-  line-height: 1.6;
-  color: #495057;
-  margin-bottom: 1rem;
-`;
-
-const ImageContainer = styled.div`
-  display: flex;
-  gap: 8px;
-  margin-bottom: 1rem;
-`;
-
-const PostImage = styled.img`
-  width: calc(100% / 3 - 8px);
-  max-width: 150px;
-  height: 100px;
-  object-fit: cover;
-  border-radius: 4px;
-`;
-
-const Footer = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-`;
-
-const LikeButton = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  background-color: transparent;
-  border: none;
-  cursor: pointer;
-  font-size: 1rem;
-`;
-
-const ActionButtons = styled.div`
-  display: flex;
-  gap: 1rem;
-`;
-
-const Button = styled.button`
-  padding: 0.5rem 1rem;
-  background-color: #1c7ed6;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-
-  &:hover {
-    background-color: #1864ab;
-  }
-`;
-
-const CommentsSection = styled.div`
-  background-color: #f8f9fa;
-  padding: 1rem;
-  border-radius: 8px;
-`;
-
-const CommentItem = styled.div`
-  padding: 0.75rem;
-  border-bottom: 1px solid #dee2e6;
-  font-size: 0.95rem;
-  color: #495057;
-`;
-
-const CommentForm = styled.form`
-  display: flex;
-  gap: 0.5rem;
-  margin-top: 1rem;
-`;
-
-const CommentInput = styled.input`
-  flex: 1;
-  padding: 0.5rem;
-  border: 1px solid #ced4da;
-  border-radius: 4px;
-`;
+interface LocationState {
+  cid: string;
+}
+interface SupabaseError {
+  message: string;
+  details?: string;
+  hint?: string;
+  code?: string;
+}
 
 export default function Post() {
-  const { cid } = useParams<{ cid: string }>();
+  const location = useLocation();
+  const state = location.state as LocationState;
+  const cid = state?.cid;
+  const { userInfo } = useMainContext();
+  const { showAlert, showConfirm } = usePopup();
   const navigate = useNavigate();
+
   const [post, setPost] = useState<Post | null>(null);
+  const [profileUrl, setProfileUrl] = useState<string | null>(null); // 프로필 이미지 URL 상태 추가
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
-  const [currentUser, setCurrentUser] = useState<any>(null);
-
-  // 현재 로그인한 사용자 정보 가져오기
-  useEffect(() => {
-    const fetchUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setCurrentUser(user);
-    };
-    fetchUser();
-  }, []);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [modalImageIndex, setModalImageIndex] = useState<number | null>(null); 
 
   useEffect(() => {
     if (cid) {
       fetchPost();
       fetchComments();
+    } else {
+      setError("게시물 ID를 찾을 수 없습니다.");
+      setIsLoading(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line
   }, [cid]);
 
-  // 글 데이터 가져오기
   const fetchPost = async () => {
-    const { data, error } = await supabase
-      .from('community')
-      .select('*')
-      .eq('cid', cid)
-      .single();
-    if (error) {
-      console.error('글 불러오기 실패:', error.message);
-    } else {
-      setPost(data);
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('community')
+        .select(
+          `*, 
+           like(count), 
+           views(count), 
+           comments(count)`
+        )
+        .eq('cid', cid)
+        .limit(1);
+  
+      if (error) {
+        throw error;
+      }
+  
+      console.log(data);
+      const singleData = data?.[0];
+  
+      if (singleData) {
+        const normalizedPost: Post = {
+          ...singleData,
+          view_count: singleData.views?.[0]?.count ?? 0,
+          likeCount: singleData.like?.[0]?.count ?? 0,
+        };
+        setPost(normalizedPost);
+      }
+  
+      const userData = await getUser(singleData.uid);
+      const url = getPublicProfileUrl(userData.info.profileUrl ?? null);
+      setProfileUrl(url);
+    } catch (error) {
+      const supabaseError = error as SupabaseError;
+      console.error('글 불러오기 실패:', supabaseError.message);
+      setError('글을 불러오는 중 오류가 발생했습니다.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   // 댓글 데이터 가져오기
   const fetchComments = async () => {
-    const { data, error } = await supabase
-      .from('comments')
-      .select('*')
-      .eq('postId', cid)
-      .order('created_at', { ascending: true });
-    if (error) {
-      console.error('댓글 불러오기 실패:', error.message);
-    } else {
-      setComments(data);
+    try {
+      const { data, error } = await supabase
+        .from('comments')
+        .select('*')
+        .eq('cid', cid)
+        .order('created_at', { ascending: true });
+
+      if (error) {
+        throw error;
+      }
+
+      setComments(data || []);
+    } catch (error) {
+      const supabaseError = error as SupabaseError;
+      console.error('댓글 불러오기 실패:', supabaseError.message);
     }
   };
 
   // 좋아요 클릭 처리 (좋아요 수 1 증가)
   const handleLike = async () => {
     if (!post) return;
-    const newLikeCount = (post.likeCount || 0) + 1;
-    const { error } = await supabase
-      .from('community')
-      .update({ likeCount: newLikeCount })
-      .eq('cid', post.cid);
-    if (error) {
-      console.error('좋아요 업데이트 실패:', error.message);
-    } else {
+    try {
+      const likeConfirm = await showConfirm({message: "좋아요 하시겠어요?"});
+
+      if(!likeConfirm)return;
+
+      const newLikeCount = (post.likeCount || 0) + 1;
+      const { error } = await supabase
+      .from('like')
+      .insert([
+        {
+          cid: post.cid,
+          uid: userInfo?.uid,
+        }
+      ]);
+      await showAlert({message: "좋아요했습니다."});
+      if (error) {
+        throw error;
+      }
+
       setPost({ ...post, likeCount: newLikeCount });
+    } catch (error) {
+      const supabaseError = error as SupabaseError;
+      console.error('좋아요 업데이트 실패:', supabaseError.message);
     }
   };
 
-  // 글 삭제 처리 (작성자만 가능)
   const handleDelete = async () => {
     if (!post) return;
-    const confirmDelete = window.confirm('정말로 삭제하시겠습니까?');
+    const confirmDelete = await showConfirm({ message: '삭제하시겠습니까?' });
     if (!confirmDelete) return;
-    const { error } = await supabase
-      .from('community')
-      .delete()
-      .eq('cid', post.cid);
-    if (error) {
-      console.error('삭제 실패:', error.message);
-    } else {
-      navigate('/');
+
+    try {
+      const { error } = await supabase
+        .from('community')
+        .delete()
+        .eq('cid', post.cid);
+
+      if (error) {
+        throw error;
+      }
+      await showAlert({ message: '삭제되었습니다.' });
+      navigate(-1);
+    } catch (error) {
+      const supabaseError = error as SupabaseError;
+      console.error('삭제 실패:', supabaseError.message);
     }
   };
 
   // 댓글 등록 처리
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newComment.trim() || !post) return;
-    // 현재 사용자 정보에서 uid와 nickName을 사용 (없으면 이메일 사용)
-    const commentData = {
-      postId: post.cid,
-      comment: newComment,
-      uid: currentUser?.id,
-      nickName: currentUser?.email,
-    };
-    const { error } = await supabase.from('comments').insert([commentData]);
-    if (error) {
-      console.error('댓글 등록 실패:', error.message);
-    } else {
+    if (!newComment.trim() || !post || !userInfo) return;
+
+    try {
+      const commentData = {
+        postId: post.cid,
+        comment: newComment,
+        uid: userInfo.uid,
+        nickName: userInfo.nickName,
+        // 추후 댓글 이미지 업로드를 지원할 경우, image_urls 필드를 추가할 수 있습니다.
+      };
+
+      const { error } = await supabase.from('comments').insert([commentData]);
+
+      if (error) {
+        throw error;
+      }
+
       setNewComment('');
       fetchComments();
+    } catch (error) {
+      const supabaseError = error as SupabaseError;
+      console.error('댓글 등록 실패:', supabaseError.message);
     }
   };
 
-  if (!post) {
+  // 뒤로가기
+  const handleGoBack = () => {
+    navigate(-1);
+  };
+
+  if (isLoading) {
     return <Container>로딩 중...</Container>;
+  }
+
+  if (error || !cid) {
+    return (
+      <Container>
+        <ErrorMessage>
+          {error || "게시물을 찾을 수 없습니다."}
+        </ErrorMessage>
+        <Button onClick={handleGoBack}>돌아가기</Button>
+      </Container>
+    );
+  }
+
+  if (!post) {
+    return (
+      <Container>
+        <ErrorMessage>게시물을 찾을 수 없습니다.</ErrorMessage>
+        <Button onClick={handleGoBack}>돌아가기</Button>
+      </Container>
+    );
   }
 
   return (
     <Container>
       <PostContainer>
-        <Title>{post.title}</Title>
+        <Title>
+          <FaAngleLeft onClick={handleGoBack} />
+          {post.title}
+        </Title>
         <AuthorInfo>
-          작성자: {post.nickName} | {new Date(post.created_at).toLocaleString()}
+          <ProfileWrapper style={{ width: '40px', height: '40px', marginRight: '5px' }}>
+            {profileUrl ? (
+              <ProfileImg src={profileUrl} alt="프로필 이미지" />
+            ) : (
+              <FaUser size={20} color="#aaa" />
+            )}
+          </ProfileWrapper>
+          {post.nickName} ㆍ {timeStamp(post.updated_at)} 전
         </AuthorInfo>
         <PostContent>{post.comment}</PostContent>
-        {post.imageUrls && post.imageUrls.length > 0 && (
+        {post.image_urls && post.image_urls.length > 0 && (
           <ImageContainer>
-            {post.imageUrls.map((url, index) => (
-              <PostImage key={index} src={url} alt={`이미지 ${index + 1}`} />
+            {post.image_urls.map((url, index) => (
+              <PostImage
+                key={index}
+                src={url}
+                alt={`이미지 ${index + 1}`}
+                onClick={() => setModalImageIndex(index)}
+              />
             ))}
           </ImageContainer>
         )}
         <Footer>
-          <LikeButton onClick={handleLike}>
-            <AiOutlineLike /> {post.likeCount || 0}
-          </LikeButton>
-          {/* 현재 사용자가 작성자일 경우 수정/삭제 버튼 표시 */}
-          {currentUser && currentUser.id === post.uid && (
-            <ActionButtons>
-              <Button onClick={() => navigate(`/edit/${post.cid}`)}>
-                수정
-              </Button>
-              <Button onClick={handleDelete}>삭제</Button>
-            </ActionButtons>
-          )}
+          <FooterItem>
+            <AiOutlineEye /> {post.view_count || 0}명이 봤어요
+          </FooterItem>
+          <FooterItem>
+            <LikeButton onClick={handleLike}>
+              <AiOutlineLike /> {post.likeCount || 0}명이 좋아해요
+            </LikeButton>
+          </FooterItem>
         </Footer>
       </PostContainer>
+
+      <ActionButtons>
+        {userInfo?.uid === post.uid && (
+          <>
+            <Button onClick={() => navigate(`/edit/${post.cid}`)}>수정</Button>
+            <Button onClick={handleDelete}>삭제</Button>
+          </>
+        )}
+      </ActionButtons>
       <CommentsSection>
         <h2>댓글</h2>
         {comments.length > 0 ? (
           comments.map((comm) => (
             <CommentItem key={comm.id}>
               <strong>{comm.nickName}:</strong> {comm.comment}
+              {comm.image_urls && comm.image_urls.length > 0 && (
+                <ImageContainer>
+                  {comm.image_urls.map((url, index) => (
+                    <img
+                      key={index}
+                      src={url}
+                      alt={`댓글 이미지 ${index + 1}`}
+                      style={{ maxWidth: '100%', marginTop: '5px' }}
+                    />
+                  ))}
+                </ImageContainer>
+              )}
               <div style={{ fontSize: '0.8rem', color: '#868e96' }}>
                 {new Date(comm.created_at).toLocaleString()}
               </div>
@@ -285,16 +319,51 @@ export default function Post() {
         ) : (
           <p>댓글이 없습니다.</p>
         )}
-        <CommentForm onSubmit={handleCommentSubmit}>
-          <CommentInput
-            type="text"
-            placeholder="댓글을 입력하세요..."
-            value={newComment}
-            onChange={(e) => setNewComment(e.target.value)}
-          />
-          <Button type="submit">댓글 등록</Button>
-        </CommentForm>
+        {userInfo?.uid ? (
+          <CommentForm onSubmit={handleCommentSubmit}>
+            <CommentInput
+              type="text"
+              placeholder="댓글을 입력하세요..."
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+            />
+            <Button type="submit">댓글 등록</Button>
+          </CommentForm>
+        ) : (
+          <p>댓글을 작성하려면 로그인이 필요합니다.</p>
+        )}
       </CommentsSection>
+
+      {modalImageIndex !== null && post.image_urls && (
+        <ModalOverlay onClick={() => setModalImageIndex(null)}>
+          <ModalContent onClick={(e) => e.stopPropagation()}>
+            {modalImageIndex > 0 && (
+              <LeftArrow
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setModalImageIndex(modalImageIndex! - 1);
+                }}
+              >
+                <AiOutlineLeft />
+              </LeftArrow>
+            )}
+            <img
+              src={post.image_urls[modalImageIndex]}
+              alt={`확대된 이미지 ${modalImageIndex + 1}`}
+            />
+            {modalImageIndex < post.image_urls.length - 1 && (
+              <RightArrow
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setModalImageIndex(modalImageIndex! + 1);
+                }}
+              >
+                <AiOutlineRight />
+              </RightArrow>
+            )}
+          </ModalContent>
+        </ModalOverlay>
+      )}
     </Container>
   );
 }

@@ -3,7 +3,7 @@ import { Header, ProfileImg, ProfileWrapper, UserInfo, InfoContainer, SubInfo, B
 import { useUserInfo } from "@hooks/myPage/useUserInfo";
 import Modal from "@components/common/Modal";
 import { ModalProvider } from "@context/ModalContext";
-import MyPage1 from "@pages/MyPage1";
+import MyEdit from "@pages/myPage/MyEdit";
 
 export default function UserProfile() {
   const { info, isOwner, ProfileUrl, showMypage, setShowMypage } = useUserInfo();
@@ -36,7 +36,7 @@ export default function UserProfile() {
       
       <ModalProvider onClose={() => setShowMypage(false)}>
         <Modal isOpen={showMypage} title="마이페이지">
-          <MyPage1 />
+          <MyEdit />
         </Modal>
       </ModalProvider>
     </>

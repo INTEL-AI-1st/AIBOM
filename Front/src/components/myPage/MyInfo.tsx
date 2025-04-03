@@ -1,7 +1,7 @@
 import { ApiContainer, ButtonDiv, AvatarWrapper, AvatarUpload, AvatarInput,
           InfoInput, InfoTextArea, InfoItem, InfoButton, ImgButton,
           ButtonWrapper, } 
-  from "@styles/MyPageStyles";
+  from "@styles/myPage/MyPageStyles";
 import { useMyInfo } from "@hooks/UseMyPage";
 import PasswordInput, { PasswordForm } from "../common/Password";
 import { FaUser } from "react-icons/fa";

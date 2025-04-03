@@ -2,7 +2,13 @@ import { api } from "../common/Api";
 interface AuthResponse {
   token: string;
 }
-
+interface UserResponse {
+  info: {
+    uid: string;
+    nickName: string;
+    profileUrl?: string;
+  }
+}
 // 회원가입 API
 export const registerUser = async (name: string, email: string, nickName: string, birthday: string, pw: string, agent: string) => {
   try {
@@ -62,4 +68,15 @@ export const getAuth = async (): Promise<boolean> => {
 // 로그아웃 API (토큰 삭제)
 export const logoutUser = () => {
   localStorage.removeItem("token");
+};
+
+
+export const getUser = async (uid?: string) => {
+  try {
+    const response = await api.post<UserResponse>("/auth/getUser", {uid});
+    return response.data;
+  } catch (error) {
+    console.error("create Error:", error);
+    throw error;
+  }
 };

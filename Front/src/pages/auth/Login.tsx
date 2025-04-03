@@ -1,8 +1,8 @@
 import { FaEnvelope } from "react-icons/fa";
-import { Input, Button, Form, InputWrapper, IconWrapper, Container, StyledLink, StripedContainer, StripedText, MyWrapper } from "@styles/AuthStyles";
+import { Input, Button, Form, InputWrapper, IconWrapper, Container, StyledLink, StripedContainer, StripedText, MyWrapper } from "@styles/auth/AuthStyles";
 import { useLoginForm } from "@hooks/UseAuthForm";
 import PasswordInput from "@components/common/Password";
-import SocialLoginButtons from "@components/SocialLoginButtons";
+import SocialLoginButtons from "@components/auth/SocialLoginButtons";
 
 export default function Login() {
   const { email, setEmail, password, setPassword, handleSubmit, showPassword, setShowPassword } = useLoginForm();

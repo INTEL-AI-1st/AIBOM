@@ -7,7 +7,7 @@ import {
   ButtonForm, SubInfo, ChildBody, ProfileWrapper, ProfileImg, 
   AvatarContainer
 } from "@styles/main/ProfileStlyes";
-import { AvatarInput, AvatarUpload, AvatarWrapper, ButtonWrapper, ImgButton } from "@styles/MyPageStyles";
+import { AvatarInput, AvatarUpload, AvatarWrapper, ButtonWrapper, ImgButton } from "@styles/myPage/MyPageStyles";
 import { useChildInfo } from "@hooks/myPage/useChildInfo";
 import { useUserInfo } from "@hooks/myPage/useUserInfo";
 
