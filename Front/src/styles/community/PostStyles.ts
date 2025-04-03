@@ -196,15 +196,16 @@ export const FooterItem = styled.div`
   color: #868e96;
 `;
 
-export const LikeButton = styled.div`
+export const LikeButton = styled.div<{hasLiked : boolean}>`
   display: flex;
   align-items: center;
   gap: 0.25rem;
   padding: 5px;
+  background-color: ${({ hasLiked }) => (hasLiked ? '#ffb9b9' : 'transparent')};
+  color: ${({ hasLiked }) => (hasLiked ? '#fff' : '#666')};
   border: 1px solid #ddd;
   border-radius: 20px;
   cursor: pointer;
-  color: #666;
   font-size: 0.9rem;
 `;
 
@@ -213,32 +214,6 @@ export const ActionButtons = styled.div`
   justify-content: end;
   gap: 1rem;
   height: 3rem;
-`;
-
-export const CommentsSection = styled.div`
-  background-color: #f8f9fa;
-  padding: 1rem;
-  border-radius: 8px;
-`;
-
-export const CommentItem = styled.div`
-  padding: 0.75rem;
-  border-bottom: 1px solid #dee2e6;
-  font-size: 0.95rem;
-  color: #495057;
-`;
-
-export const CommentForm = styled.form`
-  display: flex;
-  gap: 0.5rem;
-  margin-top: 1rem;
-`;
-
-export const CommentInput = styled.input`
-  flex: 1;
-  padding: 0.5rem;
-  border: 1px solid #ced4da;
-  border-radius: 4px;
 `;
 
 export const ErrorMessage = styled.div`
@@ -303,5 +278,70 @@ export const RightArrow = styled(ArrowButton)`
 
   @media (max-width: 480px) {
     right: -50px;
+  }
+`;
+
+//
+
+export const CommentsContainer = styled.div`
+  background-color: #f8f9fa;
+  padding: 1rem;
+  border-radius: 8px;
+`;
+
+export const CommentsSection = styled.div`
+  border: 1px solid #dee2e6;
+  padding: 1rem;
+  border-radius: 8px;
+`;
+
+export const CommentsHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  `;
+
+export const HeaderLeft = styled.div`
+    display: flex;
+    align-items: center;
+`;
+
+export const ActionItem = styled.span`
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  cursor: pointer;
+
+  svg{
+    margin-bottom: 5px;
+  }
+`;
+
+export const CommentItem = styled.div`
+  padding: 0.75rem;
+  border-bottom: 1px solid #dee2e6;
+  font-size: 0.95rem;
+  color: #495057;
+`;
+
+export const CommentForm = styled.form`
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+`;
+
+export const CommentInput = styled.input`
+  flex: 1;
+  padding: 0.5rem;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+`;
+
+export const CommentEdit = styled.div`
+  display: flex;
+  gap: 2px;
+  button{
+    padding: 5px 10px;
+    font-size: 1rem;
   }
 `;

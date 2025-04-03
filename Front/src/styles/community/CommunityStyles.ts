@@ -249,6 +249,10 @@ export const ActionItem = styled.span`
   display: flex;
   align-items: center;
   gap: 0.25rem;
+
+  svg{
+    margin-bottom: 3px;
+  }
 `;
 
 export const PaginationWrapper = styled.div`
