@@ -4,6 +4,7 @@ import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadius
 import { RightSection, ColorSection, Headers, Bodys, PerformanceBox, ShapeContainer, ColorBox, ColorWrapper, Color, ColorText, Footer, LockWrapper, LinkP, TitleWrapper, InfoIconWrapper, Tooltip } from '@styles/main/AbilityGraphStyles';
 import { selectGraph } from '@services/main/AbilityService';
 import { AiFillLock, AiOutlineInfoCircle } from 'react-icons/ai';
+import { usePopup } from '@hooks/UsePopup';
 
 // ===== TYPES =====
 interface ChartData {
@@ -171,6 +172,8 @@ const PerformanceRadarChart = memo(function PerformanceRadarChart({ data, avgDat
 
 // ===== PerformanceCard Component =====
 const PerformanceCard = memo(function PerformanceCard({ data }: { data: PerformanceData }) {
+  const { selectedChild } = useMainContext();
+  const { showAlert } = usePopup();
   const showOverlay = useMemo(() => data.data.every(item => isNaN(item.value)), [data.data]);
 
   const headerLink = useMemo(() => {
@@ -183,6 +186,18 @@ const PerformanceCard = memo(function PerformanceCard({ data }: { data: Performa
     return data.id === 'A002' ? '/obser' : data.id === 'A001' ? '/pose' : '#';
   }, [data.id, data.status]);
 
+  const handleA002Click = async () => {
+    if (data.id === 'A002') {
+      const age = Number(selectedChild?.ageYears);
+      if (!selectedChild || isNaN(age) || age < 3 || age > 5) {
+        console.log(selectedChild);
+        await showAlert({
+          message: '해당 설문은 3~5세 전용 데이터입니다. <br/>측정은 가능하지만 정확성은 불확실합니다.'
+        });
+      }
+    }
+  };
+  
   return (
     <ColorSection backgroundColor={data.color}>
       <Headers>
@@ -210,7 +225,12 @@ const PerformanceCard = memo(function PerformanceCard({ data }: { data: Performa
         </PerformanceBox>
       </Bodys>
       <Footer>
-        {footerLink && <LinkP to={footerLink}>측정하러 가기 →</LinkP>}
+        {footerLink && 
+          <LinkP 
+            to={footerLink}
+            onClick={data.id === 'A002' ? handleA002Click : undefined}
+          >
+            측정하러 가기 →</LinkP>}
       </Footer>
     </ColorSection>
   );
@@ -300,10 +320,10 @@ export default function AbilityGraph() {
   }, [chartColors]);
 
   const fetchData = useCallback(async () => {
-    if (!selectedChild?.uid) return;
+    if (!selectedChild?.uid || !selectedChild?.ageYears) return;
     setLoading(true);
     try {
-      const response = await selectGraph(selectedChild.uid);
+      const response = await selectGraph(selectedChild.uid, selectedChild.ageYears);
       if (!response?.info) throw new Error('No data received');
       const info = Array.isArray(response.info) ? response.info : [];
       const processedData = processResponse(info);

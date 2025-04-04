@@ -39,6 +39,14 @@ export default function WritePost() {
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { showAlert, showConfirm } = usePopup();
+  
+  // 렌더링 사이에도 이미지 상태를 유지하기 위한 ref 생성
+  const imagesRef = useRef<ImageItem[]>([]);
+  
+  // images 상태가 변경될 때마다 ref도 업데이트
+  useEffect(() => {
+    imagesRef.current = images;
+  }, [images]);
 
   // 임시저장 데이터 불러오기 (신규 작성 모드)
   useEffect(() => {
@@ -72,6 +80,8 @@ export default function WritePost() {
                 isNew: false,
               }));
               setImages(existingImages);
+              // ref도 함께 업데이트
+              imagesRef.current = existingImages;
             }
             setHasLoadedDraft(true);
           }
@@ -112,6 +122,8 @@ export default function WritePost() {
           originalImages = data.image_urls;
         }
         setImages(initialImages);
+        // ref도 함께 업데이트
+        imagesRef.current = initialImages;
         // 원본 데이터를 저장해두어 변경 여부를 비교
         setOriginalPost({
           title: data.title || '',
@@ -133,8 +145,9 @@ export default function WritePost() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.length) return;
     
+    // ref에서 현재 이미지 상태를 가져옴
     const selectedFiles = Array.from(e.target.files);
-    const availableSlots = 4 - images.length;
+    const availableSlots = 4 - imagesRef.current.length;
 
     if (availableSlots <= 0) {
       showAlert({ message: "이미지는 4개까지만 올릴 수 있습니다." });
@@ -147,7 +160,10 @@ export default function WritePost() {
       isNew: true,
     }));
 
-    setImages((prev) => [...prev, ...filesToAdd]);
+    const newImages = [...imagesRef.current, ...filesToAdd];
+    setImages(newImages);
+    // state와 ref 모두 업데이트
+    imagesRef.current = newImages;
     
     // 파일 입력 필드 초기화
     if (fileInputRef.current) {
@@ -157,19 +173,21 @@ export default function WritePost() {
 
   // 이미지 삭제 처리
   const handleDeleteImage = (index: number) => {
-    setImages((prev) => {
-      const newImages = [...prev];
-      if (newImages[index].isNew) {
-        URL.revokeObjectURL(newImages[index].preview);
-      }
-      newImages.splice(index, 1);
-      return newImages;
-    });
+    // ref에서 현재 이미지 상태를 가져옴
+    const newImages = [...imagesRef.current];
+    if (newImages[index]?.isNew) {
+      URL.revokeObjectURL(newImages[index].preview);
+    }
+    newImages.splice(index, 1);
+    setImages(newImages);
+    // state와 ref 모두 업데이트
+    imagesRef.current = newImages;
   };
 
   // 새 이미지 업로드
   const uploadNewImages = async (): Promise<string[]> => {
-    const newImages = images.filter((img) => img.isNew && img.file);
+    // ref에서 현재 이미지 상태를 가져옴
+    const newImages = imagesRef.current.filter((img) => img.isNew && img.file);
     if (!newImages.length) return [];
     
     const uploadPromises = newImages.map(async (img) => {
@@ -203,9 +221,11 @@ export default function WritePost() {
     setIsLoading(true);
     
     try {
+      // ref에서 현재 이미지 상태를 가져옴
+      const currentImages = imagesRef.current;
       const newImageUrls = await uploadNewImages();
       const imageUrls = [
-        ...images.filter((img) => !img.isNew).map((img) => img.preview),
+        ...currentImages.filter((img) => !img.isNew).map((img) => img.preview),
         ...newImageUrls
       ];
 
@@ -252,9 +272,13 @@ export default function WritePost() {
     if (!originalPost) return false;
     if (title !== originalPost.title) return true;
     if (comment !== originalPost.comment) return true;
-    if (images.length !== originalPost.images.length) return true;
-    for (let i = 0; i < images.length; i++) {
-      const img = images[i];
+    
+    // ref에서 현재 이미지 상태를 가져옴
+    const currentImages = imagesRef.current;
+    if (currentImages.length !== originalPost.images.length) return true;
+    
+    for (let i = 0; i < currentImages.length; i++) {
+      const img = currentImages[i];
       if (img.isNew) return true;
       if (img.preview !== originalPost.images[i]) return true;
     }
@@ -265,7 +289,8 @@ export default function WritePost() {
   const handleGoBack = async () => {
     if (!cid) {
       // 신규 작성 모드
-      if (title.trim() || comment.trim() || images.length > 0) {
+      // ref에서 현재 이미지 상태를 가져옴
+      if (title.trim() || comment.trim() || imagesRef.current.length > 0) {
         const shouldSave = await showConfirm({
           message: '작성 중인 내용이 있습니다. 임시저장 하시겠습니까?'
         });
@@ -274,12 +299,12 @@ export default function WritePost() {
         }
       }
     } else {
-      if (hasChanges()) {
-        const shouldLeave = await showConfirm({
-          message: '변경사항이 있습니다. 뒤로 가시면 저장하지 않은 변경 내용이 사라집니다. 계속하시겠습니까?'
-        });
-        if (!shouldLeave) return;
-      }
+      // if (hasChanges()) {
+      //   const shouldLeave = await showConfirm({
+      //     message: '변경사항이 있습니다. 뒤로 가시면 저장하지 않은 변경 내용이 사라집니다. 계속하시겠습니까?'
+      //   });
+      //   if (!shouldLeave) return;
+      // }
     }
     navigate(-1);
   };
@@ -301,6 +326,10 @@ export default function WritePost() {
     const success = await savePost(false);
     if (success) {
       if(cid){
+        if(!hasChanges()){
+          await showAlert({message: '수정된 이력이 없습니다'});
+          return;
+        }
         navigate(-1);
       }else{
         navigate('/community');

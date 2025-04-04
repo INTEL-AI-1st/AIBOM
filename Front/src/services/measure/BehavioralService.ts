@@ -10,7 +10,7 @@ interface ObserResponse {
   
 export const beha = async (formData: FormData) => {
     try {
-        const response = await api.post<ObserResponse>("/", formData, {
+        const response = await api.post<ObserResponse>("/upload-video", formData, {
             headers: {
               'Content-Type': 'multipart/form-data'
             }

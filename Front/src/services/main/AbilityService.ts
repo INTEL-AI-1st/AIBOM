@@ -8,10 +8,11 @@ interface AbilityResponse {
     }
 }
 
-export const selectGraph = async (uid: string) => {
+export const selectGraph = async (uid: string, age: string) => {
   try {
     const response = await api.post<AbilityResponse>("/ability/selectGraph", {
-        uid
+        uid, 
+        age
     });
     return response.data;
   } catch (error) {

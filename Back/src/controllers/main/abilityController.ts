@@ -4,8 +4,8 @@ import { Request, Response } from "express";
 export const selectGraph = async (req: Request, res: Response): Promise<void> => {
   try {
 
-    const { uid } = req.body;
-    const info = await selectChildGraph(uid);
+    const { uid, age } = req.body;
+    const info = await selectChildGraph(uid, age);
     res.json({ info });
   } catch (error) {
     console.error("조회 오류:", error);
