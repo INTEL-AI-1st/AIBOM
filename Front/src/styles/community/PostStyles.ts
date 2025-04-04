@@ -313,7 +313,7 @@ export const ActionItem = styled.span`
   cursor: pointer;
 
   svg{
-    margin-bottom: 5px;
+    margin-bottom: 3px;
   }
 `;
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '@services/common/supabaseClient';
 import { FaAngleLeft } from "react-icons/fa6";
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { AiOutlineCamera } from 'react-icons/ai';
 import {
   Button, ButtonForm, ButtonRow, Container, DeleteButton, FileInputWrapper,
@@ -17,23 +17,33 @@ type ImageItem = {
   isNew: boolean;
 };
 
+interface LocationState {
+  cid: string;
+}
+
 export default function WritePost() {
   const { userInfo } = useMainContext();
-  const { id } = useParams<{ id: string }>();
   const [title, setTitle] = useState('');
   const [comment, setComment] = useState('');
   const [images, setImages] = useState<ImageItem[]>([]);
   const [draftId, setDraftId] = useState<string | null>(null);
   const [hasLoadedDraft, setHasLoadedDraft] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  // originalPost는 수정 모드에서 최초 불러온 데이터를 저장
+  const [originalPost, setOriginalPost] = useState<{ title: string, comment: string, images: string[] } | null>(null);
+
+  const location = useLocation();
+  const state = location.state as LocationState;
+  const cid = state?.cid;
 
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { showAlert, showConfirm } = usePopup();
 
+  // 임시저장 데이터 불러오기 (신규 작성 모드)
   useEffect(() => {
-    if (!userInfo?.uid) return;
-    
+    if (!userInfo?.uid || cid) return;
+
     const fetchDraft = async () => {
       try {
         const { data, error } = await supabase
@@ -70,13 +80,14 @@ export default function WritePost() {
         console.error('임시저장 불러오기 에러:', err);
       }
     };
-  
+    
     fetchDraft();
     // eslint-disable-next-line
-  }, [userInfo]);
+  }, [userInfo, cid]);
 
+  // 게시글 불러오기 (수정 모드)
   useEffect(() => {
-    if (!id) return;
+    if (!cid) return;
 
     const fetchPost = async () => {
       setIsLoading(true);
@@ -84,20 +95,29 @@ export default function WritePost() {
         const { data, error } = await supabase
           .from('community')
           .select('*')
-          .eq('cid', id)
+          .eq('cid', cid)
           .single();
 
         if (error) throw error;
 
         setTitle(data.title || '');
         setComment(data.comment || '');
+        let initialImages: ImageItem[] = [];
+        let originalImages: string[] = [];
         if (data.image_urls && Array.isArray(data.image_urls)) {
-          const existingImages = data.image_urls.map((url: string) => ({
+          initialImages = data.image_urls.map((url: string) => ({
             preview: url,
             isNew: false,
           }));
-          setImages(existingImages);
+          originalImages = data.image_urls;
         }
+        setImages(initialImages);
+        // 원본 데이터를 저장해두어 변경 여부를 비교
+        setOriginalPost({
+          title: data.title || '',
+          comment: data.comment || '',
+          images: originalImages,
+        });
       } catch (err) {
         console.error('게시글 불러오기 실패:', err);
         showAlert({ message: '게시글을 불러오는데 실패했습니다.' });
@@ -107,7 +127,7 @@ export default function WritePost() {
     };
 
     fetchPost();
-  }, [id, showAlert]);
+  }, [cid, showAlert]);
 
   // 이미지 파일 선택 처리
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -198,10 +218,10 @@ export default function WritePost() {
 
       let result;
       
-      if (id) {
+      if (cid) {
         result = await supabase.from('community')
           .update(payload)
-          .eq('cid', id);
+          .eq('cid', cid);
       } else if (draftId) {
         result = await supabase.from('community')
           .update(payload)
@@ -227,6 +247,43 @@ export default function WritePost() {
     }
   };
 
+  // 변경 여부를 확인하는 함수 (수정 모드 전용)
+  const hasChanges = () => {
+    if (!originalPost) return false;
+    if (title !== originalPost.title) return true;
+    if (comment !== originalPost.comment) return true;
+    if (images.length !== originalPost.images.length) return true;
+    for (let i = 0; i < images.length; i++) {
+      const img = images[i];
+      if (img.isNew) return true;
+      if (img.preview !== originalPost.images[i]) return true;
+    }
+    return false;
+  };
+
+  // 뒤로 가기 전 확인
+  const handleGoBack = async () => {
+    if (!cid) {
+      // 신규 작성 모드
+      if (title.trim() || comment.trim() || images.length > 0) {
+        const shouldSave = await showConfirm({
+          message: '작성 중인 내용이 있습니다. 임시저장 하시겠습니까?'
+        });
+        if (shouldSave) {
+          await handleTemporarySave({ preventDefault: () => {} } as React.FormEvent);
+        }
+      }
+    } else {
+      if (hasChanges()) {
+        const shouldLeave = await showConfirm({
+          message: '변경사항이 있습니다. 뒤로 가시면 저장하지 않은 변경 내용이 사라집니다. 계속하시겠습니까?'
+        });
+        if (!shouldLeave) return;
+      }
+    }
+    navigate(-1);
+  };
+
   // 글 작성/수정 완료
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -243,7 +300,11 @@ export default function WritePost() {
 
     const success = await savePost(false);
     if (success) {
-      navigate('/community');
+      if(cid){
+        navigate(-1);
+      }else{
+        navigate('/community');
+      }
     }
   };
 
@@ -265,26 +326,11 @@ export default function WritePost() {
     }
   };
 
-  // 뒤로 가기 전 확인 (임시저장 여부)
-  const handleGoBack = async () => {
-    if (title.trim() || comment.trim() || images.length > 0) {
-      const shouldSave = await showConfirm({ 
-        message: '작성 중인 내용이 있습니다. 임시저장 하시겠습니까?' 
-      });
-      
-      if (shouldSave) {
-        await handleTemporarySave({ preventDefault: () => {} } as React.FormEvent);
-      }
-    }
-    
-    navigate(-1);
-  };
-
   return (
     <Container>
       <Title>
         <FaAngleLeft size={36} onClick={handleGoBack} style={{ cursor: 'pointer', marginRight: '10px' }} />
-        {id ? '글 수정' : '글 작성'}
+        {cid ? '글 수정' : '글 작성'}
       </Title>
       <Form onSubmit={handleSubmit}>
         <Input
@@ -303,18 +349,18 @@ export default function WritePost() {
           required
         />
         <ImagePreviewContainer>
-        {images.map((img, index) => (
+          {images.map((img, index) => (
             <ImagePreviewItem key={index} style={{ width: `${100 / Math.min(images.length, 4)}%` }}>
-            <PreviewImage src={img.preview} alt="미리보기" />
-            <DeleteButton 
+              <PreviewImage src={img.preview} alt="미리보기" />
+              <DeleteButton 
                 type="button"
                 onClick={() => handleDeleteImage(index)}
                 disabled={isLoading}
-            >
+              >
                 &times;
-            </DeleteButton>
+              </DeleteButton>
             </ImagePreviewItem>
-        ))}
+          ))}
         </ImagePreviewContainer>
 
         <ButtonRow>
@@ -330,18 +376,20 @@ export default function WritePost() {
             />
           </FileInputWrapper>
           <ButtonForm>
-            <Button 
-              type="button" 
-              onClick={handleTemporarySave}
-              disabled={isLoading}
-            >
-              {isLoading ? '저장 중...' : '임시저장'}
-            </Button>
+            {!cid && (
+              <Button 
+                type="button" 
+                onClick={handleTemporarySave}
+                disabled={isLoading}
+              >
+                {isLoading ? '저장 중...' : '임시저장'}
+              </Button>
+            )}
             <Button 
               type="submit"
               disabled={isLoading}
             >
-              {isLoading ? '저장 중...' : (id ? '수정 완료' : '작성 완료')}
+              {isLoading ? '저장 중...' : (cid ? '수정 완료' : '작성 완료')}
             </Button>
           </ButtonForm>
         </ButtonRow>

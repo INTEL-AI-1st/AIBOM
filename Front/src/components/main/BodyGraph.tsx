@@ -65,8 +65,8 @@ export default function BodyGraph(){
                           <YAxis hide />
                           <Tooltip />
                           <Bar dataKey="행동 발달" fill="#b9edff" radius={[2, 2, 0, 0]} />
-                          <Bar dataKey="유아 관찰" fill="#ffd6a5" radius={[2, 2, 0, 0]} />
-                          <Bar dataKey="역량 발달" fill="#ff8a8a" radius={[2, 2, 0, 0]} />
+                          <Bar dataKey="유아 관찰" fill="#ffdada" radius={[2, 2, 0, 0]} />
+                          <Bar dataKey="역량 발달" fill="#ffd6a5" radius={[2, 2, 0, 0]} />
                       </BarChart>
                   </ResponsiveContainer>
               </ChartContainer>

@@ -22,7 +22,7 @@ interface Post {
   comment: string;
   created_at: number;
   updated_at: number;
-  likeCount?: number;
+  likes: number;
   view_count?: number;
   image_urls?: string[];
 }
@@ -49,7 +49,6 @@ export default function Post() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [modalImageIndex, setModalImageIndex] = useState<number | null>(null);
-  // 추가: 좋아요 여부 상태
   const [hasLiked, setHasLiked] = useState<boolean>(false);
 
   useEffect(() => {
@@ -62,7 +61,6 @@ export default function Post() {
     // eslint-disable-next-line
   }, [cid]);
 
-  // 게시글이 로드되고 사용자 정보가 있으면 좋아요 상태 확인
   useEffect(() => {
     if (post && userInfo?.uid) {
       checkLikeStatus();
@@ -73,7 +71,7 @@ export default function Post() {
   const checkLikeStatus = async () => {
     try {
       const { data, error } = await supabase
-        .from('like')
+        .from('likes')
         .select('*')
         .eq('cid', post?.cid)
         .eq('uid', userInfo?.uid)
@@ -97,7 +95,6 @@ export default function Post() {
         .from('community')
         .select(
           `*, 
-           like(count), 
            views(count), 
            comments(count)`
         )
@@ -114,7 +111,6 @@ export default function Post() {
         const normalizedPost: Post = {
           ...singleData,
           view_count: singleData.views?.[0]?.count ?? 0,
-          likeCount: singleData.like?.[0]?.count ?? 0,
         };
         setPost(normalizedPost);
       }
@@ -144,9 +140,9 @@ export default function Post() {
 
       if (!likeConfirm) return;
 
-      const newLikeCount = (post.likeCount || 0) + 1;
+      const newLikeCount = (post.likes || 0) + 1;
       const { error } = await supabase
-        .from('like')
+        .from('likes')
         .insert([
           {
             cid: post.cid,
@@ -159,7 +155,7 @@ export default function Post() {
       }
       
       await showAlert({ message: "좋아요했습니다." });
-      setPost({ ...post, likeCount: newLikeCount });
+      setPost({ ...post, likes: newLikeCount });
       setHasLiked(true);
     } catch (error) {
       const supabaseError = error as SupabaseError;
@@ -189,11 +185,14 @@ export default function Post() {
     }
   };
 
-  // 뒤로가기
+  const handleEditClick = () => {
+    navigate('/community/write', { state: { cid } });
+  };
+
   const handleGoBack = () => {
     navigate(-1);
   };
-
+  
   if (isLoading) {
     return <Container>로딩 중...</Container>;
   }
@@ -257,7 +256,7 @@ export default function Post() {
               onClick={handleLike}
               hasLiked= {hasLiked}
             >
-              {hasLiked ? <AiFillLike /> : <AiOutlineLike/>} {post.likeCount || 0}명이 좋아해요
+              {hasLiked ? <AiFillLike /> : <AiOutlineLike/>} {post.likes || 0}명이 좋아해요
             </LikeButton>
           </FooterItem>
         </Footer>
@@ -266,7 +265,7 @@ export default function Post() {
       <ActionButtons>
         {userInfo?.uid === post.uid && (
           <>
-            <Button onClick={() => navigate(`/edit/${post.cid}`)}>수정</Button>
+            <Button onClick={handleEditClick}>수정</Button>
             <Button onClick={handleDelete}>삭제</Button>
           </>
         )}

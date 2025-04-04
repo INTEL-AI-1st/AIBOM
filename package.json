@@ -17,7 +17,7 @@
         "install:cv": "build-opencv --incDir C:\\OpenCv4.11.0\\build\\include --libDir C:\\OpenCv4.11.0\\build\\x64\\vc15\\lib --binDir C:\\OpenCv4.11.0\\build\\x64\\vc15\\bin --nobuild rebuild"
     },
     "dependencies": {
-        "@supabase/supabase-js": "^2.49.1",
+        "@supabase/supabase-js": "^2.49.4",
         "@types/bcryptjs": "^2.4.6",
         "@types/cors": "^2.8.17",
         "@types/express": "^5.0.0",

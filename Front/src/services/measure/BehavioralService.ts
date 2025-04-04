@@ -1,4 +1,4 @@
-import { api } from "@services/common/Api";
+import { api } from "@services/common/Ai";
 
 interface ObserResponse {
     info: {
@@ -10,7 +10,7 @@ interface ObserResponse {
   
 export const beha = async (formData: FormData) => {
     try {
-        const response = await api.post<ObserResponse>("/beha/measure", formData, {
+        const response = await api.post<ObserResponse>("/", formData, {
             headers: {
               'Content-Type': 'multipart/form-data'
             }

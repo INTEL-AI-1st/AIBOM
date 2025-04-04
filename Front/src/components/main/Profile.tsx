@@ -22,7 +22,7 @@ const ChildButton = styled.button<{ selected: boolean }>`
   padding: 8px 12px;
   border: none;
   border-radius: 8px;
-  background-color: ${({ selected }) => (selected ? "#007bff" : "#ccc")};
+  background-color: ${({ selected }) => (selected ? "#ffb9b9" : "#ccc")};
   color: white;
 `;
 

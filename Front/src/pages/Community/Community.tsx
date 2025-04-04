@@ -19,7 +19,7 @@ interface Post {
   comment: string;
   created_at: number;
   updated_at: number;
-  like_count: number;
+  likes: number;
   view_count: number;
   comment_count: number;
   image_urls?: string[];
@@ -52,9 +52,8 @@ export default function Community() {
         .from('community')
         .select(
           `*, 
-           like(count), 
-           views(count), 
-           comments(count)`,
+            views: views(count), 
+            comments: comments(count)`,
           { count: 'exact' }
         )
         .eq('is_draft', false);
@@ -62,13 +61,12 @@ export default function Community() {
       if (activeSearchQuery) {
         query = query.ilike(activeSearchField, `%${activeSearchQuery}%`);
       }
-
       if (sortOrder === 'feed') {
         query = query.order('created_at', { ascending: false });
       } else if (sortOrder === 'popular') {
-        query = query.order('like_count', { ascending: false });
+        query = query.order('likes', { ascending: false });
       }
-
+      console.log(query);
       const { data: community, error, count } = await query.range(start, end);
 
       if (error) {
@@ -80,7 +78,7 @@ export default function Community() {
         const normalizedPosts: Post[] = community.map((post): Post => ({
           ...post,
           view_count: post.views?.[0]?.count ?? 0,
-          like_count: post.like?.[0]?.count ?? 0,
+          like_count: post.likes?.[0]?.count ?? 0,
           comment_count: post.comments?.[0]?.count ?? 0,
         }));        
         setPosts(normalizedPosts);
@@ -130,24 +128,33 @@ export default function Community() {
     navigate('write');
   }, [navigate]);
 
-  const handlePostClick = useCallback(
-    async (cid: string) => {
-      const { error } = await supabase.from('views').insert([
-        {
-          cid,
-          viewer_id: userInfo?.nickName,
-        },
-      ]);
-
+  const handlePostClick = useCallback(async (cid: string) => {
+    const { data: existingView, error: selectError } = await supabase
+      .from('views')
+      .select('*')
+      .eq('cid', cid)
+      .eq('viewer_id', userInfo?.uid)
+      .maybeSingle();
+  
+    if (selectError) {
+      console.error('조회 기록 확인 실패:', selectError.message);
+      throw selectError;
+    }
+  
+    if (!existingView) {
+      const { error } = await supabase
+        .from('views')
+        .insert([{ cid, viewer_id: userInfo?.uid }]);
+  
       if (error) {
         console.error('뷰 등록 실패:', error.message);
         throw error;
       }
-
-      navigate('post', { state: { cid } });
-    },
-    [navigate, userInfo]
-  );
+    }
+  
+    navigate('post', { state: { cid } });
+  }, [navigate, userInfo]);
+  
 
   const paginationArray = useMemo(() =>
     Array.from({ length: totalPages }, (_, i) => i + 1),
@@ -185,7 +192,7 @@ export default function Community() {
             <FaRegComments />{post.comment_count || 0}
           </ActionItem>
           <ActionItem>
-            <AiOutlineLike />{post.like_count || 0}
+            <AiOutlineLike />{post.likes || 0}
           </ActionItem>
         </PostActions>
       </PostFooter>
