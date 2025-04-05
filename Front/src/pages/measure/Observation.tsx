@@ -2,11 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { surveyData } from '@constants/surveyData';
-import {
-  Container, SubContainer, DomainContainer, Title, DomainSection, DomainTitle, Header, InfoIcon, Nav, NavItem, NavList, 
-  CloseButton, ObservationCategory, ObservationHeader, ObservationList, ObservationListItem, OptionLabel, OptionList, 
-  Overlay, Question, QuestionTitle, QuestionTitleContainer, RadioInput, ScrollToTop, SidebarContainer, ToastCon, Btn, BtnForm
-} from '@styles/measure/ObservationStyles';
+import * as OS from '@styles/measure/ObservationStyles';
 import { useMainContext } from '@context/MainContext';
 import { saveObservation, selectObservation, upsertObservation } from '@services/measure/ObservationService';
 import { usePopup } from '@hooks/UsePopup';
@@ -149,40 +145,40 @@ export default function Observation() {
   
 
   return (
-    <Container>
-      <SubContainer>
-        <Title>KICCE 유아관찰척도 설문</Title>
-        <Nav>
-          <NavList>
+    <OS.Container>
+      <OS.SubContainer>
+        <OS.Title>KICCE 유아관찰척도 설문</OS.Title>
+        <OS.Nav>
+          <OS.NavList>
             {domainList.map((domain) => (
-              <NavItem key={domain} onClick={() => scrollToSection(domain)}>
+              <OS.NavItem key={domain} onClick={() => scrollToSection(domain)}>
                 {domain}
-              </NavItem>
+              </OS.NavItem>
             ))}
-          </NavList>
-        </Nav>
+          </OS.NavList>
+        </OS.Nav>
         
-        <DomainContainer>
+        <OS.DomainContainer>
           <p>이름: {selectedChild?.name}</p>
           <p>※ 문항을 선택할 때 마다 데이터는 저장됩니다.</p>
 
           {domainList.map((domain) => (
-            <DomainSection key={domain} id={domain}>
-              <DomainTitle>{domain}</DomainTitle>
+            <OS.DomainSection key={domain} id={domain}>
+              <OS.DomainTitle>{domain}</OS.DomainTitle>
               {groupedData[domain].map((item: SurveyItem) => (
-                <Question key={item.questId} id={`question-${item.questId}`}>
-                  <QuestionTitleContainer>
-                    <QuestionTitle>{item.question}</QuestionTitle>
-                    <InfoIcon
+                <OS.Question key={item.questId} id={`question-${item.questId}`}>
+                  <OS.QuestionTitleContainer>
+                    <OS.QuestionTitle>{item.question}</OS.QuestionTitle>
+                    <OS.InfoIcon
                       size={20}
                       onClick={() => setActiveObservation({ id: item.questId, observation: item.observation })}
                       title="관측사례 보기"
                       />
-                  </QuestionTitleContainer>
-                  <OptionList>
+                  </OS.QuestionTitleContainer>
+                  <OS.OptionList>
                     {item.options.map((option: string, index: number) => (
-                      <OptionLabel key={index}>
-                        <RadioInput
+                      <OS.OptionLabel key={index}>
+                        <OS.RadioInput
                           type="radio"
                           name={item.questId}
                           value={index + 1}
@@ -190,55 +186,55 @@ export default function Observation() {
                           onChange={() => handleAnswerChange(item.abilityLabelId, item.questId, index + 1)}
                           />
                         <span>{option}</span>
-                      </OptionLabel>
+                      </OS.OptionLabel>
                     ))}
-                  </OptionList>
-                </Question>
+                  </OS.OptionList>
+                </OS.Question>
               ))}
-            </DomainSection>
+            </OS.DomainSection>
           ))}
 
-        <BtnForm>
-          <Btn onClick={handleSave}>측정하기</Btn>
-        </BtnForm>
-        </DomainContainer>
-        {showScrollToTop && <ScrollToTop onClick={scrollToTop} />}
+        <OS.BtnForm>
+          <OS.Btn onClick={handleSave}>측정하기</OS.Btn>
+        </OS.BtnForm>
+        </OS.DomainContainer>
+        {showScrollToTop && <OS.ScrollToTop onClick={scrollToTop} />}
 
         {/* 슬라이드바(관측사례) */}
-        <Overlay open={activeObservation !== null} onClick={closeSidebar} />
-        <SidebarContainer open={activeObservation !== null}>
+        <OS.Overlay open={activeObservation !== null} onClick={closeSidebar} />
+        <OS.SidebarContainer open={activeObservation !== null}>
           {activeObservation && (
             <>
-              <Header>
-                <ObservationHeader>관측사례</ObservationHeader>
-                <CloseButton onClick={closeSidebar}>×</CloseButton>
-              </Header>
+              <OS.Header>
+                <OS.ObservationHeader>관측사례</OS.ObservationHeader>
+                <OS.CloseButton onClick={closeSidebar}>×</OS.CloseButton>
+              </OS.Header>
               {(Object.entries(activeObservation.observation) as [keyof Observation, string[]][]).map(
                 ([category, observations]) => (
                   <div key={category}>
-                    <ObservationCategory>
+                    <OS.ObservationCategory>
                       {category === 'play'
                         ? '놀이'
                         : category === 'life'
                         ? '일상생활'
                         : '활동'}
-                    </ObservationCategory>
-                    <ObservationList>
+                    </OS.ObservationCategory>
+                    <OS.ObservationList>
                       {observations.map((text: string, idx: number) => (
-                        <ObservationListItem key={idx}>
+                        <OS.ObservationListItem key={idx}>
                           {text.replace(/\n/g, ' ')}
-                        </ObservationListItem>
+                        </OS.ObservationListItem>
                       ))}
-                    </ObservationList>
+                    </OS.ObservationList>
                   </div>
                 )
               )}
             </>
           )}
-        </SidebarContainer>
+        </OS.SidebarContainer>
 
-        <ToastCon />
-      </SubContainer>
-    </Container>
+        <OS.ToastCon />
+      </OS.SubContainer>
+    </OS.Container>
   );
 }
