@@ -6,23 +6,42 @@ export const Container = styled.div`
   height: 100vh;
   margin: 0;
   padding: 0;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    height: auto;
+  }
 `;
 
 export const Sidebar = styled.div`
-  width: 300px;
+  flex: 1;
   padding: 15px;
   box-sizing: border-box;
   border-right: 1px solid #ddd;
   background: #fafafa;
   overflow-y: auto;
+
+  @media (max-width: 768px) {
+    border-right: none;
+    border-bottom: 1px solid #ddd;
+    overflow-y: hidden;
+  }
+`;
+
+export const Header = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
 `;
 
 export const SidebarHeader = styled.h2`
-  margin-top: 0;
+  margin-block: 0;
 `;
 
 export const SearchContainer = styled.div`
   display: flex;
+  width: 100%;
   margin-bottom: 15px;
 `;
 
@@ -35,16 +54,15 @@ export const SearchInput = styled.input`
 `;
 
 export const SearchButton = styled.button`
-  margin-left: 5px;
-  padding: 8px 12px;
-  border: none;
-  background-color: #007aff;
+  padding: 0.6rem 1rem;
+  margin-left: 0.5rem;
+  background-color: #ffb9b9;
   color: #fff;
+  border: none;
   border-radius: 4px;
-  font-size: 1em;
-  cursor: pointer;
+  font-size: 1rem;
   &:hover {
-    background-color: #005bb5;
+    background-color: #eea9a9;
   }
 `;
 
@@ -81,9 +99,13 @@ export const NoResults = styled.p`
 `;
 
 export const RightContainer = styled.div`
-  flex: 1;
+  flex: 2;
   display: flex;
   flex-direction: column;
+
+  @media (max-width: 768px) {
+    flex: 1;
+  }
 `;
 
 export const TopBar = styled.div`
@@ -100,11 +122,15 @@ export const TopBarButton = styled.button``;
 export const MapArea = styled.div`
   flex: 2;
   position: relative;
+
+  @media (max-width: 768px) {
+    height: 300px; /* 모바일에서는 고정 높이 설정 */
+  }
 `;
 
 export const InfoWindowContent = styled.div`
   padding: 10px;
-  min-width: 200px;
+  width: 300px;
   max-height: 300px;
 `;
 

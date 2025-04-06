@@ -92,7 +92,6 @@ export const SearchButton = styled.button`
   color: #fff;
   border: none;
   border-radius: 4px;
-  cursor: pointer;
   &:hover {
     background-color: #eea9a9;
   }
@@ -168,7 +167,6 @@ export const PostBody = styled.div`
   align-items: start;
   margin-top: 0.5rem;
 
-  /* --- 작은 화면에서는 세로 배치 --- */
   @media (max-width: 768px) {
     flex-direction: column;
     gap: 0.5rem;

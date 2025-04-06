@@ -22,8 +22,7 @@ export default function Education() {
   });
   const [places, setPlaces] = useState<Place[]>([]);
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
-  const [searchQuery, setSearchQuery] = useState<string>("유치원");
-  const [showReturnButton, setShowReturnButton] = useState<boolean>(true);
+  const [searchQuery, setSearchQuery] = useState<string>("");
 
   // 브라우저의 현재 위치 가져오기
   useEffect(() => {
@@ -43,7 +42,7 @@ export default function Education() {
   }, []);
 
   // 지도 중심(또는 현재 위치) 기준으로 검색
-  const handleSearch = () => {
+  const handleSearch = (query: string) => {
     if (!window.kakao || !window.kakao.maps) return;
     const ps = new window.kakao.maps.services.Places();
     const center = map
@@ -55,7 +54,7 @@ export default function Education() {
     };
 
     ps.keywordSearch(
-      searchQuery,
+      query,
       (data: Place[], status: string) => {
         if (status === window.kakao.maps.services.Status.OK) {
           setPlaces(data);
@@ -91,8 +90,12 @@ export default function Education() {
     <E.Container>
       {/* 사이드바 */}
       <E.Sidebar onClick={(e) => e.stopPropagation()}>
-        <E.SidebarHeader>유아교육 시설 검색</E.SidebarHeader>
-
+        <E.Header>
+          <E.SidebarHeader>유아교육 시설 검색</E.SidebarHeader>
+          <E.TopBarButton onClick={handleReturnToMyLocation}>
+            내 좌표로 돌아가기
+          </E.TopBarButton>
+        </E.Header>
         {/* 사이드바 내 검색 입력창 및 버튼 */}
         <E.SearchContainer>
           <E.SearchInput
@@ -100,49 +103,29 @@ export default function Education() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="검색어를 입력하세요"
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                handleSearch(searchQuery);
+              }
+            }}
           />
-          <E.SearchButton onClick={handleSearch}>검색</E.SearchButton>
+          <E.SearchButton onClick={() => handleSearch(searchQuery)}>
+            검색
+          </E.SearchButton>
         </E.SearchContainer>
 
         {/* 카테고리 버튼 */}
         <E.CategoryContainer>
-          <E.CategoryButton
-            onClick={() => {
-              setSearchQuery("유치원");
-              handleSearch();
-            }}
-          >
+          <E.CategoryButton onClick={() => handleSearch("유치원")}>
             유치원
           </E.CategoryButton>
-          <E.CategoryButton
-            onClick={() => {
-              setSearchQuery("어린이집");
-              handleSearch();
-            }}
-          >
+          <E.CategoryButton onClick={() => handleSearch("어린이집")}>
             어린이집
           </E.CategoryButton>
-          <E.CategoryButton
-            onClick={() => {
-              setSearchQuery("유아학원");
-              handleSearch();
-            }}
-          >
+          <E.CategoryButton onClick={() => handleSearch("유아학원")}>
             유아학원
           </E.CategoryButton>
         </E.CategoryContainer>
-
-        {/* 내 좌표 이동 버튼 표시 옵션 */}
-        <E.OptionContainer>
-          <label>
-            <input
-              type="checkbox"
-              checked={showReturnButton}
-              onChange={(e) => setShowReturnButton(e.target.checked)}
-            />
-            내 좌표 이동 버튼 표시
-          </label>
-        </E.OptionContainer>
 
         {/* 검색 결과 목록 */}
         <E.SearchResultList>
@@ -154,7 +137,9 @@ export default function Education() {
                 onClick={() => handleListClick(place)}
               >
                 <strong>{place.place_name}</strong>
-                <E.ResultText>{place.road_address_name || place.address_name}</E.ResultText>
+                <E.ResultText>
+                  {place.road_address_name || place.address_name}
+                </E.ResultText>
                 {place.phone && <E.ResultText>{place.phone}</E.ResultText>}
               </E.SearchResultItem>
             ))
@@ -166,13 +151,6 @@ export default function Education() {
 
       {/* 우측 컨테이너 */}
       <E.RightContainer>
-        <E.TopBar>
-          {showReturnButton && (
-            <E.TopBarButton onClick={handleReturnToMyLocation}>
-              내 좌표로 돌아가기
-            </E.TopBarButton>
-          )}
-        </E.TopBar>
         <E.MapArea>
           <Map
             center={currentLocation}
@@ -184,7 +162,10 @@ export default function Education() {
             {places.map((place, index) => (
               <MapMarker
                 key={place.id || index}
-                position={{ lat: parseFloat(place.y), lng: parseFloat(place.x) }}
+                position={{
+                  lat: parseFloat(place.y),
+                  lng: parseFloat(place.x),
+                }}
                 title={place.place_name}
                 onClick={() => setSelectedPlace(place)}
               />
@@ -198,10 +179,13 @@ export default function Education() {
                 }}
               >
                 <E.InfoWindowContent onClick={(e) => e.stopPropagation()}>
-                  <E.InfoWindowTitle>{selectedPlace.place_name}</E.InfoWindowTitle>
+                  <E.InfoWindowTitle>
+                    {selectedPlace.place_name}
+                  </E.InfoWindowTitle>
                   <E.InfoWindowText>
                     <strong>주소:</strong>{" "}
-                    {selectedPlace.road_address_name || selectedPlace.address_name}
+                    {selectedPlace.road_address_name ||
+                      selectedPlace.address_name}
                   </E.InfoWindowText>
                   {selectedPlace.phone && (
                     <E.InfoWindowText>
