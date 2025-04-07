@@ -1,5 +1,5 @@
-import React, { useRef, useState, useEffect, useMemo } from 'react';
-import { beha } from '@services/measure/BehavioralService';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
+import { beha, selectAbilites } from '@services/measure/BehavioralService';
 import * as BE from '@styles/measure/BehavioralStyles';
 import { useMainContext } from '@context/MainContext';
 
@@ -12,8 +12,25 @@ export default function Behavioral() {
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   const [recordedChunks, setRecordedChunks] = useState<Blob[]>([]);
   const [stream, setStream] = useState<MediaStream | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   // const [result, setResult] = useState<string>('');
 
+  const fetchData = useCallback(async () => {
+    if(isLoading) return;
+    setIsLoading(true);
+    try {;
+      if(!selectedChild?.ageMonths) return;
+      await selectAbilites(selectedChild.ageMonths);
+    } catch (error) {
+      console.error('Unexpected error:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [selectedChild?.ageMonths]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const handleRecord = async () => {
     if (!isRecording) {

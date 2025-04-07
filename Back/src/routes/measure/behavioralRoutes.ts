@@ -1,9 +1,9 @@
+import { selectAbilites } from '@controllers/measure/behavioralController';
 import { Router } from 'express';
-import multer from 'multer';
-// import { measureVideo } from '@controllers/measure/behavioralController';
 
-const upload = multer({ dest: 'uploads/' });
 const behavioralRouter = Router();
+
+behavioralRouter.post("/selectAbilites", selectAbilites);
 
 // behavioralRouter.post('/measure', upload.single('video'), measureVideo);
 

@@ -1,3 +1,25 @@
+import { api } from "@services/common/Api";
+
+
+interface behaResponse {
+    info:{
+        state: string;
+        msg: string;
+    }[];
+}
+  
+export const selectAbilites = async (month: string) => {
+    try {
+      const response = await api.post<behaResponse>("/beha/selectAbilites", {
+        month
+      });
+      return response.data;
+    } catch (error) {
+      console.error("create Error:", error);
+      throw error;
+    }
+}
+
 export const beha = (formData: FormData) => {
     fetch("/upload-video", {
       method: "POST",

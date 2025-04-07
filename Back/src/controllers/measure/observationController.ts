@@ -1,5 +1,4 @@
-import { PR_Observation } from './../../models/measure/observationModel';
-import { selectChildObservation, upsertChildObservation } from "@models/measure/observationModel";
+import { selectChildObservation, upsertChildObservation, PR_Observation } from "@models/measure/observationModel";
 import { Request, Response } from "express";
 
 export const selectObservation = async (req: Request, res: Response): Promise<void> => {

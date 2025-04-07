@@ -11,7 +11,7 @@ interface msgStatus {
   msg: string;
 }
 
-export const selectChildObservation = async (uid: string): Promise<obser | null> => {
+export const selectAbility = async (month: string): Promise<obser | null> => {
     const conn = await pool.getConnection();
     const rows = await conn.query(
       `SELECT 
@@ -29,7 +29,7 @@ export const selectChildObservation = async (uid: string): Promise<obser | null>
                            WHEN ? >= 54 THEN 'C' 
                            ELSE 'B' 
                            END`, 
-      [uid]
+      [month, month]
   );
     conn.release();
     return rows.length ? rows : null;
