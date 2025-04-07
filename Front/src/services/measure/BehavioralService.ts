@@ -1,24 +1,10 @@
-import { api } from "@services/common/Ai";
-
-interface ObserResponse {
-    info: {
-        abilityLabelId: string;
-        questId: string;
-        score: string;
-    }
-}
+export const beha = (formData: FormData) => {
+    fetch("/upload-video", {
+      method: "POST",
+      body: formData,
+      // Content-Type은 브라우저가 자동으로 multipart/form-data로 설정함
+      keepalive: true,
+    });
+    window.location.href = "/";
+  };
   
-export const beha = async (formData: FormData) => {
-    try {
-        const response = await api.post<ObserResponse>("/upload-video", formData, {
-            headers: {
-              'Content-Type': 'multipart/form-data'
-            }
-          });
-        
-        return response.data;
-    } catch (error) {
-        console.error("create Error:", error);
-        throw error;
-    }
-}

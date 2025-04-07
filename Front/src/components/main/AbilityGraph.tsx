@@ -81,7 +81,7 @@ const CustomAngleAxis = memo(({
   hovered
 }: CustomTickProps & { data: CombinedChartData[]; hovered: 'child' | 'avg' | null; }) => {
   const angle = (Math.PI * 2 * index) / data.length - Math.PI / 2;
-  const labelX = cx + (radius + 30) * Math.cos(angle);
+  const labelX = cx + (radius + 35) * Math.cos(angle);
   const labelY = cy + (radius + 30) * Math.sin(angle);
   const valueY = labelY + 20;
   const value = hovered === 'avg' ? data[index].average : data[index].performance;
@@ -334,7 +334,7 @@ export default function AbilityGraph() {
     } finally {
       setLoading(false);
     }
-  }, [selectedChild?.uid, processResponse]);
+  }, [selectedChild?.uid, selectedChild?.ageYears, processResponse]);
 
   useEffect(() => {
     fetchData();

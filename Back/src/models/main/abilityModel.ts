@@ -55,12 +55,13 @@ interface graph {
               ability_id,
               ability_label_id,
               ROUND(AVG(score), 2) AS avgScore
-          FROM tb_avg_ability
+           FROM tb_avg_ability
           WHERE age = CASE 
                           WHEN ? <= 3 THEN 3 
                           WHEN ? = 4 THEN 4 
                           ELSE 5 
                       END
+            AND gender = 0         
           GROUP BY ability_id, ability_label_id
       ) AS avg_tbl2
           ON a.ability_id = avg_tbl2.ability_id

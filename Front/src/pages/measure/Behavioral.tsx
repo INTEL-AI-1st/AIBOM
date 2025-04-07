@@ -1,34 +1,10 @@
-import React, { useRef, useState, useEffect } from 'react';
-import styled from 'styled-components';
+import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { beha } from '@services/measure/BehavioralService';
-
-const Container = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 2rem;
-`;
-
-const Button = styled.button`
-  background-color: #007bff;
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  margin: 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 1rem;
-
-  &:hover {
-    background-color: #0056b3;
-  }
-`;
-
-const FileInput = styled.input`
-  display: none;
-`;
+import * as BE from '@styles/measure/BehavioralStyles';
+import { useMainContext } from '@context/MainContext';
 
 export default function Behavioral() {
+  const { selectedChild } = useMainContext();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoPreviewRef = useRef<HTMLVideoElement>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -38,10 +14,9 @@ export default function Behavioral() {
   const [stream, setStream] = useState<MediaStream | null>(null);
   // const [result, setResult] = useState<string>('');
 
-  // 녹화 시작/정지 핸들러
+
   const handleRecord = async () => {
     if (!isRecording) {
-      // 녹화 시작
       try {
         const userStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
         setStream(userStream);
@@ -123,6 +98,8 @@ export default function Behavioral() {
       for (const [key, value] of formData.entries()) {
         console.log('FormData key:', key, 'FormData value:', value);
       }
+      formData.append("data_type", `A\\1`);
+
       const response = await beha(formData);
       console.log(response);
       // setResult(response);
@@ -141,17 +118,35 @@ export default function Behavioral() {
     };
   }, [previewUrl]);
 
+  console.log(selectedChild);
   return (
-    <Container>
-      <Button onClick={handleRecord}>{isRecording ? '정지' : '녹화'}</Button>
-      <Button onClick={handleUploadClick}>파일업로드</Button>
-      <FileInput
+    <BE.Container>
+      <BE.SubContainer>
+        <BE.Title>KICCE 유아관찰척도 설문</BE.Title>
+        <BE.Nav>
+          <BE.NavList>
+            {/* {domainList.map((domain) => (
+              <BE.NavItem key={domain} onClick={() => scrollToSection(domain)}>
+                {domain}
+              </BE.NavItem>
+            ))} */}
+          </BE.NavList>
+        </BE.Nav>
+        
+        <BE.DomainContainer>
+          <p>이름: {selectedChild?.name}</p>
+          <p>※ 문항을 선택할 때 마다 데이터는 저장됩니다.</p>
+      
+        </BE.DomainContainer>
+      <BE.Btn onClick={handleRecord}>{isRecording ? '정지' : '녹화'}</BE.Btn>
+      <BE.Btn onClick={handleUploadClick}>파일업로드</BE.Btn>
+      <BE.InFlie
         type="file"
         accept="video/*"
         ref={fileInputRef}
         onChange={handleFileChange}
       />
-      <Button onClick={handleTest}>검사</Button>
+      <BE.Btn onClick={handleTest}>검사</BE.Btn>
       {/* 녹화 중 실시간 미리보기 */}
       <video
         ref={videoPreviewRef}
@@ -168,6 +163,7 @@ export default function Behavioral() {
         </video>
       )}
       {/* {result && <p>측정 결과: {result}</p>} */}
-    </Container>
+      </BE.SubContainer>
+    </BE.Container>
   );
 }
