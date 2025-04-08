@@ -11,10 +11,6 @@ export const Container = styled.div`
 
 export const SubContainer = styled.div``;
 
-export const DomainContainer = styled.div`
-  padding: 10px;
-`;
-
 export const Title = styled.h1`
   text-align: center;
   margin-block: 40px;
@@ -24,30 +20,85 @@ export const Title = styled.h1`
 
 export const Nav = styled.nav`
   width: 100%;
-  background: #ffb9b9;
-  padding: 12px 0;
+  background: linear-gradient(to right, #ffb9b9, #ffd0d0);
+  padding: 14px 0;
   position: sticky;
   top: 0;
   z-index: 1000;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  margin-bottom: 24px;
 `;
 
 export const NavList = styled.ul`
   display: flex;
   justify-content: center;
+  flex-wrap: wrap;
   list-style: none;
   margin: 0;
   padding: 0;
+  gap: 8px;
+
+  @media (max-width: 768px) {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    padding: 8px 16px;
+    scroll-snap-type: x mandatory;
+  }
 `;
 
 export const NavItem = styled.li`
   cursor: pointer;
-  font-weight: bold;
-  margin: 0 15px;
-  transition: color 0.2s ease-in-out;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 20px;
+  transition: all 0.2s ease-in-out;
+  background-color: rgba(255, 255, 255, 0.3);
+  scroll-snap-align: center;
+
   &:hover {
-    color: #0077cc;
+    background-color: rgba(255, 255, 255, 0.6);
+    color: #0066cc;
+    transform: translateY(-2px);
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
+
+  @media (max-width: 768px) {
+    flex: 0 0 auto;
   }
 `;
+
+export const DomainContainer = styled.div`
+  padding: 16px;
+  background-color: #f5f5f7;
+  border-radius: 8px;
+  font-size: 18px;
+  font-weight: 600;
+  p {
+    margin: 0;
+  }
+`;
+
+export const InfoBox = styled.div`
+  background-color: #f8f9ff;
+  border-left: 4px solid #007bff;
+  padding: 16px 24px;
+  margin-block: 24px;
+  border-radius: 0 8px 8px 0;
+  text-align: left;
+  
+  p {
+    margin: 8px 0;      
+    font-weight: 600;
+    color: #222;
+    line-height: 1.6;
+  }
+`;
+
 
 export const DomainSection = styled.section`
   margin-bottom: 20px;
@@ -59,6 +110,9 @@ export const DomainTitle = styled.h2`
   margin-bottom: 15px;
   border-bottom: 2px solid #ddd;
   padding-bottom: 10px;
+`;
+
+export const ContentContainer = styled.div`
 `;
 
 export const Question = styled.div`
@@ -217,7 +271,7 @@ export const ScrollToTop = styled(FaArrowCircleUp)`
   cursor: pointer;
   z-index: 1002;
   transition: background 0.2s;
-  opacity: 0.7;
+  opacity: 0.8;
   &:hover {
     opacity: 1;
   }
@@ -229,9 +283,26 @@ export const BtnForm = styled.div`
 `;
 
 export const Btn = styled.button`
-    /* padding: 20px; */
-    font-size: 1.5em;
-    border-radius: 5px;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.75rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.25);
+  margin-bottom: 1rem;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.3);
+  }
+  
+  &:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
 `;
 
 export const ToastCon = styled(ToastContainer)`

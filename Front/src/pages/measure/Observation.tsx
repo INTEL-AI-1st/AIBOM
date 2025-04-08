@@ -99,11 +99,13 @@ export default function Observation() {
   const scrollToSection = useCallback((domain: string) => {
     const element = document.getElementById(domain);
     if (element) {
-      const yOffset = -20;
+      const isMobile = window.innerWidth <= 768;
+      const yOffset = isMobile ? -80 : -50;
       const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
       window.scrollTo({ top: y, behavior: 'smooth' });
     }
   }, []);
+  
 
   const scrollToQuestion = useCallback((questionId: string) => {
     const element = document.getElementById(`question-${questionId}`);
@@ -160,8 +162,12 @@ export default function Observation() {
         
         <OS.DomainContainer>
           <p>이름: {selectedChild?.name}</p>
+        </OS.DomainContainer>
+        <OS.InfoBox>
           <p>※ 문항을 선택할 때 마다 데이터는 저장됩니다.</p>
+        </OS.InfoBox>
 
+          <OS.ContentContainer>
           {domainList.map((domain) => (
             <OS.DomainSection key={domain} id={domain}>
               <OS.DomainTitle>{domain}</OS.DomainTitle>
@@ -197,7 +203,7 @@ export default function Observation() {
         <OS.BtnForm>
           <OS.Btn onClick={handleSave}>측정하기</OS.Btn>
         </OS.BtnForm>
-        </OS.DomainContainer>
+        </OS.ContentContainer>
         {showScrollToTop && <OS.ScrollToTop onClick={scrollToTop} />}
 
         {/* 슬라이드바(관측사례) */}

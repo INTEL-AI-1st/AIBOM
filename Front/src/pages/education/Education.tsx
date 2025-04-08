@@ -125,6 +125,9 @@ export default function Education() {
           <E.CategoryButton onClick={() => handleSearch("유아학원")}>
             유아학원
           </E.CategoryButton>
+          <E.CategoryButton onClick={() => handleSearch("소아병원")}>
+            소아병원
+          </E.CategoryButton>
         </E.CategoryContainer>
 
         {/* 검색 결과 목록 */}

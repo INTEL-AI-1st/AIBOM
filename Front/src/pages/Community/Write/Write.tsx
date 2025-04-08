@@ -3,11 +3,7 @@ import { supabase } from '@services/common/supabaseClient';
 import { FaAngleLeft } from "react-icons/fa6";
 import { useLocation, useNavigate } from 'react-router-dom';
 import { AiOutlineCamera } from 'react-icons/ai';
-import {
-  Button, ButtonForm, ButtonRow, Container, DeleteButton, FileInputWrapper,
-  Form, HiddenFileInput, ImagePreviewContainer, ImagePreviewItem, Input,
-  PreviewImage, TextArea, Title
-} from '@styles/community/PostStyles';
+import * as PS from '@styles/community/PostStyles';
 import { usePopup } from '@hooks/UsePopup';
 import { useMainContext } from '@context/MainContext';
 
@@ -31,6 +27,8 @@ export default function WritePost() {
   const [isLoading, setIsLoading] = useState(false);
   // originalPost는 수정 모드에서 최초 불러온 데이터를 저장
   const [originalPost, setOriginalPost] = useState<{ title: string, comment: string, images: string[] } | null>(null);
+  // 임시 저장된 글 데이터를 저장하는 state 추가
+  const [loadedDraftData, setLoadedDraftData] = useState<{ title: string, comment: string, images: string[] } | null>(null);
 
   const location = useLocation();
   const state = location.state as LocationState;
@@ -74,15 +72,28 @@ export default function WritePost() {
           if (shouldLoad) {
             setTitle(data.title || '');
             setComment(data.comment || '');
+            let draftImages: ImageItem[] = [];
+            let originalDraftImages: string[] = [];
+            
             if (data.image_urls && Array.isArray(data.image_urls)) {
-              const existingImages = data.image_urls.map((url: string) => ({
+              draftImages = data.image_urls.map((url: string) => ({
                 preview: url,
                 isNew: false,
               }));
-              setImages(existingImages);
-              // ref도 함께 업데이트
-              imagesRef.current = existingImages;
+              originalDraftImages = data.image_urls;
             }
+            
+            setImages(draftImages);
+            // ref도 함께 업데이트
+            imagesRef.current = draftImages;
+            
+            // 임시저장 데이터 원본 저장
+            setLoadedDraftData({
+              title: data.title || '',
+              comment: data.comment || '',
+              images: originalDraftImages,
+            });
+            
             setHasLoadedDraft(true);
           }
         }
@@ -219,7 +230,6 @@ export default function WritePost() {
   // 글 저장 처리 공통 함수
   const savePost = async (isDraft: boolean) => {
     setIsLoading(true);
-    
     try {
       // ref에서 현재 이미지 상태를 가져옴
       const currentImages = imagesRef.current;
@@ -239,14 +249,17 @@ export default function WritePost() {
       let result;
       
       if (cid) {
+        // 기존 게시글 수정
         result = await supabase.from('community')
           .update(payload)
           .eq('cid', cid);
       } else if (draftId) {
+        // 임시저장된 글 업데이트
         result = await supabase.from('community')
           .update(payload)
           .eq('cid', draftId);
       } else {
+        // 새 글 작성
         result = await supabase.from('community')
           .insert([{
             ...payload,
@@ -285,12 +298,30 @@ export default function WritePost() {
     return false;
   };
 
+  // 임시저장 불러온 글의 변경 여부를 확인하는 함수
+  const hasDraftChanges = () => {
+    if (!loadedDraftData) return title.trim() || comment.trim() || imagesRef.current.length > 0;
+    
+    if (title !== loadedDraftData.title) return true;
+    if (comment !== loadedDraftData.comment) return true;
+    
+    // ref에서 현재 이미지 상태를 가져옴
+    const currentImages = imagesRef.current;
+    if (currentImages.length !== loadedDraftData.images.length) return true;
+    
+    for (let i = 0; i < currentImages.length; i++) {
+      const img = currentImages[i];
+      if (img.isNew) return true;
+      if (img.preview !== loadedDraftData.images[i]) return true;
+    }
+    return false;
+  };
+
   // 뒤로 가기 전 확인
   const handleGoBack = async () => {
     if (!cid) {
-      // 신규 작성 모드
-      // ref에서 현재 이미지 상태를 가져옴
-      if (title.trim() || comment.trim() || imagesRef.current.length > 0) {
+      // 임시저장 모드에서는 변경사항이 있을 때만 저장 여부 물어봄
+      if (hasDraftChanges()) {
         const shouldSave = await showConfirm({
           message: '작성 중인 내용이 있습니다. 임시저장 하시겠습니까?'
         });
@@ -299,12 +330,12 @@ export default function WritePost() {
         }
       }
     } else {
-      // if (hasChanges()) {
-      //   const shouldLeave = await showConfirm({
-      //     message: '변경사항이 있습니다. 뒤로 가시면 저장하지 않은 변경 내용이 사라집니다. 계속하시겠습니까?'
-      //   });
-      //   if (!shouldLeave) return;
-      // }
+      if (hasChanges()) {
+        const shouldLeave = await showConfirm({
+          message: '변경사항이 있습니다. 뒤로 가시면 저장하지 않은 변경 내용이 사라집니다. 계속하시겠습니까?'
+        });
+        if (!shouldLeave) return;
+      }
     }
     navigate(-1);
   };
@@ -325,13 +356,13 @@ export default function WritePost() {
 
     const success = await savePost(false);
     if (success) {
-      if(cid){
-        if(!hasChanges()){
+      if (cid) {
+        if (!hasChanges()) {
           await showAlert({message: '수정된 이력이 없습니다'});
           return;
         }
         navigate(-1);
-      }else{
+      } else {
         navigate('/community');
       }
     }
@@ -340,6 +371,12 @@ export default function WritePost() {
   // 임시 저장
   const handleTemporarySave = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // 임시저장 데이터를 불러왔는데 변경사항이 없으면 안내
+    if (hasLoadedDraft && !hasDraftChanges()) {
+      await showAlert({message: '수정된 이력이 없습니다'});
+      return;
+    }
 
     if (draftId && !hasLoadedDraft) {
       const confirmOverwrite = await showConfirm({
@@ -350,19 +387,25 @@ export default function WritePost() {
 
     const success = await savePost(true);
     if (success) {
+      // 임시저장 성공 후 현재 상태를 loadedDraftData에 저장
+      setLoadedDraftData({
+        title,
+        comment,
+        images: imagesRef.current.map(img => img.preview)
+      });
       showAlert({ message: '임시저장 되었습니다.' });
       setHasLoadedDraft(true);
     }
   };
 
   return (
-    <Container>
-      <Title>
+    <PS.Container>
+      <PS.Title>
         <FaAngleLeft size={36} onClick={handleGoBack} style={{ cursor: 'pointer', marginRight: '10px' }} />
         {cid ? '글 수정' : '글 작성'}
-      </Title>
-      <Form onSubmit={handleSubmit}>
-        <Input
+      </PS.Title>
+      <PS.Form onSubmit={handleSubmit}>
+        <PS.Input
           type="text"
           placeholder="제목을 입력하세요"
           value={title}
@@ -370,32 +413,32 @@ export default function WritePost() {
           disabled={isLoading}
           required
         />
-        <TextArea
+        <PS.TextArea
           placeholder="내용을 입력하세요"
           value={comment}
           onChange={(e) => setComment(e.target.value)}
           disabled={isLoading}
           required
         />
-        <ImagePreviewContainer>
+        <PS.ImagePreviewContainer>
           {images.map((img, index) => (
-            <ImagePreviewItem key={index} style={{ width: `${100 / Math.min(images.length, 4)}%` }}>
-              <PreviewImage src={img.preview} alt="미리보기" />
-              <DeleteButton 
+            <PS.ImagePreviewItem key={index} style={{ width: `${100 / Math.min(images.length, 4)}%` }}>
+              <PS.PreviewImage src={img.preview} alt="미리보기" />
+              <PS.DeleteButton 
                 type="button"
                 onClick={() => handleDeleteImage(index)}
                 disabled={isLoading}
               >
                 &times;
-              </DeleteButton>
-            </ImagePreviewItem>
+              </PS.DeleteButton>
+            </PS.ImagePreviewItem>
           ))}
-        </ImagePreviewContainer>
+        </PS.ImagePreviewContainer>
 
-        <ButtonRow>
-          <FileInputWrapper>
+        <PS.ButtonRow>
+          <PS.FileInputWrapper>
             <AiOutlineCamera size={36} color={isLoading || images.length >= 4 ? "#ccc" : "#868e96"} />
-            <HiddenFileInput
+            <PS.HiddenFileInput
               type="file"
               accept="image/*"
               multiple
@@ -403,26 +446,26 @@ export default function WritePost() {
               ref={fileInputRef}
               disabled={isLoading || images.length >= 4}
             />
-          </FileInputWrapper>
-          <ButtonForm>
+          </PS.FileInputWrapper>
+          <PS.ButtonForm>
             {!cid && (
-              <Button 
+              <PS.Button 
                 type="button" 
                 onClick={handleTemporarySave}
                 disabled={isLoading}
               >
                 {isLoading ? '저장 중...' : '임시저장'}
-              </Button>
+              </PS.Button>
             )}
-            <Button 
+            <PS.Button 
               type="submit"
               disabled={isLoading}
             >
               {isLoading ? '저장 중...' : (cid ? '수정 완료' : '작성 완료')}
-            </Button>
-          </ButtonForm>
-        </ButtonRow>
-      </Form>
-    </Container>
+            </PS.Button>
+          </PS.ButtonForm>
+        </PS.ButtonRow>
+      </PS.Form>
+    </PS.Container>
   );
 }

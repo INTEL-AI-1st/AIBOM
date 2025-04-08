@@ -15,11 +15,11 @@ export const selectAbility = async (month: string): Promise<obser | null> => {
     const conn = await pool.getConnection();
     const rows = await conn.query(
       `SELECT 
-                a.ABILITY_LABEL,
-                i.ABILITY_LABEL_ID,
-                i.GROUP_ID,
-                i.GROUP_NUM,
-                i.INFO
+                a.ABILITY_LABEL as abilityLabel,
+                i.ABILITY_LABEL_ID as abilityLabelId,
+                i.GROUP_ID as groupId,
+                i.GROUP_NUM as groupNum,
+                i.INFO as info
          FROM TB_ABILITY a
    INNER JOIN TB_ABILITY_INFO i
            ON a.ABILITY_ID = i.ABILITY_ID

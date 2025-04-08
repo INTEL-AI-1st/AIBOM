@@ -1,10 +1,12 @@
 import { api } from "@services/common/Api";
 
-
 interface behaResponse {
     info:{
-        state: string;
-        msg: string;
+      abilityLabel: string;
+      abilityLabelId: string;
+      groupId: string;
+      groupNum: string;
+      info: string;
     }[];
 }
   
@@ -25,8 +27,7 @@ export const beha = (formData: FormData) => {
       method: "POST",
       body: formData,
       // Content-Type은 브라우저가 자동으로 multipart/form-data로 설정함
-      keepalive: true,
+      // keepalive: true,
     });
-    window.location.href = "/";
   };
   
