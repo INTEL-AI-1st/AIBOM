@@ -4,6 +4,8 @@ export interface Behavioral {
     groupId: string;
     groupNum: string;
     info: string;
+    score: number;
+    isMeas: boolean;
   }
   
   export interface BehavioralState {

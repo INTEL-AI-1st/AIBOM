@@ -10,6 +10,7 @@ import {
   RESET_PREVIEW,
   BehavioralActionTypes
 } from '../actions/behavioral.actions';
+import { AnyAction } from 'redux';
 
 const initialState: BehavioralState = {
   abilities: [],
@@ -22,7 +23,7 @@ const initialState: BehavioralState = {
 
 export const behavioralReducer = (
   state = initialState,
-  action: BehavioralActionTypes
+  action: BehavioralActionTypes | AnyAction
 ): BehavioralState => {
   switch (action.type) {
     case FETCH_ABILITIES_REQUEST:
@@ -65,7 +66,8 @@ export const behavioralReducer = (
     case RESET_PREVIEW:
       return {
         ...state,
-        previewUrl: null
+        previewUrl: null,
+        selectedAbility: action.payload.preserveAbility ? state.selectedAbility : null,
       };
     default:
       return state;

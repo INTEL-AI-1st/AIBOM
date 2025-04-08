@@ -1,55 +1,64 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
-import { beha, selectAbilites } from '@services/measure/BehavioralService';
+import { useDispatch, useSelector } from 'react-redux';
 import * as BE from '@styles/measure/BehavioralStyles';
 import { useMainContext } from '@context/MainContext';
+import { RootState, AppDispatch } from '@redux/store';
+import {
+  setSelectedAbility,
+  setPreviewUrl,
+  setIsRecording,
+  setRemainingTime,
+  resetPreview
+} from '@redux/actions/behavioral.actions';
+import { fetchAbilities, sendBehavioralData } from '@redux/thunks/behavioral.thunks';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { FaAngleLeft } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
+import { insertBeha } from '@services/measure/BehavioralService';
 
-// 반환 데이터에 맞춘 인터페이스 정의
-interface Behavioral {
-  abilityLabel: string;
+interface Ability {
   abilityLabelId: string;
+  abilityLabel: string;
+  info: string;
   groupId: string;
   groupNum: string;
-  info: string;
+  score: number;
+  isMeas: boolean;
 }
 
 export default function Behavioral() {
   const { selectedChild } = useMainContext();
+  const navigate = useNavigate();
+  // 타입이 지정된 dispatch 사용 (thunk 액션도 지원)
+  const dispatch = useDispatch<AppDispatch>();
+
+  // Redux 상태
+  const {
+    abilities,
+    selectedAbility,
+    previewUrl,
+    isLoading,
+    isRecording,
+  } = useSelector((state: RootState) => state.behavioral);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoPreviewRef = useRef<HTMLVideoElement>(null);
   const recordingTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [isRecording, setIsRecording] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [abilities, setAbilities] = useState<Behavioral[]>([]);
-  const [selectedAbility, setSelectedAbility] = useState<Behavioral | null>(null);
-  const [remainingTime, setRemainingTime] = useState<number>(15);
+
+  // 로컬 상태: 타이머 카운트다운
+  const [localTime, setLocalTime] = useState(15);
 
   const chunksRef = useRef<Blob[]>([]);
 
-  const fetchData = useCallback(async () => {
-    if (isLoading || !selectedChild?.ageMonths) return;
-    
-    setIsLoading(true);
-    try {
-      const data = await selectAbilites(selectedChild.ageMonths);
-      if (data.info && Array.isArray(data.info)) {
-        setAbilities(data.info);
-        setSelectedAbility(data.info[0]);
-      }
-    } catch (error) {
-      console.error('Unexpected error:', error);
-    } finally {
-      setIsLoading(false);
-    }
-    // eslint-disable-next-line
-  }, [selectedChild?.ageMonths]);
-
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    if (selectedChild?.uid && selectedChild?.ageMonths && !isLoading && abilities.length === 0) {
+      dispatch(fetchAbilities(selectedChild.uid, selectedChild.ageMonths));
+    }
+  }, [selectedChild?.uid, selectedChild?.ageMonths, dispatch, isLoading, abilities.length]);
 
   useEffect(() => {
     if (videoPreviewRef.current && stream) {
@@ -58,38 +67,39 @@ export default function Behavioral() {
   }, [stream]);
 
   useEffect(() => {
+    let timer: NodeJS.Timeout;
     if (isRecording) {
-      setRemainingTime(15);
-      
-      recordingTimerRef.current = setInterval(() => {
-        setRemainingTime(prev => {
-          if (prev <= 1) {
+      setLocalTime(15);
+      dispatch(setRemainingTime(15));
+      timer = setInterval(() => {
+        setLocalTime((prevTime) => {
+          const newTime = prevTime - 1;
+          if (newTime <= 0) {
             if (mediaRecorder && mediaRecorder.state !== 'inactive') {
               mediaRecorder.stop();
             }
-            setIsRecording(false);
-            
-            if (recordingTimerRef.current) {
-              clearInterval(recordingTimerRef.current);
-            }
+            dispatch(setIsRecording(false));
+            clearInterval(timer);
+            dispatch(setRemainingTime(0));
             return 0;
           }
-          return prev - 1;
+          dispatch(setRemainingTime(newTime));
+          return newTime;
         });
       }, 1000);
+      recordingTimerRef.current = timer;
     } else {
       if (recordingTimerRef.current) {
         clearInterval(recordingTimerRef.current);
         recordingTimerRef.current = null;
       }
     }
-    
     return () => {
-      if (recordingTimerRef.current) {
-        clearInterval(recordingTimerRef.current);
+      if (timer) {
+        clearInterval(timer);
       }
     };
-  }, [isRecording, mediaRecorder]);
+  }, [isRecording, mediaRecorder, dispatch]);
 
   const cleanupStream = useCallback(() => {
     if (stream) {
@@ -101,50 +111,71 @@ export default function Behavioral() {
   const handleRecord = useCallback(async () => {
     if (!isRecording) {
       try {
+        // Permissions API를 통해 카메라와 마이크 권한 상태 확인
+        if (navigator.permissions) {
+          const cameraPerm = await navigator.permissions.query({ name: 'camera' });
+          const micPerm = await navigator.permissions.query({ name: 'microphone' });
+          if (cameraPerm.state === 'denied' || micPerm.state === 'denied') {
+            alert("카메라 및 마이크 접근 권한이 필요합니다. 브라우저 설정에서 권한을 허용해주세요.");
+            return;
+          }
+        }
+        
+        // 권한이 prompt 상태라면 getUserMedia가 자동으로 권한 요청을 수행함
         const userStream = await navigator.mediaDevices.getUserMedia({
           video: true,
           audio: true,
         });
+        
         setStream(userStream);
         chunksRef.current = [];
-
+  
         const recorder = new MediaRecorder(userStream);
         setMediaRecorder(recorder);
-
+  
         recorder.ondataavailable = (event) => {
           if (event.data && event.data.size > 0) {
             chunksRef.current.push(event.data);
           }
         };
-
+  
         recorder.onstop = () => {
           const blob = new Blob(chunksRef.current, { type: 'video/mp4' });
           const url = URL.createObjectURL(blob);
-          setPreviewUrl(url);
+          dispatch(setPreviewUrl(url));
           cleanupStream();
         };
-
+  
         recorder.start();
-        setIsRecording(true);
+        dispatch(setIsRecording(true));
         
+        // 15초 후 자동 종료
         setTimeout(() => {
           if (recorder.state !== 'inactive') {
             recorder.stop();
-            setIsRecording(false);
+            dispatch(setIsRecording(false));
           }
         }, 15000);
-        
-      } catch (err) {
+  
+      } catch (err: unknown) {
         console.error('녹화 시작 실패:', err);
-        alert(`카메라 접근 권한이 없거나 문제가 발생했습니다. ${err}`);
+        if (err instanceof Error) {
+          if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+            alert("카메라 및 마이크 권한이 필요합니다. 브라우저 설정에서 접근 권한을 확인해주세요.");
+          } else {
+            alert(`녹화를 시작하는 중 문제가 발생했습니다. ${err.message}`);
+          }
+        } else {
+          alert("알 수 없는 오류가 발생했습니다.");
+        }
       }
     } else {
       if (mediaRecorder && mediaRecorder.state !== 'inactive') {
         mediaRecorder.stop();
       }
-      setIsRecording(false);
+      dispatch(setIsRecording(false));
     }
-  }, [isRecording, mediaRecorder, cleanupStream]);
+  }, [isRecording, mediaRecorder, cleanupStream, dispatch]);
 
   const handleUploadClick = useCallback(() => {
     if (fileInputRef.current) {
@@ -157,18 +188,18 @@ export default function Behavioral() {
     if (files && files[0]) {
       const file = files[0];
       const url = URL.createObjectURL(file);
-      setPreviewUrl(url);
+      dispatch(setPreviewUrl(url));
     }
-  }, []);
+  }, [dispatch]);
 
   const handleSend = useCallback(async () => {
     if (!selectedAbility || !selectedChild) {
       alert('아이 정보 또는 측정 능력이 선택되지 않았습니다.');
       return;
     }
-    
+  
     const formData = new FormData();
-
+  
     if (fileInputRef.current?.files?.[0]) {
       formData.append('video', fileInputRef.current.files[0]);
     } else if (previewUrl) {
@@ -185,31 +216,52 @@ export default function Behavioral() {
       alert('영상 파일을 먼저 업로드 또는 녹화 해주세요.');
       return;
     }
-
+  
     formData.append('uid', `${selectedChild.uid}`);
     formData.append('abilityLabelId', `${selectedAbility.abilityLabelId}`);
     formData.append('data_type', `${selectedAbility.groupId}\\${selectedAbility.groupNum}`);
-
-    setIsLoading(true);
+  
     try {
-      const response = await beha(formData);
-      console.log('분석 결과:', response);
-      alert('측정이 완료되었습니다.');
+      toast.info(
+        <>
+          파일 측정이 시작되었습니다.
+          <br />
+          잠시만 기다려주세요.
+        </>
+      );
+      if(!selectedChild?.uid || !selectedAbility?.abilityLabelId) return;
+      await insertBeha(selectedChild?.uid, selectedAbility?.abilityLabelId);
+      await dispatch(sendBehavioralData(formData));
+      // abilities 배열에서 현재 선택된 selectedAbility의 인덱스를 찾아 다음 아이템으로 업데이트
+      const currentIndex = abilities.findIndex(
+        (ability: Ability) => ability.abilityLabelId === selectedAbility.abilityLabelId
+      );
+      if (currentIndex !== -1 && currentIndex < abilities.length - 1) {
+        dispatch(setSelectedAbility(abilities[currentIndex + 1]));
+      }
+
+      dispatch(resetPreview(true));
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+      chunksRef.current = [];
     } catch (error) {
-      console.error('측정 실패:', error);
-      alert('측정(예측) 실행에 실패했습니다.');
-    } finally {
-      setIsLoading(false);
+      console.error('데이터 전송 오류:', error);
     }
-  }, [previewUrl, selectedAbility, selectedChild]);
+  }, [previewUrl, selectedAbility, selectedChild, abilities, dispatch]);  
 
   const handleReRecord = useCallback(() => {
-    setPreviewUrl(null);
+    dispatch(resetPreview(true));
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
     chunksRef.current = [];
-  }, []);
+  }, [dispatch]);
+
+  const handleSelectAbility = useCallback((ability: Ability) => {
+    dispatch(setSelectedAbility(ability));
+    console.log(selectedAbility);
+  }, [dispatch]);
 
   useEffect(() => {
     return () => {
@@ -223,13 +275,18 @@ export default function Behavioral() {
   return (
     <BE.Container>
       <BE.SubContainer>
-        <BE.Title>K-DST 기반 행동발달 분석</BE.Title>
+        <BE.Title>
+          <BE.BackIconWrapper onClick={() => navigate(-1)}>
+            <FaAngleLeft size={40} />
+          </BE.BackIconWrapper>
+          K-DST 기반 행동발달 분석
+        </BE.Title>
         <BE.Nav>
           <BE.NavList>
-            {abilities.map((ability) => (
+            {abilities.map((ability: Ability) => (
               <BE.NavItem
                 key={ability.abilityLabelId}
-                onClick={() => setSelectedAbility(ability)}
+                onClick={() => handleSelectAbility(ability)}
               >
                 {ability.abilityLabel}
               </BE.NavItem>
@@ -252,7 +309,7 @@ export default function Behavioral() {
           {!previewUrl ? (
             <BE.BtnWrapper>
               <BE.Btn onClick={handleRecord} disabled={isLoading}>
-                {isRecording ? `정지 (${remainingTime}초)` : '녹화'}
+                {isRecording ? `정지 (${localTime}초)` : '녹화'}
               </BE.Btn>
               <BE.Btn onClick={handleUploadClick} disabled={isLoading || isRecording}>
                 파일업로드
@@ -269,8 +326,8 @@ export default function Behavioral() {
               <BE.Btn onClick={handleReRecord} disabled={isLoading}>
                 재녹화
               </BE.Btn>
-              <BE.Btn onClick={handleSend} disabled={isLoading}>
-                {isLoading ? '처리 중...' : '파일 전송'}
+              <BE.Btn onClick={handleSend} disabled={selectedAbility?.isMeas}>
+                {selectedAbility?.isMeas ? '처리 중...' : '파일 전송'}
               </BE.Btn>
             </BE.BtnWrapper>
           )}
@@ -300,6 +357,8 @@ export default function Behavioral() {
           촬영 동작 : {selectedAbility?.info}
         </BE.RecordIndicator>
       </BE.SubContainer>
+
+       <BE.ToastCon />
     </BE.Container>
   );
 }

@@ -11,7 +11,7 @@ interface msgStatus {
   msg: string;
 }
 
-export const selectAbility = async (month: string): Promise<obser | null> => {
+export const selectAbility = async (uid: string, month: string): Promise<obser | null> => {
     const conn = await pool.getConnection();
     const rows = await conn.query(
       `SELECT 
@@ -19,56 +19,46 @@ export const selectAbility = async (month: string): Promise<obser | null> => {
                 i.ABILITY_LABEL_ID as abilityLabelId,
                 i.GROUP_ID as groupId,
                 i.GROUP_NUM as groupNum,
-                i.INFO as info
+                i.INFO as info,
+                c.score,
+                c.isMeas
          FROM TB_ABILITY a
    INNER JOIN TB_ABILITY_INFO i
            ON a.ABILITY_ID = i.ABILITY_ID
           AND a.ABILITY_LABEL_ID = i.ABILITY_LABEL_ID
+    LEFT JOIN TB_CHILD_ABILITY c
+    	   ON a.ABILITY_LABEL_ID = c.ABILITY_LABEL_ID
+    	  AND a.ABILITY_LABEL_ID = i.ABILITY_LABEL_ID
+    	  AND c.UID = ?
+    	  AND c.RECORD_MONTH = CONCAT(YEAR(CURDATE()), '-', LPAD(MONTH(CURDATE()), 2, '0'))
         WHERE i.GROUP_ID = CASE 
                            WHEN ? <= 35 THEN 'A' 
                            WHEN ? >= 54 THEN 'C' 
                            ELSE 'B' 
                            END`, 
-      [month, month]
+      [uid, month, month]
   );
     conn.release();
     return rows.length ? rows : null;
 };
 
-export const upsertChildObservation = async (uid: string, abilityLabelId: string, questId: string, score: number): Promise<void> => {
+export const insertBehavioral = async (uid: string, abilityLabelId: string): Promise<void> => {
     const conn = await pool.getConnection();
     try {
       await conn.query(
         `
-        INSERT INTO TB_OBSERVATION (
+        INSERT INTO TB_CHILD_ABILITY (
             uid,
+            ability_id,
             ability_label_id,
-            quest_id,
-            score,
-            state
+            isMeas
         ) VALUES (
-            ?, ?, ?, ?, 1
+            ?, 'A001', ?, true
         )
-        ON DUPLICATE KEY UPDATE
-        score = VALUES(score)
         `,
-        [uid, abilityLabelId, questId, score]
+        [uid, abilityLabelId]
       );
     } finally {
       conn.release();
     }
-};
-      
-export const PR_Observation = async (uid: string): Promise<msgStatus> => {
-  const conn = await pool.getConnection();
-  try {
-    const rows = await conn.query(
-      `CALL InsertChildAbilityObservation(?, 'A002')`,
-      [uid]
-    );
-
-    return rows[0];
-  } finally {
-    conn.release();
-  }
 };

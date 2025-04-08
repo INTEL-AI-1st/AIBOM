@@ -40,6 +40,7 @@ interface PerformanceRadarChartProps {
   data: ChartData[];
   avgData: ChartData[];
   color: string;
+  domain: [number, number];
 }
 
 interface AbilityGraphResponseItem {
@@ -99,7 +100,7 @@ const CustomAngleAxis = memo(({
 });
 
 // ===== PerformanceRadarChart Component =====
-const PerformanceRadarChart = memo(function PerformanceRadarChart({ data, avgData, color }: PerformanceRadarChartProps) {
+const PerformanceRadarChart = memo(function PerformanceRadarChart({ data, avgData, color, domain }: PerformanceRadarChartProps) {
   const [hovered, setHovered] = useState<'child' | 'avg' | null>(null);
   const outerRadius = 80;
   const polarRadius = [0, 20, 40, 60, outerRadius];
@@ -147,7 +148,7 @@ const PerformanceRadarChart = memo(function PerformanceRadarChart({ data, avgDat
               })
             }
           />
-          <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} />
+          <PolarRadiusAxis domain={domain} tick={false} axisLine={false} />
           <Radar
             name="Average"
             dataKey="average"
@@ -182,22 +183,32 @@ const PerformanceCard = memo(function PerformanceCard({ data }: { data: Performa
   }, [data.id, data.status]);
 
   const footerLink = useMemo(() => {
-    if (data.id === 'A003' || data.status === '1') return null;
+    if (data.id === 'A003') return null;
     return data.id === 'A002' ? '/obser' : data.id === 'A001' ? '/pose' : '#';
   }, [data.id, data.status]);
 
-  const handleA002Click = async () => {
-    if (data.id === 'A002') {
+  const handleClick = async (id: string) => {
+    if (id === 'A001') {
+      const age = Number(selectedChild?.ageMonths);
+      if (!selectedChild || isNaN(age) || age <= 20 ) {
+        await showAlert({
+          message: '해당 측정은 20개월 이상의 데이터로 만들어졌습니다. <br/>측정은 가능하지만 정확성은 불확실합니다.'
+        });
+      }
+    }
+    
+    if (id === 'A002') {
       const age = Number(selectedChild?.ageYears);
       if (!selectedChild || isNaN(age) || age < 3 || age > 5) {
-        console.log(selectedChild);
         await showAlert({
           message: '해당 설문은 3~5세 전용 데이터입니다. <br/>측정은 가능하지만 정확성은 불확실합니다.'
         });
       }
     }
   };
-  
+
+  const domain: [number, number] = data.id === 'A001' ? [0, 2] : [0, 100];
+
   return (
     <ColorSection backgroundColor={data.color}>
       <Headers>
@@ -220,7 +231,7 @@ const PerformanceCard = memo(function PerformanceCard({ data }: { data: Performa
                 <AiFillLock size={50} color="#ddd" />
               </LockWrapper>
             )}
-            <PerformanceRadarChart data={data.data} avgData={data.avgData} color="#ff5555" />
+            <PerformanceRadarChart data={data.data} avgData={data.avgData} color="#ff5555" domain={domain}/>
           </ShapeContainer>
         </PerformanceBox>
       </Bodys>
@@ -228,7 +239,7 @@ const PerformanceCard = memo(function PerformanceCard({ data }: { data: Performa
         {footerLink && 
           <LinkP 
             to={footerLink}
-            onClick={data.id === 'A002' ? handleA002Click : undefined}
+            onClick={() => handleClick(data.id)}
           >
             측정하러 가기 →</LinkP>}
       </Footer>

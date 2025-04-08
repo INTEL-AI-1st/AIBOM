@@ -12,10 +12,23 @@ export const Container = styled.div`
 export const SubContainer = styled.div``;
 
 export const Title = styled.h1`
+  position: relative;
   text-align: center;
   margin-block: 40px;
   font-size: 2rem;
   letter-spacing: 0.5px;
+
+  @media (max-width: 768px) {
+    font-size: 1.8rem;
+  }
+`;
+
+export const BackIconWrapper = styled.div`
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-45%);
+  cursor: pointer;
 `;
 
 export const Nav = styled.nav`

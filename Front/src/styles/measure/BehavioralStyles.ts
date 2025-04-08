@@ -1,3 +1,4 @@
+import { ToastContainer } from 'react-toastify';
 import styled from 'styled-components';
 
 export const Container = styled.div`
@@ -10,6 +11,7 @@ export const SubContainer = styled.div`
 `;
 
 export const Title = styled.h1`
+  position: relative;
   text-align: center;
   margin-block: 40px;
   font-size: 2rem;
@@ -18,6 +20,14 @@ export const Title = styled.h1`
   @media (max-width: 768px) {
     font-size: 1.8rem;
   }
+`;
+
+export const BackIconWrapper = styled.div`
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-45%);
+  cursor: pointer;
 `;
 
 export const Nav = styled.nav`
@@ -164,6 +174,21 @@ export const VideoContainer = styled.div`
   }
 `;
 
+export const PermissionBox = styled.div`
+  margin: 15px 0;
+  padding: 15px;
+  border-radius: 8px;
+  background-color: #fff3f3;
+  border: 1px solid #ffcccc;
+  text-align: center;
+  
+  p {
+    margin-bottom: 10px;
+    color: #cc0000;
+    font-weight: bold;
+  }
+`;
+
 export const RecordIndicator = styled.div`
   display: flex;
   font-size: 1.2rem;
@@ -172,7 +197,7 @@ export const RecordIndicator = styled.div`
   gap: 8px;
   color: #dc3545;
   font-weight: 600;
-  margin-bottom: 24px;
+  padding-bottom: 12px;
   animation: pulse 1.5s infinite;
 /*   
   &::before {
@@ -193,5 +218,22 @@ export const RecordIndicator = styled.div`
     100% {
       opacity: 1;
     }
+  }
+`;
+
+export const ToastCon = styled(ToastContainer)`
+
+  .Toastify__toast-body {
+    display: flex;
+    align-items: center;
+    color: #333;
+  }
+
+  .Toastify__toast-icon svg {
+    fill: #ffb9b9 !important;
+  }
+
+  .Toastify__progress-bar {
+    background: #ffb9b9 !important;
   }
 `;

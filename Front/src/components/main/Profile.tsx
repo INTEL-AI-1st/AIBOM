@@ -64,9 +64,6 @@ export default function Profile() {
     const navigate = useNavigate();
     
     useEffect(() => {
-      console.log(loading);
-      console.log(childInfo.length);
-
         if(!loading && childInfo.length == 0){
           navigate('/community');
         }

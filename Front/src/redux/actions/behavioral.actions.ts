@@ -43,8 +43,9 @@ export const setRemainingTime = (time: number) => ({
   payload: time
 });
 
-export const resetPreview = () => ({
-  type: RESET_PREVIEW as typeof RESET_PREVIEW
+export const resetPreview = (preserveAbility: boolean = false) => ({
+  type: RESET_PREVIEW as typeof RESET_PREVIEW,
+  payload: { preserveAbility }
 });
 
 export type BehavioralActionTypes = 

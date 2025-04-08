@@ -7,6 +7,7 @@ import { useMainContext } from '@context/MainContext';
 import { saveObservation, selectObservation, upsertObservation } from '@services/measure/ObservationService';
 import { usePopup } from '@hooks/UsePopup';
 import { useNavigate } from "react-router-dom";
+import { FaAngleLeft } from 'react-icons/fa';
 
 interface Observation {
   play?: string[];
@@ -149,7 +150,12 @@ export default function Observation() {
   return (
     <OS.Container>
       <OS.SubContainer>
-        <OS.Title>KICCE 유아관찰척도 설문</OS.Title>
+        <OS.Title>
+          <OS.BackIconWrapper onClick={() => navigate(-1)}>
+            <FaAngleLeft size={40} />
+          </OS.BackIconWrapper>
+            KICCE 유아관찰척도 설문
+        </OS.Title>
         <OS.Nav>
           <OS.NavList>
             {domainList.map((domain) => (

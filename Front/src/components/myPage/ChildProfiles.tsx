@@ -55,7 +55,7 @@ export default function ChildProfiles() {
               onClick={handleAddChild} 
               disabled={childForm.some(child => child.state === "C")}
             >
-              아이 추가
+              아이 등록
             </Button>
           )}
           <Sorting onClick={handleSortClick} showSortOptions={showSortOptions}>

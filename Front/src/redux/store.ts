@@ -1,15 +1,12 @@
-import { createStore, combineReducers, applyMiddleware } from 'redux';
-import thunk from 'redux-thunk';
+import { configureStore } from '@reduxjs/toolkit';
 import { behavioralReducer } from './reducers/behavioral.reducer';
 
-const rootReducer = combineReducers({
-  behavioral: behavioralReducer
-  // Add other reducers here
+export const store = configureStore({
+  reducer: {
+    behavioral: behavioralReducer,
+  },
 });
+export type RootState = ReturnType<typeof store.getState>;
+export type AppDispatch = typeof store.dispatch;
 
-export type RootState = ReturnType<typeof rootReducer>;
-
-export const store = createStore(
-  rootReducer,
-  applyMiddleware(thunk)
-);
+export default store;
