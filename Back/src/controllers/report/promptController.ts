@@ -81,8 +81,6 @@ export const getPrompt = async (req: Request, res: Response): Promise<void> => {
       responses.push({ type: "KICCE", text: kicceResponse.output_text });
     }
 
-    // a001과 a002 모두 없는 경우: 기존 combined prompt 사용
-    if (responses.length === 0) {
       const combinedPrompt = getCombinedPrompt(kicceReport, kdstReport);
       console.log("최종 Combined 프롬프트:", combinedPrompt);
 
@@ -98,7 +96,6 @@ export const getPrompt = async (req: Request, res: Response): Promise<void> => {
         temperature: 0.7,
       });
       responses.push({ type: "Combined", text: combinedResponse.output_text });
-    }
 
     res.json({ responses });
   } catch (error) {

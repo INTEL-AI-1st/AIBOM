@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
@@ -9,22 +9,42 @@ import A002 from '@components/report/A002';
 import Recommendation from '@components/report/Recommendation';
 import Support from '@components/report/Support';
 import * as RE from '@styles/report/ReportStyles';
+import { useA001Data, useProfileData, useGptSummary, useA002Data } from '@hooks/report/UseReport';
 
-// 메인 컴포넌트
-export default function DevelopmentReport() {
+export default function Report() {
   const navigate = useNavigate();
   const pdfRef = useRef<HTMLDivElement>(null);
   const [activeSection, setActiveSection] = useState('전체');
 
-  // PDF 저장 핸들러
+
+  // 여기서 한 번씩만 호출
+  const { data: profileData, loading: profileLoading, error: profileError } = useProfileData();
+  const { data: a001Data, loading: a001Loading, error: a001Error } = useA001Data();
+  const { data: a002Data, loading: a002Loading, error: a002Error } = useA002Data();
+
+  // GPT 요약 훅: 이미 받아온 profileData, a001Data, a002Data를 인자로 전달
+  const { summary, a001Summary, loading: gptLoading, error: gptError } =
+    useGptSummary(profileData, a001Data, a002Data);
+
+  // 로딩/에러 처리
+  if (profileLoading || a001Loading || a002Loading || gptLoading) {
+    return <div>데이터 로딩 중입니다...</div>;
+  }
+
+  if (profileError || a001Error || a002Error || gptError) {
+    return <div>오류가 발생했습니다...</div>;
+  }
+
+  if (!profileData || !a001Data) {
+    return <div>데이터가 없습니다...</div>;
+  }
+
   const handleDownloadPdf = async () => {
     if (!pdfRef.current) return;
 
-    // 전체 섹션이 보이도록 임시 상태 변경
     const currentSection = activeSection;
     setActiveSection('전체');
-    
-    // 약간의 지연 후 캡처 (DOM 업데이트 기다림)
+
     setTimeout(async () => {
       const canvas = await html2canvas(pdfRef.current!, { 
         scale: 2,
@@ -35,18 +55,13 @@ export default function DevelopmentReport() {
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF('p', 'pt', 'a4');
       const pdfWidth = pdf.internal.pageSize.getWidth();
-      const imgWidth = pdfWidth - 40; // 여백 주기
+      const imgWidth = pdfWidth - 40;
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      
-      // 이미지가 너무 길 경우 여러 페이지로 나누기
       let heightLeft = imgHeight;
-      let position = 20; // 상단 여백
-      
-      // 첫 페이지 추가
+      let position = 20;
       pdf.addImage(imgData, 'PNG', 20, position, imgWidth, imgHeight);
-      heightLeft -= pdf.internal.pageSize.getHeight() - 40; // 여백 고려
+      heightLeft -= pdf.internal.pageSize.getHeight() - 40;
       
-      // 추가 페이지가 필요한 경우
       while (heightLeft >= 0) {
         position = 20 - pdf.internal.pageSize.getHeight();
         pdf.addPage();
@@ -55,25 +70,15 @@ export default function DevelopmentReport() {
       }
       
       pdf.save('우리아이_통합발달_분석리포트.pdf');
-      
-      // 원래 섹션으로 복원
       setActiveSection(currentSection);
     }, 300);
   };
-
-  // 섹션 표시 여부 체크 함수
-  // const isSectionVisible = useCallback((sectionId: string) => {
-  //   return activeSection === '전체' || activeSection === sectionId;
-  // }, [activeSection]);
 
   return (
     <RE.Container>
       <RE.HeaderRow>
         <RE.Title>
-          <FaAngleLeft
-            size={24}
-            onClick={() => navigate(-1)}
-          />
+          <FaAngleLeft size={24} onClick={() => navigate(-1)} />
           통합발달 분석 리포트
         </RE.Title>
         <RE.SaveButton onClick={handleDownloadPdf}>리포트 저장</RE.SaveButton>
@@ -84,15 +89,19 @@ export default function DevelopmentReport() {
           <RE.MainTitle>우리아이 통합발달 분석 리포트</RE.MainTitle>
           
           <RE.Section>
-            <Profile />
+            <Profile 
+              data={profileData} 
+              summary={summary}
+            />
           </RE.Section>
           
-          {/* <Section visible={isSectionVisible('kdst')}> */}
           <RE.Section>
-            <A001 />
+            <A001 
+              data={a001Data} 
+              a001Summary={a001Summary} 
+            />
           </RE.Section>
           
-          {/* <Section visible={isSectionVisible('kicce')}> */}
           <RE.Section>
             <A002 />
           </RE.Section>

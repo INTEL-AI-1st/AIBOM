@@ -273,50 +273,50 @@ export function useChildData() {
  * @param prompt GPT API에 전달할 프롬프트 텍스트 (사용자가 자유롭게 수정 가능)
  * @returns {Object} { summary, loading, error, refetch } - 생성된 요약, 로딩 상태, 에러, 재호출 함수
  */
-export function useGptSummary(prompt: string | null) {
-  // 이미 정의된 useProfileData와 useA001Data 훅을 통해 필요한 데이터를 가져옵니다.
-  const { data: profile } = useProfileData();
-  const { data: a001 } = useA001Data();
-  const { data: a002 } = useA002Data();
-
+export function useGptSummary(
+  profile?: RT.ChildProfile,
+  a001?: RT.A001Item,
+  a002?: RT.A002Data
+) {
   const [summary, setSummary] = useState("");
+  const [a001Summary, setA001Summary] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  // 프롬프트와 함께 profile, a001 데이터를 payload로 포함하여 전송합니다.
   const fetchGptSummary = useCallback(async () => {
-    if (!prompt) return;
+    // profile, a001, a002가 모두 준비되어 있어야 GPT 요청을 할 수 있음
+    // if (!profile || !a001 || !a002) return;
 
     setLoading(true);
     setError(null);
 
     try {
-      // context 객체에 profile과 a001 데이터를 포함합니다.
+      // payload: 이미 상위 컴포넌트에서 fetch해온 데이터를 컨텍스트로 전달
       const payload = {
-        context: {
-          profile,
-          a001,
-          a002,
-        },
+        context: { profile, a001, a002 },
       };
 
-      // RS.getPrompt 함수가 payload 객체를 받도록 수정했다고 가정합니다.
+      // 실제 GPT 요청
       const response = await RS.getPrompt(payload);
-      console.log(`response === ${response.text}`);
-      setSummary(response.text);
+
+      // 응답 예시: { responses: [{ type: "K-DST", text: "..."}, { type: "Combined", text: "..."}], ... }
+      const kdstResponse = response.responses?.find((r: any) => r.type === "K-DST");
+      const combinedResponse = response.responses?.find((r: any) => r.type === "Combined");
+      
+      setSummary(combinedResponse?.text ?? "");
+      setA001Summary(kdstResponse?.text ?? "");
     } catch (err) {
       console.error("GPT 요약 호출 오류:", err);
       setError(err instanceof Error ? err : new Error(String(err)));
     } finally {
       setLoading(false);
     }
-  }, [prompt, profile, a001, a002]);
+  }, [profile, a001, a002]);
 
   useEffect(() => {
-    if (prompt) {
-      fetchGptSummary();
-    }
-  }, [prompt, fetchGptSummary]);
+    // 데이터가 모두 준비되면 GPT 요약 요청 실행
+    fetchGptSummary();
+  }, [profile, a001, a002, fetchGptSummary]);
 
-  return { summary, loading, error, refetch: fetchGptSummary };
+  return { summary, a001Summary, loading, error, refetch: fetchGptSummary };
 }

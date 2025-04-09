@@ -1,7 +1,11 @@
 import { FaRunning } from 'react-icons/fa';
 import * as RE from '@styles/report/ReportStyles';
-import { useA001Data } from '@hooks/report/UseReport';
 import * as RT from 'src/types/ReportTypes';
+
+interface A001Props {
+  data: RT.A001Item | RT.A001Item[] | undefined;
+  a001Summary: string | undefined;
+}
 
 const performanceMap: Record<number, RT.PerformanceLevel> = {
   0: "잘 못함",
@@ -9,30 +13,14 @@ const performanceMap: Record<number, RT.PerformanceLevel> = {
   2: "완벽함",
 };
 
-interface UseA001Result {
-  data: RT.A001Item | undefined;
-  loading: boolean;
-  error: Error | null;
-  refetch: () => Promise<void>;
-}
-
-export default function A001() {
-  const { data: a001Data, loading, error }: UseA001Result = useA001Data();
-
-  if (error) {
-    throw error;
-  }
-  if (loading) {
-    return <div>데이터를 로딩 중입니다...</div>;
-  }
-  if (!a001Data) {
+export default function A001({ data, a001Summary }: A001Props) {
+  if (!data) {
     return <div>K-DST 데이터가 없습니다.</div>;
   }
-
-  // 아이 데이터가 배열이 아닐 경우를 대비해 배열로 변환
-  const a001DataArray = Array.isArray(a001Data) ? a001Data : [a001Data];
-
-  // 각 Task에 대한 분석 포인트 매핑
+  
+  // data가 배열이 아닐 경우 배열로 변환합니다.
+  const a001DataArray = Array.isArray(data) ? data : [data];
+  
   const taskDataWithPoints: RT.A001Data[] = a001DataArray.map((item: RT.A001Item, index: number) => {
     const pointsData: string[][] = [
       [
@@ -57,7 +45,6 @@ export default function A001() {
       ]
     ];
 
-    // 점수를 기반으로 수행 수준 판단
     const score = parseFloat(item.score);
     const performance: RT.PerformanceLevel = performanceMap[score] || "보통";
 
@@ -69,7 +56,7 @@ export default function A001() {
       points: pointsData[index]
     };
   });
-
+  
   return (
     <RE.SectionContainer>
       <RE.SectionTitle>
@@ -81,7 +68,9 @@ export default function A001() {
         {taskDataWithPoints.map((item: RT.A001Data) => (
           <RE.TaskCard key={item.id} performance={item.performance}>
             <RE.TaskTitle>
-              <RE.TaskTitleItem>Task {item.id} <span>{item.performance}</span></RE.TaskTitleItem>
+              <RE.TaskTitleItem>
+                Task {item.id} <span>{item.performance}</span>
+              </RE.TaskTitleItem>
               <RE.TaskTitleItem>{item.task}</RE.TaskTitleItem>
             </RE.TaskTitle>
             <RE.TaskDescription>
@@ -95,7 +84,13 @@ export default function A001() {
       
       <RE.SummaryBox>
         <strong>K-DST 분석 요약: </strong>
-        아동은 공을 던지는 동작과 한 발로 서기에서 좋은 수행능력을 보였습니다. 특히 한 발로 서기에서 균형 감각이 뛰어난 것으로 나타났습니다. 반면 계단 오르기와 내려가기는 아직 발달 중인 단계로, 신체 균형감과 자신감을 기르는 활동이 도움이 될 것입니다. 전반적으로 대근육 운동 발달이 연령에 맞게 진행되고 있으며, 상체와 하체의 협응력이 점차 발달하는 과정에 있습니다.
+        아동은 공을 던지는 동작과 한 발로 서기에서 좋은 수행능력을 보였습니다.
+        반면, 계단 오르기와 내려가기는 아직 발달 중으로 신체 균형과 자신감을 기르는 활동이 필요합니다.
+      </RE.SummaryBox>
+
+      <RE.SummaryBox style={{ marginTop: "20px", backgroundColor: "#f7f7f7", padding: "15px" }}>
+        <strong>GPT 요약 결과:</strong>
+         <p>{a001Summary}</p>
       </RE.SummaryBox>
     </RE.SectionContainer>
   );
