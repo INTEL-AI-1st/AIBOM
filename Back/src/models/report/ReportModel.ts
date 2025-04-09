@@ -102,11 +102,12 @@ export const selectA001Data = async (uid: string, month: string): Promise<A001Da
             ON c.ABILITY_ID = i.ABILITY_ID
            AND c.ABILITY_LABEL_ID = i.ABILITY_LABEL_ID
          WHERE c.uid = ?
+           AND c.ABILITY_ID = 'A001'
            AND i.GROUP_ID = CASE 
                             WHEN ? <= 35 THEN 'A' 
                             WHEN ? >= 54 THEN 'C' 
                             ELSE 'B' END
-     ORDER BY i.GROUP_NUM
+     ORDER BY c.ABILITY_LABEL_ID
         `, 
       [uid, month, month]
   );
@@ -117,14 +118,27 @@ export const selectA001Data = async (uid: string, month: string): Promise<A001Da
 export const selectA002Data = async (uid: string, age: string): Promise<A002Data | null> => {
     const conn = await pool.getConnection();
     const rows = await conn.query(
-      `SELECT 
-            ability_label_id as abilityLabelId,
-            quest_id as questId,
-            score
-        FROM TB_OBSERVATION
-       WHERE UID = ?
-         AND STATE = 1`, 
-      [uid]
+        `
+        SELECT 
+        	   ta.ABILITY_LABEL AS domain,
+               c.score,
+               a.score AS avg
+          FROM TB_ABILITY ta 
+    INNER JOIN TB_CHILD_ABILITY c
+            ON c.ABILITY_ID = ta.ABILITY_ID 
+           AND c.ABILITY_LABEL_ID = ta.ABILITY_LABEL_ID 
+    INNER JOIN TB_AVG_ABILITY a
+            ON c.ABILITY_ID = a.ABILITY_ID 
+           AND c.ABILITY_LABEL_ID = a.ABILITY_LABEL_ID 
+         WHERE c.uid = ?
+           AND c.ABILITY_ID = 'A002'
+           AND age = CASE 
+                     WHEN ? <= 3 THEN '3' 
+                     WHEN ? >= 5 THEN '5' 
+                      ELSE '4' END
+      ORDER BY c.ABILITY_LABEL_ID
+        `, 
+        [uid, age, age]   
   );
     conn.release();
     return rows.length ? rows : null;

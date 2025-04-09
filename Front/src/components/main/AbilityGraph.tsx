@@ -40,7 +40,7 @@ interface PerformanceRadarChartProps {
   data: ChartData[];
   avgData: ChartData[];
   color: string;
-  domain: [number, number];
+  id: string;
 }
 
 interface AbilityGraphResponseItem {
@@ -100,10 +100,9 @@ const CustomAngleAxis = memo(({
 });
 
 // ===== PerformanceRadarChart Component =====
-const PerformanceRadarChart = memo(function PerformanceRadarChart({ data, avgData, color, domain }: PerformanceRadarChartProps) {
+const PerformanceRadarChart = memo(function PerformanceRadarChart({ data, avgData, color, id }: PerformanceRadarChartProps) {
   const [hovered, setHovered] = useState<'child' | 'avg' | null>(null);
   const outerRadius = 80;
-  const polarRadius = [0, 20, 40, 60, outerRadius];
 
   const combinedData = useMemo(() => 
     data.map((item, index) => ({
@@ -134,7 +133,7 @@ const PerformanceRadarChart = memo(function PerformanceRadarChart({ data, avgDat
           data={combinedData}
           margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
         >
-          <PolarGrid gridType="polygon" radialLines={false} polarRadius={polarRadius} />
+          <PolarGrid gridType="polygon" radialLines={false} polarRadius={id === 'A001' ? [0, 1] : [0, 20, 40, 60, 80]} />
           <PolarAngleAxis
             dataKey="name"
             axisLine={{ stroke: 'black', strokeWidth: 0.5 }}
@@ -148,7 +147,7 @@ const PerformanceRadarChart = memo(function PerformanceRadarChart({ data, avgDat
               })
             }
           />
-          <PolarRadiusAxis domain={domain} tick={false} axisLine={false} />
+          <PolarRadiusAxis domain={id === 'A001' ? [0, 2] : [0, 100]} tick={false} axisLine={false} />
           <Radar
             name="Average"
             dataKey="average"
@@ -207,8 +206,6 @@ const PerformanceCard = memo(function PerformanceCard({ data }: { data: Performa
     }
   };
 
-  const domain: [number, number] = data.id === 'A001' ? [0, 2] : [0, 100];
-
   return (
     <ColorSection backgroundColor={data.color}>
       <Headers>
@@ -231,7 +228,7 @@ const PerformanceCard = memo(function PerformanceCard({ data }: { data: Performa
                 <AiFillLock size={50} color="#ddd" />
               </LockWrapper>
             )}
-            <PerformanceRadarChart data={data.data} avgData={data.avgData} color="#ff5555" domain={domain}/>
+            <PerformanceRadarChart data={data.data} avgData={data.avgData} color="#ff5555" id={data.id}/>
           </ShapeContainer>
         </PerformanceBox>
       </Bodys>

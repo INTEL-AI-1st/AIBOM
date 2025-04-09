@@ -8,13 +8,14 @@
    * @returns 프롬프트 문자열
    */
   export function getKdstPrompt(
+    name: string,
     age: number,
     gender: string,
     groupName: string,
     sectionText: string
   ): string {
     const additionalInfo = `
-  아이는 생후 ${age}개월 ${gender}이며, K-DST 평가 기준에 따라 ${groupName}에 해당합니다.
+  아이의 이름은 ${name}으로 생후 ${age}개월 ${gender}이며, K-DST 평가 기준에 따라 ${groupName}에 해당합니다.
   아래는 ${groupName}의 행동 평가 항목별 결과입니다. 각 항목의 점수는 2점 만점이며,
   0은 bad, 1은 good, 2는 perfect로 판정되었습니다.
   
@@ -34,23 +35,26 @@
   1. ${groupName} 각 항목별 평가 분석
   2. K-DST 분석 요약
   3. 아이의 나이와 성별을 고려한 맞춤형 조언 제공
-  4. 아래 리턴 형식은 무조건 지킬 것
+  4. details은 3개를 고정으로 리턴
   
   출력 형식은 명확하고, 이해하기 쉬운 문장으로 구성해 주세요.
 
+  JSON 타입으로 아래 리턴형식을 반드시 지키도록 하세요.
   리턴은 아래의 형식과 같이 해주세요.
   리턴 예시)
-  항목 1:
-  계단 오르기 동작에 대한 균형감 발달 진행 중
-  난간을 잡는 행동으로 안전을 확보하려는 모습 보임
-  단계별 운동 발달에 따른 계단 이용 능력 향상 중 
-  항목 2:
-  계단 오르기 동작에 대한 균형감 발달 진행 중
-  난간을 잡는 행동으로 안전을 확보하려는 모습 보임
-  단계별 운동 발달에 따른 계단 이용 능력 향상 중
-  ...
-  K-DST 분석 요약:
-  내용
+    {
+    "evaluationItems": [
+      {
+        "item": "항목 1",
+        "details": "계단 오르기 동작에 대한 균형감 발달 진행 중\n난간을 잡는 행동으로 안전을 확보하려는 모습 보임\n단계별 운동 발달에 따른 계단 이용 능력 향상 중"
+      },
+      {
+        "item": "항목 2",
+        "details": "계단 오르기 동작에 대한 균형감 발달 진행 중\n난간을 잡는 행동으로 안전을 확보하려는 모습 보임\n단계별 운동 발달에 따른 계단 이용 능력 향상 중"
+      }
+    ],
+    "kdDSTSummary": "K-DST 분석 요약: 내용"
+  }
     `.trim();
   }
 
@@ -68,21 +72,26 @@
  * @returns 프롬프트 문자열
  */
 export function getKiccePrompt(
+    name: string,
     age: number,
     gender: string,
-    scores: { [domain: string]: number }
+    sectionText: string
   ): string {
     return `
   너는 유아 행동 발달 분석 전문가이자 교육 컨설턴트이다.
-  아이는 ${age}세 ${gender}이며, KICCE 기준으로 다음 점수를 받았습니다 (100점 만점):
+  아이의 이름은 ${name}으로 생후 ${age}개월 ${gender}이며, KICCE 기준으로 다음 점수를 받았습니다 (100점 만점):
   
-  - 신체운동·건강: ${scores["신체운동·건강"].toFixed(1)}
-  - 의사소통:     ${scores["의사소통"].toFixed(1)}
-  - 사회관계:     ${scores["사회관계"].toFixed(1)}
-  - 예술경험:     ${scores["예술경험"].toFixed(1)}
-  - 자연탐구:     ${scores["자연탐구"].toFixed(1)}
+  ${sectionText}
   
   각 영역별 점수, 평가 내용, 그리고 가정 연계 활동 팁을 포함한 발달 리포트를 작성해 주세요.
+  JSON 타입으로 아래 리턴형식을 반드시 지키도록 하세요.
+
+  리턴 예시)
+  {
+    domain: '신체운동',
+    description: 'OO이는 또래 수준에 맞는 신체 운동 능력을 잘 갖추고 있으며, 대근육과 소근육을 활용한 활동에 안정감 있게 참여합니다. 특히 몸을 움직이며 즐기는 활동에서 긍정적인 태도를 보이며, 기본적인 신체 조절력과 협응력도 적절하게 발달하고 있습니다.',
+    tip: '균형 잡힌 놀이 활동(예: 공 던지고 받기, 밸런스 게임)을 통해 더욱 다양한 움직임을 경험해보세요.'
+  }
     `.trim();
   }
   

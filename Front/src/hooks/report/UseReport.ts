@@ -12,14 +12,14 @@ interface ApiResponse<T> {
 type DataCache = {
   profileData: Map<string, RT.ChildProfile>;
   a001Data: Map<string, RT.A001Item>;
-  a002Data: Map<string, RT.A002Data>;
+  a002Data: Map<string, RT.A002Item>;
 };
 
 // 전역 캐시 객체
 const dataCache: DataCache = {
   profileData: new Map<string, RT.ChildProfile>(),
   a001Data: new Map<string, RT.A001Item>(),
-  a002Data: new Map<string, RT.A002Data>(),
+  a002Data: new Map<string, RT.A002Item>(),
 };
 
 // 메모리 관리를 위한 구독자 카운트 추적 훅
@@ -232,11 +232,11 @@ export function useA001Data() {
 export function useA002Data() {
   const { selectedChild } = useMainContext();
   
-  return useFetchDataWithTwoParams<RT.A002Data>(
+  return useFetchDataWithTwoParams<RT.A002Item>(
     RS.selectA002, 
     dataCache.a002Data,
     selectedChild?.uid,
-    selectedChild?.ageYears // age 파라미터 사용
+    selectedChild?.ageYears
   );
 }
 
@@ -276,10 +276,11 @@ export function useChildData() {
 export function useGptSummary(
   profile?: RT.ChildProfile,
   a001?: RT.A001Item,
-  a002?: RT.A002Data
+  a002?: RT.A002Item
 ) {
   const [summary, setSummary] = useState("");
   const [a001Summary, setA001Summary] = useState("");
+  const [a002Summary, setA002Summary] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
@@ -300,11 +301,13 @@ export function useGptSummary(
       const response = await RS.getPrompt(payload);
 
       // 응답 예시: { responses: [{ type: "K-DST", text: "..."}, { type: "Combined", text: "..."}], ... }
-      const kdstResponse = response.responses?.find((r: any) => r.type === "K-DST");
-      const combinedResponse = response.responses?.find((r: any) => r.type === "Combined");
+      const kdstResponse = response.responses?.find((r: RT.ResponseItem) => r.type === "K-DST");
+      const kicceResponse = response.responses?.find((r: RT.ResponseItem) => r.type === "KICCE");
+      const combinedResponse = response.responses?.find((r: RT.ResponseItem) => r.type === "Combined");
       
-      setSummary(combinedResponse?.text ?? "");
       setA001Summary(kdstResponse?.text ?? "");
+      setA002Summary(kicceResponse?.text ?? "");
+      setSummary(combinedResponse?.text ?? "");
     } catch (err) {
       console.error("GPT 요약 호출 오류:", err);
       setError(err instanceof Error ? err : new Error(String(err)));
@@ -318,5 +321,5 @@ export function useGptSummary(
     fetchGptSummary();
   }, [profile, a001, a002, fetchGptSummary]);
 
-  return { summary, a001Summary, loading, error, refetch: fetchGptSummary };
+  return { summary, a001Summary, a002Summary, loading, error, refetch: fetchGptSummary };
 }

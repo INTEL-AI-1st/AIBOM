@@ -6,7 +6,7 @@ export type PromptPayload = {
   context?: {
     profile?: RT.ChildProfile;
     a001?: RT.A001Item;
-    a002?: RT.A002Data;
+    a002?: RT.A002Item;
   };
 };
 
@@ -38,7 +38,7 @@ export const selectA001 = async (uid: string, month: string) => {
   
 export const selectA002 = async (uid: string, age: string) => {
     try {
-        const response = await api.post<T.A002Data>("/report/selectA002", {
+        const response = await api.post<T.A002Item>("/report/selectA002", {
             uid,
             age
         });

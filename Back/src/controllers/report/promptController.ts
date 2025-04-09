@@ -14,6 +14,7 @@ export const getPrompt = async (req: Request, res: Response): Promise<void> => {
     console.log("전체 payload:", JSON.stringify(payload, null, 2));
 
     // 프로필 정보를 통해 나이와 성별을 추출
+    const name = payload.context.profile.name;
     const age = payload.context.profile.ageMonths;
     const gender = payload.context.profile.gender;
 
@@ -33,7 +34,7 @@ export const getPrompt = async (req: Request, res: Response): Promise<void> => {
         .join("\n");
 
       const groupNameA001 = "행동 평가";
-      const promptA001 = getKdstPrompt(age, gender, groupNameA001, sectionTextA001);
+      const promptA001 = getKdstPrompt(name, age, gender, groupNameA001, sectionTextA001);
       console.log("최종 K-DST 프롬프트:", promptA001);
 
       const kdstResponse = await client.responses.create({
@@ -55,18 +56,16 @@ export const getPrompt = async (req: Request, res: Response): Promise<void> => {
     // a002가 존재할 경우: KICCE 평가 프롬프트 생성 및 호출
     if (payload.context.a002) {
       console.log("a002 데이터:", JSON.stringify(payload.context.a002, null, 2));
+      // 예시: { "신체운동": 85, "의사소통": 90, "사회관계": 80, "예술경험": 75, "자연탐구": 88 }
+      const a002Data: any[] = payload.context.a002;
 
-      // a002는 KICCE 평가 점수를 담은 객체라고 가정합니다.
-      // 예시: { "신체운동·건강": 85, "의사소통": 90, "사회관계": 80, "예술경험": 75, "자연탐구": 88 }
-      const scores: { [domain: string]: number } = {
-        "신체운동·건강": Number(payload.context.a002["신체운동·건강"] || 0),
-        "의사소통": Number(payload.context.a002["의사소통"] || 0),
-        "사회관계": Number(payload.context.a002["사회관계"] || 0),
-        "예술경험": Number(payload.context.a002["예술경험"] || 0),
-        "자연탐구": Number(payload.context.a002["자연탐구"] || 0),
-      };
+      const sectionTextA002 = a002Data
+        .map((item) => {
+          return `${item.domain}: { 점수: ${item.score}, 나잇대 평균: ${item.avg} }`;
+        })
+        .join("\n");
 
-      const promptA002 = getKiccePrompt(age, gender, scores);
+      const promptA002 = getKiccePrompt(name,age, gender, sectionTextA002);
       console.log("최종 KICCE 프롬프트:", promptA002);
 
       const kicceResponse = await client.responses.create({

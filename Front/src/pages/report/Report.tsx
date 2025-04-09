@@ -24,7 +24,7 @@ export default function Report() {
   const { data: a002Data, loading: a002Loading, error: a002Error } = useA002Data();
 
   // GPT 요약 훅: 이미 받아온 profileData, a001Data, a002Data를 인자로 전달
-  const { summary, a001Summary, loading: gptLoading, error: gptError } =
+  const { summary, a001Summary, a002Summary, loading: gptLoading, error: gptError } =
     useGptSummary(profileData, a001Data, a002Data);
 
   // 로딩/에러 처리
@@ -107,7 +107,10 @@ export default function Report() {
           </RE.Section>
           
           <RE.Section>
-            <A002 />
+            <A002 
+              data={a002Data} 
+              a002Summary={a002Summary} 
+            />
           </RE.Section>
           
           <RE.Section>

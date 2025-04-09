@@ -28,6 +28,13 @@ export interface ChildProfile {
   }
   
   //A002: KICCE 유아관찰척도 데이터
+
+  export interface A002Item {
+    domain: string;
+    score: string;
+    avg: string;
+  }
+
   export interface KICCEDomain {
     domain: string;
     score: number;
@@ -67,4 +74,8 @@ export interface ChildProfile {
   export interface SupportTips {
     homeTips: TipGroup[];
     agencies?: string[]; // 유관기관 정보
+  }
+
+  export  interface ResponseItem {
+    type: "K-DST" | "KICCE" | "Combined" | string;
   }
