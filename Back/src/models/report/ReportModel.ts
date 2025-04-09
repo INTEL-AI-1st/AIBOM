@@ -81,30 +81,38 @@ export const selectChildProfile = async (uid: string): Promise<ChildProfile | nu
         FROM TB_USERS_CHILDS c
         LEFT JOIN TB_CHILD_ABILITY a
         ON c.uid = a.uid
-        WHERE c.uid = ?;
+        WHERE c.uid = ?
     `, [uid]
   );
     conn.release();
     return rows.length ? rows[0] : null;
 };
 
-export const selectA001Data = async (uid: string): Promise<A001Data | null> => {
+export const selectA001Data = async (uid: string, month: string): Promise<A001Data | null> => {
     const conn = await pool.getConnection();
     const rows = await conn.query(
-      `SELECT 
-            ability_label_id as abilityLabelId,
-            quest_id as questId,
-            score
-        FROM TB_OBSERVATION
-       WHERE UID = ?
-         AND STATE = 1`, 
-      [uid]
+        `       
+        SELECT 
+               c.score, 
+               i.GROUP_NUM num, 
+               i.info 
+          FROM TB_CHILD_ABILITY c
+    RIGHT JOIN TB_ABILITY_INFO i
+            ON c.ABILITY_ID = i.ABILITY_ID
+           AND c.ABILITY_LABEL_ID = i.ABILITY_LABEL_ID
+         WHERE c.uid = ?
+           AND i.GROUP_ID = CASE 
+                            WHEN ? <= 35 THEN 'A' 
+                            WHEN ? >= 54 THEN 'C' 
+                            ELSE 'B' END
+        `, 
+      [uid, month, month]
   );
     conn.release();
-    return rows.length ? rows[0] : null;
+    return rows.length ? rows : null;
 };
 
-export const selectA002Data = async (uid: string): Promise<A002Data | null> => {
+export const selectA002Data = async (uid: string, age: string): Promise<A002Data | null> => {
     const conn = await pool.getConnection();
     const rows = await conn.query(
       `SELECT 
@@ -117,5 +125,5 @@ export const selectA002Data = async (uid: string): Promise<A002Data | null> => {
       [uid]
   );
     conn.release();
-    return rows.length ? rows[0] : null;
+    return rows.length ? rows : null;
 };

@@ -162,7 +162,6 @@ export const TaskCard = styled.div<{ performance: string }>`
   border-left: 5px solid ${props => {
     switch(props.performance) {
       case '완벽함': return '#4CAF50';
-      case '잘 함': return '#2196F3';
       case '보통': return '#FF9800';
       case '잘 못함': return '#F44336';
       default: return '#9E9E9E';
@@ -174,15 +173,21 @@ export const TaskTitle = styled.h3`
   font-size: 18px;
   margin-bottom: 10px;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
   
   span {
+    font-weight: 600;
     font-size: 14px;
     padding: 3px 8px;
     border-radius: 4px;
     background: #f0f4f8;
   }
+`;
+
+export const TaskTitleItem = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 `;
 
 export const TaskDescription = styled.ul`

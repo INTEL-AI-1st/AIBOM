@@ -10,16 +10,21 @@ export interface ChildProfile {
   }
   
   //A001: K-DST 행동 발달 분석 데이터
-  export interface KDSTTask {
-    id: number;
-    task: string;
-    performance: '완벽함' | '잘 함' | '보통' | '잘 못함';
-    points: string[];
+  export interface A001Item {
+    num: string;
+    info: string;
+    score: string;
   }
   
+  // 퍼포먼스 타입을 열거형으로 정의
+  export type PerformanceLevel = '완벽함' | '보통' | '잘 못함';
+  
   export interface A001Data {
-    tasks: KDSTTask[];
-    summary: string;
+    id: string;
+    task: string;
+    score: string;
+    performance: PerformanceLevel;
+    points: string[];
   }
   
   //A002: KICCE 유아관찰척도 데이터

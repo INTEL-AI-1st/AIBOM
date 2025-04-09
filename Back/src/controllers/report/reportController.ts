@@ -14,8 +14,8 @@ export const selectProfile = async (req: Request, res: Response): Promise<void> 
 
 export const selectA001 = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { uid } = req.body
-    const info = await selectA001Data(uid);
+    const { uid, month } = req.body
+    const info = await selectA001Data(uid, month);
     res.json({ info });
   } catch (error) {
     console.error("조회 오류:", error);
@@ -25,8 +25,8 @@ export const selectA001 = async (req: Request, res: Response): Promise<void> => 
 
 export const selectA002 = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { uid } = req.body
-    const info = await selectA002Data(uid);
+    const { uid, age } = req.body
+    const info = await selectA002Data(uid, age);
     res.json({ info });
   } catch (error) {
     console.error("조회 오류:", error);
