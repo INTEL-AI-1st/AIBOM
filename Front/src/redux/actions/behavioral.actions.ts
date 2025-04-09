@@ -8,6 +8,7 @@ export const SET_PREVIEW_URL = 'SET_PREVIEW_URL';
 export const SET_IS_RECORDING = 'SET_IS_RECORDING';
 export const SET_REMAINING_TIME = 'SET_REMAINING_TIME';
 export const RESET_PREVIEW = 'RESET_PREVIEW';
+export const SET_ABILITY_MEASURED = 'SET_ABILITY_MEASURED';
 
 export const fetchAbilitiesRequest = () => ({
   type: FETCH_ABILITIES_REQUEST as typeof FETCH_ABILITIES_REQUEST
@@ -48,6 +49,11 @@ export const resetPreview = (preserveAbility: boolean = false) => ({
   payload: { preserveAbility }
 });
 
+export const setAbilityMeasured = (abilityId: string) => ({
+  type: SET_ABILITY_MEASURED,
+  payload: abilityId,
+});
+
 export type BehavioralActionTypes = 
   | ReturnType<typeof fetchAbilitiesRequest>
   | ReturnType<typeof fetchAbilitiesSuccess>
@@ -56,4 +62,5 @@ export type BehavioralActionTypes =
   | ReturnType<typeof setPreviewUrl>
   | ReturnType<typeof setIsRecording>
   | ReturnType<typeof setRemainingTime>
-  | ReturnType<typeof resetPreview>;
+  | ReturnType<typeof resetPreview>
+  | ReturnType<typeof setAbilityMeasured>;

@@ -4,7 +4,6 @@ import { getPublicProfileUrl } from "@services/common/supabaseClient";
 import { ApiChild } from "@hooks/myPage/useChildInfo";
 import { getUser } from "@services/auth/AuthService";
 
-
 interface User {
   uid: string;
   nickName: string;
@@ -33,21 +32,31 @@ const ChildContext = createContext<ChildContextType | undefined>(undefined);
 
 // eslint-disable-next-line
 export const useMainContext = () => {
-    const context = useContext(ChildContext);
-    if (!context) {
-      throw new Error("useChildContext must be used within a ChildProvider");
-    }
-    return context;
-  };
+  const context = useContext(ChildContext);
+  if (!context) {
+    throw new Error("useChildContext must be used within a ChildProvider");
+  }
+  return context;
+};
 
-  
 export const MainProvider = ({ children }: { children: ReactNode }) => {
   const [childInfo, setChildInfo] = useState<ChildInfo[]>([]);
   const [userInfo, setUserInfo] = useState<User>();
-  const [selectedChild, setSelectedChild] = useState<ChildInfo | null>(null);
+  const [selectedChild, setSelectedChild] = useState<ChildInfo | null>(() => {
+    const stored = localStorage.getItem("selectedChild");
+    return stored ? JSON.parse(stored) : null;
+  });
   const [loading, setLoading] = useState(true);
 
-  const refreshChildData = async () => {
+  useEffect(() => {
+    if (selectedChild) {
+      localStorage.setItem("selectedChild", JSON.stringify(selectedChild));
+    } else {
+      localStorage.removeItem("selectedChild");
+    }
+  }, [selectedChild]);
+
+  const refreshChildData = useCallback(async () => {
     try {
       setLoading(true);
       const data = await SelectChild();
@@ -63,18 +72,21 @@ export const MainProvider = ({ children }: { children: ReactNode }) => {
           profileUrl: child.fileName ? getPublicProfileUrl(child.fileName) : null,
         }));
         setChildInfo(formatted);
-        setSelectedChild(formatted[0]);
+        
+        if (!selectedChild || !formatted.find(child => child.uid === selectedChild.uid)) {
+          setSelectedChild(formatted[0]);
+        }
       }
     } catch (error) {
       console.error("Error fetching child info:", error);
-    }finally{
+    } finally {
       setLoading(false);
     }
-  };
+  }, [selectedChild]);
 
   useEffect(() => {
     refreshChildData();
-  }, []);
+  }, [refreshChildData]);
 
   const fetchUserData = useCallback(async () => {
     try {
@@ -90,7 +102,6 @@ export const MainProvider = ({ children }: { children: ReactNode }) => {
       console.error("Error fetching user info:", error);
     }
   }, []);
-  
 
   useEffect(() => {
     fetchUserData();

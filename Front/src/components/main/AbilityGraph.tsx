@@ -183,7 +183,7 @@ const PerformanceCard = memo(function PerformanceCard({ data }: { data: Performa
   }, [data.id, data.status]);
 
   const footerLink = useMemo(() => {
-    if (data.id === 'A003') return null;
+    if (data.id === 'A003' || data.status === '1') return null;
     return data.id === 'A002' ? '/obser' : data.id === 'A001' ? '/pose' : '#';
   }, [data.id, data.status]);
 

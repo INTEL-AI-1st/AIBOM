@@ -10,7 +10,7 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/upload-video': {
-        target: 'http://192.168.219.192:5000',
+        target: 'http://192.168.219.154:5000',
         changeOrigin: true,
         rewrite: (path) => path, 
       }

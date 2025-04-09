@@ -8,7 +8,8 @@ import {
   SET_IS_RECORDING,
   SET_REMAINING_TIME,
   RESET_PREVIEW,
-  BehavioralActionTypes
+  BehavioralActionTypes,
+  SET_ABILITY_MEASURED
 } from '../actions/behavioral.actions';
 import { AnyAction } from 'redux';
 
@@ -69,6 +70,15 @@ export const behavioralReducer = (
         previewUrl: null,
         selectedAbility: action.payload.preserveAbility ? state.selectedAbility : null,
       };
+    case SET_ABILITY_MEASURED:
+        return {
+        ...state,
+        abilities: state.abilities.map((ability) =>
+            ability.abilityLabelId === action.payload
+            ? { ...ability, isMeas: true }
+            : ability
+        ),
+    };
     default:
       return state;
   }

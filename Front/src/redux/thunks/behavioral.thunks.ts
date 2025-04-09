@@ -3,7 +3,8 @@ import { selectAbilites, beha } from '@services/measure/BehavioralService';
 import {
   fetchAbilitiesRequest,
   fetchAbilitiesSuccess,
-  fetchAbilitiesFailure
+  fetchAbilitiesFailure,
+  setAbilityMeasured
 } from '../actions/behavioral.actions';
 
 export const fetchAbilities = (uid: string, ageMonths: string) => {
@@ -25,13 +26,19 @@ export const fetchAbilities = (uid: string, ageMonths: string) => {
 };
 
 export const sendBehavioralData = (formData: FormData) => {
-  return async () => {
-    try {
-      const response = await beha(formData);
-      return response;
-    } catch (error) {
-      console.error('측정 실패:', error);
-      throw error;
-    }
+    return async (dispatch: Dispatch) => {
+      try {
+        const abilityLabelId = formData.get('abilityLabelId');
+        if (typeof abilityLabelId === 'string') {
+            dispatch(setAbilityMeasured(abilityLabelId));
+        }
+          
+        const response = await beha(formData);
+        
+        return response;
+      } catch (error) {
+        console.error('측정 실패:', error);
+        throw error;
+      }
+    };
   };
-};

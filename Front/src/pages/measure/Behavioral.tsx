@@ -260,7 +260,6 @@ export default function Behavioral() {
 
   const handleSelectAbility = useCallback((ability: Ability) => {
     dispatch(setSelectedAbility(ability));
-    console.log(selectedAbility);
   }, [dispatch]);
 
   useEffect(() => {
@@ -306,43 +305,54 @@ export default function Behavioral() {
             <p>ㆍ가능하면 단순한 배경에서, 아이 혼자만 영상에 나오도록 해주세요.</p>
             <p>ㆍ모든 촬영은 한 동작씩 진행되고, 총 4개의 지시사항을 따르게 됩니다.</p>
           </BE.InfoBox>
-          {!previewUrl ? (
-            <BE.BtnWrapper>
-              <BE.Btn onClick={handleRecord} disabled={isLoading}>
-                {isRecording ? `정지 (${localTime}초)` : '녹화'}
-              </BE.Btn>
-              <BE.Btn onClick={handleUploadClick} disabled={isLoading || isRecording}>
-                파일업로드
-              </BE.Btn>
-              <BE.InFlie
-                type="file"
-                accept="video/*"
-                ref={fileInputRef}
-                onChange={handleFileChange}
-              />
-            </BE.BtnWrapper>
-          ) : (
+          {selectedAbility?.score &&
+            <p>저장된 데이터가 존재합니다. 재측정은 가능하지만 기존 데이터가 삭제됩니다.</p>
+          }
+          {selectedAbility?.isMeas ?
             <BE.BtnWrapper>
               <BE.Btn onClick={handleReRecord} disabled={isLoading}>
-                재녹화
+                측정 중입니다..
               </BE.Btn>
-              <BE.Btn onClick={handleSend} disabled={selectedAbility?.isMeas}>
-                {selectedAbility?.isMeas ? '처리 중...' : '파일 전송'}
-              </BE.Btn>
-            </BE.BtnWrapper>
-          )}
+            </BE.BtnWrapper> 
+            :
+            <>
+              {!previewUrl ? (
+                <BE.BtnWrapper>
+                  <BE.Btn onClick={handleRecord} disabled={isLoading}>
+                    {isRecording ? `정지 (${localTime}초)` : '녹화'}
+                  </BE.Btn>
+                  <BE.Btn onClick={handleUploadClick} disabled={isLoading || isRecording}>
+                    파일업로드
+                  </BE.Btn>
+                  <BE.InFlie
+                    type="file"
+                    accept="video/*"
+                    ref={fileInputRef}
+                    onChange={handleFileChange}
+                    />
+                </BE.BtnWrapper>
+              ) : (
+                <BE.BtnWrapper>
+                  <BE.Btn onClick={handleReRecord} disabled={isLoading}>
+                    재녹화
+                  </BE.Btn>
+                  <BE.Btn onClick={handleSend}>
+                    파일 전송
+                  </BE.Btn>
+                </BE.BtnWrapper>
+              )}
 
-          {!previewUrl && stream && (
-            <BE.VideoContainer>
-              <video
-                ref={videoPreviewRef}
-                width="400"
-                autoPlay
-                muted
-                playsInline
-              />
-            </BE.VideoContainer>
-          )}
+              {!previewUrl && stream && (
+                <BE.VideoContainer>
+                  <video
+                    ref={videoPreviewRef}
+                    width="400"
+                    autoPlay
+                    muted
+                    playsInline
+                    />
+                </BE.VideoContainer>
+              )}
 
           {previewUrl && (
             <BE.VideoContainer>
@@ -352,13 +362,15 @@ export default function Behavioral() {
               </video>
             </BE.VideoContainer>
           )}
+        </> 
+       }
         </BE.ContentContainer>
         <BE.RecordIndicator>
           촬영 동작 : {selectedAbility?.info}
         </BE.RecordIndicator>
       </BE.SubContainer>
-
-       <BE.ToastCon />
-    </BE.Container>
+      
+      <BE.ToastCon />
+      </BE.Container>
   );
 }

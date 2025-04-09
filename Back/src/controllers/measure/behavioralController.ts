@@ -15,6 +15,7 @@ export const selectAbilites = async (req: Request, res: Response): Promise<void>
 export const insertBeha = async (req: Request, res: Response): Promise<void> => {
   try {
     const { uid, abilityLabelId } = req.body
+    console.log(abilityLabelId);
     const info = await insertBehavioral(uid, abilityLabelId);
     res.json({ info });
   } catch (error) {

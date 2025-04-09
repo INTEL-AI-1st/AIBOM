@@ -27,10 +27,10 @@ export const selectAbility = async (uid: string, month: string): Promise<obser |
            ON a.ABILITY_ID = i.ABILITY_ID
           AND a.ABILITY_LABEL_ID = i.ABILITY_LABEL_ID
     LEFT JOIN TB_CHILD_ABILITY c
-    	   ON a.ABILITY_LABEL_ID = c.ABILITY_LABEL_ID
-    	  AND a.ABILITY_LABEL_ID = i.ABILITY_LABEL_ID
-    	  AND c.UID = ?
-    	  AND c.RECORD_MONTH = CONCAT(YEAR(CURDATE()), '-', LPAD(MONTH(CURDATE()), 2, '0'))
+           ON a.ABILITY_ID = c.ABILITY_ID
+    	    AND a.ABILITY_LABEL_ID = c.ABILITY_LABEL_ID
+    	    AND c.UID = ?
+    	    AND c.RECORD_MONTH = CONCAT(YEAR(CURDATE()), '-', LPAD(MONTH(CURDATE()), 2, '0'))
         WHERE i.GROUP_ID = CASE 
                            WHEN ? <= 35 THEN 'A' 
                            WHEN ? >= 54 THEN 'C' 

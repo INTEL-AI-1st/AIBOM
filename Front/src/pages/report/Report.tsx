@@ -12,6 +12,7 @@ const ReportWrapper = styled.div`
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  background: #f5e8cc;
 `;
 
 // 상단 영역: 좌측 - 사용자 정보, 우측 - 그래프 영역
