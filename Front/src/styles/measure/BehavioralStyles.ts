@@ -137,11 +137,9 @@ export const BtnWrapper = styled.div`
 `;
 
 export const Btn = styled.button`
-  color: white;
   border: none;
   padding: 0.75rem 1.75rem;
   border-radius: 8px;
-  cursor: pointer;
   font-size: 1rem;
   font-weight: 600;
   transition: all 0.2s ease;

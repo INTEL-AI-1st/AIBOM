@@ -14,6 +14,7 @@ import myChildRoutes from "@routes/myPage/myChildRoutes";
 import observationRoutes from "@routes/measure/observationRoutes";
 import behavioralRoutes from "@routes/measure/behavioralRoutes";
 
+import reportRoutes from "@routes/report/reportRoutes";
 const app = express();
 const PORT = Number(process.env.PORT) || 5000;
 
@@ -32,8 +33,12 @@ app.use("/userInfo", userInfoRoutes);
 app.use("/myInfo", myInfoRoutes);
 app.use("/myChild", myChildRoutes);
 
+//measure
 app.use("/obser", observationRoutes);
 app.use("/beha", behavioralRoutes);
+
+//report
+app.use("/report", reportRoutes);
 
 // ▶ 로컬 IP 구하는 함수
 function getLocalIP() {

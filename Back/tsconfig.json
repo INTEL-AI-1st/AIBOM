@@ -6,6 +6,7 @@
     "outDir": "./dist",     
     "baseUrl": "./",
     "paths": {
+      "@assets/*": ["src/assets/*"],
       "@config/*": ["src/config/*"],
       "@controllers/*": ["src/controllers/*"],
       "@middlewares/*": ["src/middlewares/*"],
