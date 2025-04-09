@@ -72,6 +72,7 @@ export const selectChildProfile = async (uid: string): Promise<ChildProfile | nu
     `
         SELECT 
             c.name,  
+            CASE WHEN c.gender = 1 THEN '남' ELSE '여' END AS gender,
             CAST(TIMESTAMPDIFF(YEAR, c.birthday, CURDATE()) AS CHAR) as ageYears,
             CAST(TIMESTAMPDIFF(MONTH, c.birthday, CURDATE()) AS CHAR) as ageMonths,
             CONCAT(MIN(a.record_month), ' ~ ', MAX(a.record_month)) as observationPeriod,
@@ -105,6 +106,7 @@ export const selectA001Data = async (uid: string, month: string): Promise<A001Da
                             WHEN ? <= 35 THEN 'A' 
                             WHEN ? >= 54 THEN 'C' 
                             ELSE 'B' END
+     ORDER BY i.GROUP_NUM
         `, 
       [uid, month, month]
   );

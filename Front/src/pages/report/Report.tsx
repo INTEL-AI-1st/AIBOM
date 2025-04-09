@@ -10,6 +10,7 @@ import Recommendation from '@components/report/Recommendation';
 import Support from '@components/report/Support';
 import * as RE from '@styles/report/ReportStyles';
 import { useA001Data, useProfileData, useGptSummary, useA002Data } from '@hooks/report/UseReport';
+import { PuffLoader } from "react-spinners";
 
 export default function Report() {
   const navigate = useNavigate();
@@ -28,7 +29,10 @@ export default function Report() {
 
   // 로딩/에러 처리
   if (profileLoading || a001Loading || a002Loading || gptLoading) {
-    return <div>데이터 로딩 중입니다...</div>;
+    return <RE.Loading>
+      <PuffLoader color='#ffb9b9'/><br/>
+      <p>리포트를 생성중입니다...</p>
+      </RE.Loading>;
   }
 
   if (profileError || a001Error || a002Error || gptError) {

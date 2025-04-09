@@ -14,8 +14,8 @@ export const getPrompt = async (req: Request, res: Response): Promise<void> => {
     console.log("전체 payload:", JSON.stringify(payload, null, 2));
 
     // 프로필 정보를 통해 나이와 성별을 추출
-    const age = parseInt(payload.context.profile.ageYears, 10);
-    const gender = payload.context.profile.name;
+    const age = payload.context.profile.ageMonths;
+    const gender = payload.context.profile.gender;
 
     // 여러 평가 결과 응답을 모으기 위한 배열
     const responses: { type: string; text: string }[] = [];
@@ -48,7 +48,9 @@ export const getPrompt = async (req: Request, res: Response): Promise<void> => {
         temperature: 0.7,
       });
       responses.push({ type: "K-DST", text: kdstResponse.output_text });
+      console.log(`kdstResponse   ===== ${kdstResponse.output_text}`);
     }
+
 
     // a002가 존재할 경우: KICCE 평가 프롬프트 생성 및 호출
     if (payload.context.a002) {

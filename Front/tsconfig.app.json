@@ -12,6 +12,8 @@
       "@pages/*": ["src/pages/*"],
       "@services/*": ["src/services/*"],
       "@styles/*": ["src/styles/*"],
+      "@types/*": ["src/types/*"],
+      
     },
     "target": "ES2020",
     "useDefineForClassFields": true,

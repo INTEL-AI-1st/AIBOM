@@ -1,5 +1,13 @@
 import styled from "styled-components";
 
+export const Loading = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  
+`;
+
 export const Container = styled.div`
   margin: 0 auto;
   height: 100%;
@@ -191,9 +199,15 @@ export const TaskTitleItem = styled.div`
 `;
 
 export const TaskDescription = styled.ul`
-  padding-left: 20px;
+  padding-left: 0px;
   margin-top: 10px;
-  
+
+  ul{
+    padding:0px;
+    margin:0px;
+    /* list-style:none */
+  }
+
   li {
     margin-bottom: 5px;
     line-height: 1.5;
