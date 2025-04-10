@@ -1,20 +1,33 @@
 @font-face {
   font-family: 'GmarketSans';
-  src: url('/fonts/GmarketSansTTFLight.ttf') format('truetype');
+  src: url('/fonts/AppleSDGothicNeo-ExtraLight.ttf') format('truetype');
   font-weight: 300;
 }
 
 @font-face {
   font-family: 'GmarketSans';
-  src: url('/fonts/GmarketSansTTFMedium.ttf') format('truetype');
+  src: url('/fonts/AppleSDGothicNeo-Light.ttf') format('truetype');
+  font-weight: 300;
+}
+
+@font-face {
+  font-family: 'GmarketSans';
+  src: url('/fonts/AppleSDGothicNeo-Medium.ttf') format('truetype');
   font-weight: 500;
 }
 
 @font-face {
   font-family: 'GmarketSans';
-  src: url('/fonts/GmarketSansTTFBold.ttf') format('truetype');
+  src: url('/fonts/AppleSDGothicNeo-Bold.ttf') format('truetype');
   font-weight: 700;
 }
+
+@font-face {
+  font-family: 'GmarketSans';
+  src: url('/fonts/AppleSDGothicNeo-ExtraBold.ttf') format('truetype');
+  font-weight: 900;
+}
+
 html, body, #root {
   margin: 0;
   padding: 0;

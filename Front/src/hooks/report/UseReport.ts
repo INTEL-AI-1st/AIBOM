@@ -281,33 +281,47 @@ export function useGptSummary(
   const [summary, setSummary] = useState("");
   const [a001Summary, setA001Summary] = useState("");
   const [a002Summary, setA002Summary] = useState("");
+  const [reviewSummary, setReviewSummary] = useState("");
+  const [tipsSummary, setTipsSummary] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
+  // 이미 GPT 요청이 실행되었는지 추적 (중복 호출 방지)
+  const hasFetchedRef = useRef(false);
+
   const fetchGptSummary = useCallback(async () => {
-    // profile, a001, a002가 모두 준비되어 있어야 GPT 요청을 할 수 있음
-    // if (!profile || !a001 || !a002) return;
+    // 모든 데이터가 준비되지 않았다면 호출 중단
+    if (!profile || !a001 || !a002) return;
+    // 이미 한 번 실행되었으면 다시 호출하지 않음
+    if (hasFetchedRef.current) return;
+    hasFetchedRef.current = true;
 
     setLoading(true);
     setError(null);
 
     try {
-      // payload: 이미 상위 컴포넌트에서 fetch해온 데이터를 컨텍스트로 전달
+      // 상위 컴포넌트에서 가져온 데이터를 payload로 전달
       const payload = {
         context: { profile, a001, a002 },
       };
 
-      // 실제 GPT 요청
+      // 실제 GPT 요청 (예시 함수 RS.getPrompt)
       const response = await RS.getPrompt(payload);
 
-      // 응답 예시: { responses: [{ type: "K-DST", text: "..."}, { type: "Combined", text: "..."}], ... }
+      // 응답 예시:
+      // { responses: [{ type: "K-DST", text: "..."}, { type: "KICCE", text: "..."}, { type: "Combined", text: "..."}] }
       const kdstResponse = response.responses?.find((r: RT.ResponseItem) => r.type === "K-DST");
       const kicceResponse = response.responses?.find((r: RT.ResponseItem) => r.type === "KICCE");
+      const reviewResponse = response.responses?.find((r: RT.ResponseItem) => r.type === "review");
+      const tipsResponse = response.responses?.find((r: RT.ResponseItem) => r.type === "tips");
       const combinedResponse = response.responses?.find((r: RT.ResponseItem) => r.type === "Combined");
-      
+
       setA001Summary(kdstResponse?.text ?? "");
       setA002Summary(kicceResponse?.text ?? "");
+      setReviewSummary(reviewResponse?.text ?? "");
+      setTipsSummary(tipsResponse?.text ?? "")
       setSummary(combinedResponse?.text ?? "");
+
     } catch (err) {
       console.error("GPT 요약 호출 오류:", err);
       setError(err instanceof Error ? err : new Error(String(err)));
@@ -317,9 +331,11 @@ export function useGptSummary(
   }, [profile, a001, a002]);
 
   useEffect(() => {
-    // 데이터가 모두 준비되면 GPT 요약 요청 실행
-    fetchGptSummary();
+    // 모든 데이터가 준비된 경우에만 GPT 요청 실행
+    if (profile && a001 && a002) {
+      fetchGptSummary();
+    }
   }, [profile, a001, a002, fetchGptSummary]);
 
-  return { summary, a001Summary, a002Summary, loading, error, refetch: fetchGptSummary };
+  return { summary, a001Summary, a002Summary, reviewSummary, tipsSummary, loading, error, refetch: fetchGptSummary };
 }

@@ -1,6 +1,7 @@
 import { FaChild } from "react-icons/fa";
 import * as RE from "@styles/report/ReportStyles";
 import { ChildProfile } from "src/types/ReportTypes";
+import { useMemo } from "react";
 
 interface ProfileProps {
   data: ChildProfile | null;
@@ -8,8 +9,31 @@ interface ProfileProps {
 }
 
 export default function Profile({ data, summary }: ProfileProps) {
+  const parsedSummary = useMemo(() => {
+    console.log(summary);
+    if (!summary) return {};
+    let trimmedText = summary.trim();
+
+    if (trimmedText.startsWith('```json')) {
+      trimmedText = trimmedText.replace(/^```json/, '').replace(/```$/, '').trim();
+    }
+
+    try {
+      return JSON.parse(trimmedText);
+    } catch (error) {
+      console.error('JSON 파싱 에러:', error);
+      return {};
+    }
+  }, [summary]);
+
   if (!data) {
-    return <div>프로필 데이터가 없습니다.</div>;
+    return (
+      <RE.ProfileGrid>
+        <RE.GridItem>
+          <p>프로필 데이터가 없습니다.</p>
+        </RE.GridItem>
+      </RE.ProfileGrid>
+    );
   }
 
   return (
@@ -44,7 +68,7 @@ export default function Profile({ data, summary }: ProfileProps) {
       <RE.GridItem>
         <RE.SectionTitle>전반적 발달 종합 평가</RE.SectionTitle>
         <RE.ProfileCard>
-            <RE.SummaryText>{summary}</RE.SummaryText>
+          <RE.SummaryText>{parsedSummary.Combine}</RE.SummaryText>
         </RE.ProfileCard>
       </RE.GridItem>
     </RE.ProfileGrid>

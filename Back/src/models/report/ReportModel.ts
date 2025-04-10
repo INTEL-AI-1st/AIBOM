@@ -103,6 +103,7 @@ export const selectA001Data = async (uid: string, month: string): Promise<A001Da
            AND c.ABILITY_LABEL_ID = i.ABILITY_LABEL_ID
          WHERE c.uid = ?
            AND c.ABILITY_ID = 'A001'
+           AND c.RECORD_MONTH = DATE_FORMAT(NOW(), '%Y-%m')
            AND i.GROUP_ID = CASE 
                             WHEN ? <= 35 THEN 'A' 
                             WHEN ? >= 54 THEN 'C' 
@@ -122,16 +123,26 @@ export const selectA002Data = async (uid: string, age: string): Promise<A002Data
         SELECT 
         	   ta.ABILITY_LABEL AS domain,
                c.score,
+               pc.score AS prevSco,
                a.score AS avg
           FROM TB_ABILITY ta 
     INNER JOIN TB_CHILD_ABILITY c
-            ON c.ABILITY_ID = ta.ABILITY_ID 
-           AND c.ABILITY_LABEL_ID = ta.ABILITY_LABEL_ID 
+            ON ta.ABILITY_ID = c.ABILITY_ID 
+           AND ta.ABILITY_LABEL_ID = c.ABILITY_LABEL_ID 
+    INNER JOIN TB_USERS_CHILDS u
+            ON c.UID = u.UID
     INNER JOIN TB_AVG_ABILITY a
-            ON c.ABILITY_ID = a.ABILITY_ID 
-           AND c.ABILITY_LABEL_ID = a.ABILITY_LABEL_ID 
+            ON ta.ABILITY_ID = a.ABILITY_ID 
+           AND ta.ABILITY_LABEL_ID = a.ABILITY_LABEL_ID 
+     LEFT JOIN TB_CHILD_ABILITY pc
+            ON ta.ABILITY_ID = pc.ABILITY_ID 
+           AND ta.ABILITY_LABEL_ID = pc.ABILITY_LABEL_ID 
+           AND u.UID = pc.UID
+           AND pc.RECORD_MONTH = DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 1 MONTH), '%Y-%m')
          WHERE c.uid = ?
-           AND c.ABILITY_ID = 'A002'
+           AND ta.ABILITY_ID = 'A002'
+           AND c.RECORD_MONTH = DATE_FORMAT(NOW(), '%Y-%m')
+           AND a.GENDER = u.GENDER
            AND age = CASE 
                      WHEN ? <= 3 THEN '3' 
                      WHEN ? >= 5 THEN '5' 

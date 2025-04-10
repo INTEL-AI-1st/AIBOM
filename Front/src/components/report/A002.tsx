@@ -1,11 +1,6 @@
 import {
-  Radar,
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  ResponsiveContainer,
-  Tooltip
+  Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer,
+  Tooltip, BarChart, Bar, CartesianGrid, XAxis, YAxis, Legend, LabelList
 } from 'recharts';
 import { FaUsers, FaRunning, FaComments, FaPalette, FaMicroscope } from 'react-icons/fa';
 import * as RE from '@styles/report/ReportStyles';
@@ -17,19 +12,24 @@ interface A002Props {
   a002Summary: string | undefined;
 }
 
+// Tick 렌더링에 사용할 타입
+interface CustomTickProps {
+  payload: { value: string };
+  x: number;
+  y: number;
+  cx: number;
+  cy: number;
+}
+
 export default function A002({ data, a002Summary }: A002Props) {
-  // JSON 포맷과 코드 블록 마크업을 처리하여 파싱합니다.
+  // 1) JSON 파싱
   const parsedSummary = useMemo(() => {
     if (!a002Summary) return {};
 
     let trimmedText = a002Summary.trim();
-
-    // 코드 블록 마크업 제거 (```json 와 ``` 제거)
     if (trimmedText.startsWith('```json')) {
       trimmedText = trimmedText.replace(/^```json/, '').replace(/```$/, '').trim();
     }
-
-    // JSON 배열 형태가 아니라면 배열로 감쌉니다.
     if (!trimmedText.startsWith('[')) {
       trimmedText = `[${trimmedText}]`;
     }
@@ -47,12 +47,11 @@ export default function A002({ data, a002Summary }: A002Props) {
     }
   }, [a002Summary]);
 
-  // 데이터가 없으면 메시지 출력
   if (!data) {
     return <div>KICCE 데이터가 없습니다.</div>;
   }
 
-  // 도메인별 아이콘 매핑
+  // 2) 데이터 전처리
   const iconMapping: { [key: string]: React.ReactElement } = {
     "신체운동": <FaRunning size={16} />,
     "의사소통": <FaComments size={16} />,
@@ -61,10 +60,7 @@ export default function A002({ data, a002Summary }: A002Props) {
     "자연탐구": <FaMicroscope size={16} />
   };
 
-  // data를 배열로 변환
   const dataArray: RT.A002Item[] = Array.isArray(data) ? data : [data];
-
-  // KICCE 데이터 생성 (아이콘 포함)
   const kicceData = dataArray.map((item: RT.A002Item) => ({
     domain: item.domain,
     score: parseFloat(item.score),
@@ -72,12 +68,44 @@ export default function A002({ data, a002Summary }: A002Props) {
     icon: iconMapping[item.domain] || <FaUsers size={16} />,
   }));
 
-  // RadarChart에 필요한 데이터 포맷 (점수는 100점 만점)
-  const chartData = kicceData.map(item => ({
+  // 레이더 차트에 사용할 데이터
+  const radarChartData = kicceData.map(item => ({
     subject: item.domain,
     A: item.score,
     fullMark: 100,
   }));
+
+  /**
+   * 꼭지점(기본 좌표)에서 특정 거리만큼 떨어뜨려 라벨을 표시하기 위한 커스텀 Tick 함수
+   * @param props CustomTickProps
+   */
+  const renderPolarAngleAxisTick = (props: CustomTickProps) => {
+    const { payload, x, y, cx, cy } = props;
+    const dataItem = radarChartData.find(item => item.subject === payload.value);
+    const scoreText = dataItem ? `${dataItem.A}` : '';
+
+    // 차트 중심(cx, cy)에서 현재 tick 좌표(x, y)까지의 벡터를 구한 뒤,
+    // 원하는 offset을 더해서 좌표를 다시 계산
+    const offset = 12; // 원하는 만큼 띄울 거리(px 단위)
+    const dx = x - cx;
+    const dy = y - cy;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+
+    // distance + offset만큼 원래의 라벨 위치에서 더 바깥(또는 안쪽)으로 이동
+    const newX = cx + (distance + offset) * (dx / distance);
+    const newY = cy + (distance + offset) * (dy / distance);
+
+    return (
+      <g transform={`translate(${newX}, ${newY})`}>
+        <text textAnchor="middle" fill="#333">
+          {/* 도메인 이름 */}
+          {payload.value}
+          {/* tspan으로 다음 줄에 점수를 표시 (혹은 원하시는 대로 구조 변경 가능) */}
+          <tspan x="0" dy="1.6em" fontSize="12">{scoreText}</tspan>
+        </text>
+      </g>
+    );
+  };
 
   // 도메인별 아이콘 반환 함수
   const getDomainIcon = (domainName: string) => {
@@ -91,36 +119,64 @@ export default function A002({ data, a002Summary }: A002Props) {
         <FaUsers size={20} />
         KICCE 유아관찰척도
       </RE.SectionTitle>
-      
+
       <RE.KICCELayout>
-        <RE.ChartContainer>
-          <ResponsiveContainer width="100%" height="100%">
-            <RadarChart cx="50%" cy="50%" outerRadius="80%" data={chartData}>
-              <PolarGrid />
-              <PolarAngleAxis dataKey="subject" />
-              <PolarRadiusAxis tick={false} axisLine={false} domain={[0, 100]} />
-              <Radar
-                name="아이 점수"
-                dataKey="A"
-                stroke="#4a6fa5"
-                fill="#4a6fa5"
-                fillOpacity={0.6}
-              />
-              <Tooltip formatter={(value) => [`${value}/100`, '점수']} />
-            </RadarChart>
-          </ResponsiveContainer>
-        </RE.ChartContainer>
-        
         <div>
-          <h3>평균 또래 대비 점수</h3>
-          {kicceData.map((item, index) => (
-            <RE.DomainTitle key={index}>
-              {index + 1}. {item.domain} <span>평균 {item.score}/100점</span>
-            </RE.DomainTitle>
-          ))}
+          <h3>아이 점수</h3>
+          <RE.ChartContainer>
+            <ResponsiveContainer width="100%" height="100%">
+              <RadarChart
+                cx="50%"
+                cy="50%"
+                outerRadius="70%"
+                startAngle={90}
+                endAngle={-270}
+                data={radarChartData}
+              >
+                <Radar
+                  name="아이 점수"
+                  dataKey="A"
+                  stroke="#4a6fa5"
+                  fill="#4a6fa5"
+                  fillOpacity={0.6}
+                />
+                <PolarGrid />
+                {/* 커스텀 Tick 함수를 사용해 꼭지점에서 라벨을 띄웁니다 */}
+                <PolarAngleAxis 
+                  dataKey="subject" 
+                  tick={renderPolarAngleAxisTick} 
+                  tickLine={false}
+                />
+                <PolarRadiusAxis tick={false} axisLine={false} domain={[0, 100]} />
+                <Tooltip formatter={(value) => [`${value}/100`, '점수']} />
+              </RadarChart>
+            </ResponsiveContainer>
+          </RE.ChartContainer>
+        </div>
+
+        {/* 바 차트 부분 */}
+        <div>
+          <h3>평균 또래 대비 점수 비교</h3>
+          <RE.ChartContainer>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={kicceData} margin={{ top: 20, right: 20, left: 20, bottom: 20 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="domain" />
+                <YAxis domain={[0, 100]} />
+                <Tooltip formatter={(value) => [`${value}/100`, '점수']} />
+                <Legend />
+                <Bar dataKey="score" fill="#4a6fa5" name="아이 점수">
+                  <LabelList dataKey="score" position="top" fill="#333" />
+                </Bar>
+                <Bar dataKey="avg" fill="#82ca9d" name="또래 평균">
+                  <LabelList dataKey="avg" position="top" fill="#333" />
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </RE.ChartContainer>
         </div>
       </RE.KICCELayout>
-      
+
       <div style={{ marginTop: '30px' }}>
         <h3>🧒 아이 발달 리포트 요약 (KICCE 기준)</h3>
         {kicceData.map((item, index) => {

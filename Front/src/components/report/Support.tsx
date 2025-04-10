@@ -1,38 +1,54 @@
 import * as RE from '@styles/report/ReportStyles';
 import { FaHome, FaHandsHelping, FaBuilding } from 'react-icons/fa';
+import { useMemo } from 'react';
 
-export default function Support() {
-  // 발달 지원 팁 데이터
-  const homeTips = [
-    {
-      title: '1. 의사소통 발달 지원',
-      tips: [
-        '하루 중 아이와 1:1로 대화하는 시간을 10분 이상 가져보세요.',
-        '그림책을 읽은 뒤 "이 다음엔 무슨 일이 일어날까?" 같은 열린 질문을 해보세요.'
-      ]
-    },
-    {
-      title: '2. 사회관계 능력 향상',
-      tips: [
-        '역할놀이(마트놀이, 병원놀이 등)를 통해 다양한 사회적 상황을 경험하게 해보세요.',
-        '또래 친구들과 함께 놀 수 있는 기회를 자주 만들어주세요 (소규모 모임, 가족 모임 등).'
-      ]
-    },
-    {
-      title: '3. 예술경험 확장',
-      tips: [
-        '미술도구(색연필, 클레이 등)를 자유롭게 사용할 수 있는 창의 놀이 상자를 구성해보세요.',
-        '주말마다 가족이 함께 노래를 부르거나 춤추는 시간도 좋아요.'
-      ]
-    },
-    {
-      title: '4. 자연탐구 호기심 강화',
-      tips: [
-        '산책 중 자연 현상에 대해 "왜?" 질문을 함께 탐구해보세요.',
-        '집에서 간단한 과학 실험 키트를 활용한 놀이(예: 화산 만들기, 무지개 만들기 등)도 효과적입니다.'
-      ]
+interface SupportProps {
+  summary: string | undefined;
+}
+
+interface Tip {
+  item: string;
+  details: string;
+}
+
+interface ParsedSummary {
+  tips: Tip[];
+  institution?: string;
+}
+
+export default function Support({ summary }: SupportProps) {
+  const parsedSummary = useMemo(() => {
+    if (!summary) return { tips: [], institution: '' };
+
+    let trimmedText = summary.trim();
+
+    if (trimmedText.startsWith('```json')) {
+      trimmedText = trimmedText.replace(/^```json/, '').replace(/```$/, '').trim();
     }
-  ];
+
+    try {
+      const parsed = JSON.parse(trimmedText) as ParsedSummary;
+      return {
+        tips: parsed.tips || [],
+        institution: parsed.institution || ''
+      };
+    } catch (error) {
+      console.error("JSON 파싱 에러:", error);
+      return { tips: [], institution: '' };
+    }
+  }, [summary]);
+
+  // 팁 데이터 포맷팅
+  const homeTips = useMemo(() => {
+    return parsedSummary.tips.map((tip, index) => {
+      const tipDetails = tip.details.split('\n').map(detail => detail.trim().replace(/^✅\s*/, ''));
+      
+      return {
+        title: `${index + 1}. ${tip.item}`,
+        tips: tipDetails
+      };
+    });
+  }, [parsedSummary]);
 
   return (
     <RE.SectionContainer>
@@ -66,9 +82,9 @@ export default function Support() {
         </RE.AgencyTitle>
         
         <RE.AgencyNote>
-          💬 ※ 부모님이 걱정되는 영역이 있다면, 위 기관들의 무료 상담 또는 발달 선별검사 프로그램을 이용해보는 것도 좋습니다.
+          💬 {parsedSummary.institution}
         </RE.AgencyNote>
       </RE.AgencyBox>
     </RE.SectionContainer>
   );
-};
+}

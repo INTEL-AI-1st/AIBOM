@@ -12,7 +12,6 @@ export const fetchAbilities = (uid: string, ageMonths: string) => {
     dispatch(fetchAbilitiesRequest());
     try {
       const data = await selectAbilites(uid, ageMonths);
-      console.log(data);
       if (data.info && Array.isArray(data.info)) {
         dispatch(fetchAbilitiesSuccess(data.info));
       } else {

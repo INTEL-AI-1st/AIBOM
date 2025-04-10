@@ -66,7 +66,6 @@ export default function Community() {
       } else if (sortOrder === 'popular') {
         query = query.order('likes', { ascending: false });
       }
-      console.log(query);
       const { data: community, error, count } = await query.range(start, end);
 
       if (error) {

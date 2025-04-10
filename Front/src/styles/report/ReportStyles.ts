@@ -102,11 +102,15 @@ export const SectionTitle = styled.h2`
 
 export const ProfileGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 2fr));
   gap: 20px;
   align-items: stretch;
-`;
+  
+  grid-template-columns: 1fr;
 
+  @media screen and (min-width: 1024px) {
+    grid-template-columns: 1fr 2fr;
+  }
+`;
 export const GridItem = styled.div`
   display: flex;
   flex-direction: column;
@@ -316,14 +320,6 @@ export const RecommendationItem = styled.div`
   padding-left: 15px;
   border-left: 3px solid #4a6fa5;
 `;
-
-export const ChangeIndicator = styled.span<{ change: string }>`
-  display: inline-flex;
-  align-items: center;
-  color: ${props => props.change === 'increase' ? '#4CAF50' : '#F44336'};
-  margin-left: 5px;
-`;
-
 
 /////Supoort
 export const TipsGrid = styled.div`

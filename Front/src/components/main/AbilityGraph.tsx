@@ -133,7 +133,7 @@ const PerformanceRadarChart = memo(function PerformanceRadarChart({ data, avgDat
           data={combinedData}
           margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
         >
-          <PolarGrid gridType="polygon" radialLines={false} polarRadius={id === 'A001' ? [0, 1] : [0, 20, 40, 60, 80]} />
+          <PolarGrid gridType="polygon" radialLines={false} polarRadius={id === 'A001' ? [0, 40] : [0, 20, 40, 60, 80]} />
           <PolarAngleAxis
             dataKey="name"
             axisLine={{ stroke: 'black', strokeWidth: 0.5 }}

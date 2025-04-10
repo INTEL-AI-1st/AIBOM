@@ -1,6 +1,7 @@
 import { FaRunning } from 'react-icons/fa';
 import * as RE from '@styles/report/ReportStyles';
 import * as RT from 'src/types/ReportTypes';
+import { useMemo } from 'react';
 
 interface EvaluationItem {
   item: string;
@@ -24,75 +25,65 @@ const performanceMap: Record<number, RT.PerformanceLevel> = {
   2: "완벽함",
 };
 
-// a001Summary JSON 파싱 함수
-function parseA001Summary(summary: string) {
-  try {
-    // 코드 블록(예: "```json")이 포함되어 있다면 제거합니다.
-    if (summary.startsWith("```")) {
-      // 첫 줄에 있는 ```와 언어 지정 (예: ```json) 제거
-      summary = summary.replace(/^```[^\n]*\n/, "");
-      // 마지막에 위치한 ``` 제거
-      summary = summary.replace(/\n```$/, "");
+export default function A001({ data, a001Summary }: A001Props) {
+  // useMemo는 조건과 상관없이 항상 호출해야 합니다.
+  const parsedSummary = useMemo(() => {
+    if (!a001Summary) return { taskPoints: [], kdDSTSummary: '' };
+
+    let trimmedText = a001Summary.trim();
+
+    if (trimmedText.startsWith('```json')) {
+      trimmedText = trimmedText.replace(/^```json/, '').replace(/```$/, '').trim();
     }
 
-    // JSON 문자열 파싱 및 타입 단언
-    const parsed = JSON.parse(summary) as A001SummaryJSON;
-    const evaluationItems = parsed.evaluationItems || [];
-    
-    // kdDSTSummary 문자열에서 접두어 제거 (존재하는 경우)
-    const kdDSTSummaryRaw = parsed.kdDSTSummary || "";
-    const kdDSTSummary = kdDSTSummaryRaw.replace(/^K-DST\s*분석\s*요약:\s*/, "").trim();
-    
-    // evaluationItems의 details를 bullet list로 변환 (줄바꿈, 2칸 이상의 공백, 혹은 쉼표 기준)
-    const taskPoints = evaluationItems.map((item: EvaluationItem) => {
-      const details = item.details || "";
-      let bullets = details.split(/\r?\n/);
-      if (bullets.length === 1) {
-        bullets = details.split(/\s{2,}/);
+    try {
+      const parsed = JSON.parse(trimmedText) as A001SummaryJSON;
+      const evaluationItems = parsed.evaluationItems || [];
+      
+      const kdDSTSummaryRaw = parsed.kdDSTSummary || "";
+      const kdDSTSummary = kdDSTSummaryRaw.replace(/^K-DST\s*분석\s*요약:\s*/, "").trim();
+      
+      const taskPoints = evaluationItems.map((item: EvaluationItem) => {
+        const details = item.details || "";
+        let bullets = details.split(/\r?\n/);
         if (bullets.length === 1) {
-          bullets = details.split(/,|、/);
+          bullets = details.split(/\s{2,}/);
+          if (bullets.length === 1) {
+            bullets = details.split(/,|、/);
+          }
         }
-      }
-      return bullets.map((b: string) => b.trim()).filter((b: string) => b);
-    });
-    
-    return { taskPoints, kdstSummary: kdDSTSummary };
-  } catch (error) {
-    console.error("JSON 파싱 에러:", error);
-    return { taskPoints: [], kdstSummary: '' };
-  }
-}
+        return bullets.map((b: string) => b.trim()).filter((b: string) => b);
+      });
+      
+      return { taskPoints, kdDSTSummary };
+    } catch (error) {
+      console.error("JSON 파싱 에러:", error);
+      return { taskPoints: [], kdDSTSummary: '' };
+    }
+  }, [a001Summary]);
 
-export default function A001({ data, a001Summary }: A001Props) {
   if (!data) {
     return <div>K-DST 데이터가 없습니다.</div>;
   }
   
-  // data가 배열이 아닌 경우 배열로 변환합니다.
   const a001DataArray = Array.isArray(data) ? data : [data];
 
-  // JSON 형식의 a001Summary 파싱
-  const { taskPoints: parsedTaskPoints, kdstSummary: parsedKdstSummary } = a001Summary 
-    ? parseA001Summary(a001Summary) 
-    : { taskPoints: [], kdstSummary: '' };
-
-  // data 배열을 기반으로 각 Task에 대한 정보를 구성합니다.
   const taskDataWithPoints: RT.A001Data[] = a001DataArray.map((item: RT.A001Item, index: number) => {
     const score = parseFloat(item.score);
     const performance: RT.PerformanceLevel = performanceMap[score] || "보통";
-    // JSON 파싱 결과에서 해당 인덱스의 점수 항목을 사용 (없으면 빈 배열)
-    const points = (parsedTaskPoints[index] && parsedTaskPoints[index].length > 0)
-      ? parsedTaskPoints[index] : [];
-
+    const points = (parsedSummary.taskPoints[index] && parsedSummary.taskPoints[index].length > 0)
+      ? parsedSummary.taskPoints[index]
+      : [];
+      
     return {
       id: item.num,
       task: item.info,
       score: item.score,
       performance: performance,
-      points: points
+      points: points,
     };
   });
-  
+
   return (
     <RE.SectionContainer>
       <RE.SectionTitle>
@@ -122,7 +113,7 @@ export default function A001({ data, a001Summary }: A001Props) {
       
       <RE.SummaryBox style={{ marginTop: "20px", backgroundColor: "#f7f7f7", padding: "15px" }}>
         <strong>K-DST 분석 요약: </strong>
-        <p>{parsedKdstSummary}</p>
+        <p>{parsedSummary.kdDSTSummary}</p>
       </RE.SummaryBox>
     </RE.SectionContainer>
   );

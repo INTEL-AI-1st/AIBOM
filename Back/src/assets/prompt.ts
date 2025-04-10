@@ -62,8 +62,8 @@
  * KICCE 리포트 프롬프트 템플릿
  * @param age - 아이의 나이 (세)
  * @param gender - 아이의 성별
- * @param scores - 각 영역별 점수를 담은 객체. 예: {
- *    "신체운동·건강": 85.0,
+ * @param sectionText - 항목의 평가 내용
+ *    "신체운동": 85.0,
  *    "의사소통": 90.0,
  *    "사회관계": 80.0,
  *    "예술경험": 75.0,
@@ -103,21 +103,31 @@ export function getKiccePrompt(
    * @returns 프롬프트 문자열
    */
   export function getCombinedPrompt(
-    kicceReport: string,
-    kdstReport: string
+    kdstReport: string,
+    kicceReport: string
   ): string {
     return `
-  너는 유아 발달 분석 전문가이다.
-  아래 두 리포트를 참고하여, 전문가 총평(월간 변화·두 기준 비교·통합 진단)과
-  발달 지원 팁(교육과정 연계·가정 연계 활동·K-DST 과제 포함)을 작성해 주세요.
+  당신은 유아 발달 분석 전문가입니다.
+  아래 두 리포트를 참고하여, 전반적 발달 종합 평가를 작성해주세요.
+  둘 중 하나의 데이터는 없을 수도 있습니다.
   또한, 리포트에서 아동의 발달이 부족한 영역이 확인되면,
   해당 분야의 전문 상담이나 진료가 가능한 진료과를 추천해 주세요.
-  
-  --- KICCE 리포트 ---
-  ${kicceReport}
+
+  시작 문단에 진단결과, 종합 평가: 등 기계적인 문단은 넣지 말고 자연스러운 문단으로 시작
+  채팅블럭은 최대 7개까지만 작성하세요.
   
   --- K-DST 리포트 ---
   ${kdstReport}
+  
+  --- KICCE 리포트 ---
+  ${kicceReport}
+
+  JSON 타입으로 아래 리턴형식을 반드시 지키도록 하세요.
+
+  리턴 예시)
+  {
+    Combine: 내용
+  }
     `.trim();
   }
   
@@ -130,44 +140,108 @@ export function getKiccePrompt(
    * @param domainAvg - 각 영역별 평균 점수를 담은 객체
    * @returns 프롬프트 문자열
    */
-  export function getAvgComparisonPrompt(
-    age: number,
-    gender: string,
-    scores: { [domain: string]: number },
-    differences: { [domain: string]: number },
-    domainAvg: { [domain: string]: number }
+  export function getExpertReviewPrompt(
+    name: string,
+    kdstReport: string,
+    kicceData: string
   ): string {
-    const diffLines = Object.keys(scores).map((domain) => {
-      const diff = differences[domain];
-      const sign = diff >= 0 ? "+" : "";
-      return `${domain} 점수: 내 아이(${scores[domain].toFixed(
-        1
-      )}) vs 평균(${domainAvg[domain].toFixed(1)}) → 차이: ${sign}${diff.toFixed(1)}`;
-    }).join("\n");
+  //   const diffLines = Object.keys(scores).map((domain) => {
+  //     const diff = differences[domain];
+  //     const sign = diff >= 0 ? "+" : "";
+  //     return `${domain} 점수: 내 아이(${scores[domain].toFixed(
+  //       1
+  //     )}) vs 평균(${domainAvg[domain].toFixed(1)}) → 차이: ${sign}${diff.toFixed(1)}`;
+  //   }).join("\n");
   
-    const additionalInfo = `
-  아이의 정보: ${age}세 ${gender}
-  평균 비교 결과 (내 아이 점수 - ${age}세 ${gender} 평균):
-  ${diffLines}
+  //   const additionalInfo = `
+  // 아이의 정보: ${age}세 ${gender}
+  // 평균 비교 결과 (내 아이 점수 - ${age}세 ${gender} 평균):
+  // ${diffLines}
+  return `
+  당신은 유아행동 발달 분석 결과에 대해 평가하는 전문가입니다.
+  아이의 이름은 ${name}이며
+
+  ${kicceData}
   
-  위 결과를 참고하여 리포트에 반영해 주세요.
-    `;
+  위 결과를 참고하여 
+  도메인 별로 이번 달 점수와 저번 달 점수의 차이를 비교하여 성장비교를 해주고
+  이번 달 점수와 나잇대 평균 점수도 성장비교를 해 전문가 의견을 작성해주세요.
+  상승에 (▲0.0) 하강에 (▼0.0) 와 같이 형식을 맞춰주세요
+  해당 데이터가 존재하지 않으면 계산하지 않아도 됩니다.
+
+  ${kdstReport}
   
-    return `
-  너는 유아 행동 발달 분석 전문가이자 교육 컨설턴트이다.
-  다음 아이의 정보와 평균 비교 결과를 바탕으로 KICCE 기준 발달 리포트를 작성해줘.
+  위 내용은 K-DST 결과를 기반으로 만들어진 내용입니다.
+  내용을 파악하고 전문가 의견을 작성해주세요.
+  해당 데이터가 존재하지 않으면 계산하지 않아도 됩니다.
+
+  두 내용을 합산하여 전문가의 시선으로 비교 및 조언으로 총평을 작성하고
+  성장을 위한 추천 사항을 작성해주세요.
   
-  ${additionalInfo}
-  
-  리포트 작성 시, 
-  1) 신체운동·건강  
-  2) 의사소통  
-  3) 사회관계  
-  4) 예술경험  
-  5) 자연탐구  
-  
-  각 영역별 100점 만점 점수, 평가 내용, 그리고 가정에서 할 수 있는 활동 팁을 포함하며,  
-  평균 대비 어느 정도 높은지 혹은 낮은지를 간단히 언급해줘.
+  최종적으로 전문가 총평, 추천 사항으로 리포트를 작성해주세요.
+  JSON 타입으로 아래 리턴형식을 반드시 지키도록 하세요.
+
+  리턴 예시)
+  {
+     review: 'OO이는 전반적인 발달이 안정적으로 이루어지고 있으며, 특히 자연탐구(4.8)와 의사소통(4.3) 영역에서 또래보다 높은 수준의 흥미와 탐색 역량을 보이고 있습니다.
+              경험(▲0.3)0.3과사회관계(▲0.1)0.1는 개선되었으며, 반면신체운동·건강(▼0.2)0.2은 소폭 감소하여 일부 신체 활동에서의 집중도나 수행력이 낮아진 모습이 관찰됩니다.
+              유치원의 놀이 중심 통합 수업은 OO이의 주도성과 호기심을 잘 끌어내고 있으며, 관찰 및 표현 활동에서는 몰입도가 매우 높습니다.
+              또한, K-DST 신체 과제 평가에 따르면 OO이는 '굴러오는 공 멈추기' 및 '공 튀기기' 등에서 손-눈 협응 및 반응 조절 능력이 뛰어난 수준을 보였습니다. 
+             '밧줄 뛰어넘기'에서도 기초 체력과 균형감각이 잘 발달된 모습이지만, '줄넘기' 수행에서는 반복 동작의 조절과 리듬감 형성에 어려움이 있어, 도전적 과제에 대한 자신감 회복이 필요한 시점입니다.',
+  Recommend: '줄넘기처럼 리듬감과 지속적인 신체 움직임이 필요한 활동은 부담 없는 놀이 형태(예: 음악에 맞춰 뛰기, 짧은 줄넘기 게임)로 접근해 자신감을 길러주세요.
+              성공 경험을 자주 제공하고, 격려 중심의 피드백을 통해 신체활동에 대한 긍정적 태도를 유지하는 것이 중요합니다.'
+  }
+
     `.trim();
   }
   
+
+    /**
+ * 발달 지원 팁 프롬프트 템플릿
+ * @param ageMonths - 아이의 나이 (개월)
+ * @param gender - 아이의 성별 ("남아" 또는 "여아")
+ * @param focusAreas - 지원이 필요한 발달 영역 목록 (예: ["의사소통", "사회관계", "예술경험", "자연탐구"])
+ * @returns GPT에게 전달할 프롬프트 문자열
+ */
+export function getDevelopmentTipsPrompt(
+  name: string,
+  age: number,
+  gender: string,
+  sectionText: string
+): string {
+  return `
+너는 유아 발달 지원 전문가입니다.
+아이의 이름은 ${name}으로 현재 ${age}개월 된 ${gender}이며, 네 가지 발달 영역에서 추가 지원이 필요합니다:
+
+${sectionText}
+
+위 내용을 기반으로
+가정에서의 발달 지원을 할 수 있는 4개의 영역을 선정,
+각 영역별로 가정에서 쉽게 따라할 수 있는 구체적인 팁을 **2개씩** 제안해 주세요.
+- 팁 앞에는 ✅ 이모지를 붙여 주세요.
+- 가능한 한 짧고 명확한 문장으로 작성해 주세요.
+
+기관 추천에는 아이의 발달에 위험한 부분이 있거나 특출난 부분이 있다면
+해당 부분을 강화, 보안을 할 수 있는 기관을 작성하세요.
+
+특출한 영역이나 모자란 영역이 없다면 알아서 기관을 추천해주세요.
+
+JSON 타입으로 아래 리턴형식을 반드시 지키도록 하세요.
+리턴 예시)
+  {
+    "tips": [
+      {
+        "item": "의사소통 발달 지원",
+        "details": "✅ 하루 중 아이와 1:1로 대화하는 시간을 10분 이상 가져보세요.\n그림책을 읽은 뒤 "✅ 이 다음엔 무슨 일이 일어날까?" 같은 열린 질문을 해보세요."
+      },
+      {
+        "item": "사회관계 능력 향상",
+        "details": "✅ 역할놀이(마트놀이, 병원놀이 등)를 통해 다양한 사회적 상황을 경험하게 해보세요\n "✅ 또래 친구들과 함께 놀 수 있는 기회를 자주 만들어주세요 (소규모 모임, 가족 모임 등)."
+      }
+    ],
+    "institution": "※ 해당 영역이 걱정된다면, 위 기관들의 무료 상담 또는 발달 선별검사 프로그램을 이용해보는 것도 좋습니다."
+    또는
+    "institution": "※ 해당 영역에서 흥미나 두각을 들어내는 거 같습니다. 발달을 위해 ㅇㅇ기관에 방문해 보시는 것도 좋습니다."
+  }
+  `.trim();
+}
