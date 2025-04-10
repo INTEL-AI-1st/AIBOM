@@ -1,8 +1,6 @@
 import express from "express";
 import cors from "cors";
 import os from "os";
-import * as functions from 'firebase-functions';
-
 import authRoutes from "@routes/auth/authRoutes";
 import oauthRoutes from "@routes/auth/oauthRoutes";
 import userInfoRoutes from "@routes/userPage/userInfoRoutes";
@@ -22,13 +20,11 @@ const expressApp = express();
 const PORT = Number(process.env.PORT) || 5000;
 
 // 환경 변수 FRONTEND_URL이 없다면 기본값 설정 (필요 시)
-const FRONTEND_URL = process.env.FRONTEND_URL || "https://aibom.web.app";
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 
 const corsOptions = {
   origin: [
-    'https://aibom.web.app', 
-    FRONTEND_URL, 
-    'http://localhost:5173' // 개발환경도 추가
+    FRONTEND_URL
   ],
   credentials: true, // 자격 증명 허용
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -92,6 +88,3 @@ if (process.env.NODE_ENV !== 'production') {
     console.log(`👉 http://${localIP}:${PORT}`);
   });
 }
-
-// Firebase Functions용 익스포트
-export const app = functions.https.onRequest(expressApp);
