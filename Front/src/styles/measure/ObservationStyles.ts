@@ -153,6 +153,7 @@ export const InfoIcon = styled(AiOutlineInfoCircle)`
   cursor: pointer;
   color: #0077cc;
   transition: color 0.2s;
+  margin-bottom: 2px;
   &:hover {
     color: #005fa3;
   }

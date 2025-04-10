@@ -181,12 +181,13 @@ export default function Report() {
               summary={reviewSummary}
             />
           </RE.Section>
-          
-          <RE.Section>
-            <Support 
-              summary={tipsSummary}
-            />
-          </RE.Section>
+          {reportId === 'all' &&
+            <RE.Section>
+              <Support 
+                summary={tipsSummary}
+                />
+            </RE.Section>
+          }
         </RE.ReportWrapper>
       </RE.Body>
     </RE.Container>

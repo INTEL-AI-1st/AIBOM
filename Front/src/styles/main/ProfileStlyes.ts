@@ -251,3 +251,74 @@ export const GenderRadio = styled.input.attrs({ type: 'radio' })`
   accent-color: #007bff;
   cursor: pointer;
 `;
+
+export const LeftSection = styled.div`
+  flex: 1;
+  background-color: #f0f0f0;
+  border-radius: 0;
+  display: flex;
+  flex-direction: column;
+`;
+
+export const ButtonList = styled.div`
+  display: flex;
+  gap: 10px;
+  padding: 20px;
+  flex-wrap: wrap;
+`;
+
+export const ChildButton = styled.button<{ selected: boolean }>`
+  padding: 8px 12px;
+  border: none;
+  border-radius: 8px;
+  background-color: ${({ selected }) => (selected ? "#ffb9b9" : "#ccc")};
+  color: white;
+`;
+
+export const ProfileContent = styled.div`
+  display: flex;
+  gap: 20px;
+  padding: 10px 20px;
+`;
+
+export const ProfileIconWrapper = styled.div`
+  position: relative;
+`;
+
+export const ProfileIcon = styled.div`
+  height: 200px;
+  width: 200px;
+  margin-bottom: 10px;
+  border: 1px solid #ddd;
+  border-radius: 25px;
+  img {
+    width: 100%;
+    height: 100%;
+    border-radius: 10px;
+  }
+`;
+
+export const ProfileContainer = styled.div``;
+
+export const ProfileName = styled.div`
+  font-size: 32px;
+  font-weight: 900;
+  margin-top: 5px;
+`;
+
+export const EvalWrapper = styled.div`
+  border-radius: 5px;
+  border: 1px solid #ddd;
+  margin: auto 20px 10px 20px;
+  padding: 5px 10px;
+`;
+
+export const EvalHeader = styled.div`
+  display: flex;
+  justify-content: end;
+  font-weight: 600;
+`;
+
+export const EvalBody = styled.div`
+  right: 0;
+`;

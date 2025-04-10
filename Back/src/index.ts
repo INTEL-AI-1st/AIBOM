@@ -7,6 +7,7 @@ import oauthRoutes from "@routes/auth/oauthRoutes";
 import userInfoRoutes from "@routes/userPage/userInfoRoutes";
 
 import abilityRoutes from "@routes/main/abilityRoutes";
+import chatRoutes from "@routes/main/chatRoutes";
 
 import myInfoRoutes from "@routes/myPage/myInfoRoutes";
 import myChildRoutes from "@routes/myPage/myChildRoutes";
@@ -26,7 +27,8 @@ app.use("/auth", authRoutes);
 app.use("/oauth", oauthRoutes);
 
 //main
-app.use("/ability", abilityRoutes)
+app.use("/ability", abilityRoutes);
+app.use("/chat", chatRoutes);
 
 //MyPage
 app.use("/userInfo", userInfoRoutes);

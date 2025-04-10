@@ -105,21 +105,27 @@ export const getPrompt = async (req: Request, res: Response): Promise<void> => {
 
 
     //발달 지원
-    const TipsPrompt = getDevelopmentTipsPrompt(name, age, gender, reviewResponse.output_text);
-    const tipsResponse = await client.responses.create({
-      model: "gpt-4o",
-      input: [
-        {
-          role: "system",
-          content: "너는 유아 발달 분석 전문가입니다.",
-        },
-        { role: "user", content: TipsPrompt },
-      ],
-      temperature: 0.7,
-    });
-    responses.push({ type: "tips", text: tipsResponse.output_text });
-    //총합 평가
-    const combinedPrompt = getCombinedPrompt(kdst, kicce);
+    let tips = '';
+    if(payload.context.a001 && payload.context.a002){
+      const TipsPrompt = getDevelopmentTipsPrompt(name, age, gender, reviewResponse.output_text);
+      const tipsResponse = await client.responses.create({
+        model: "gpt-4o",
+        input: [
+          {
+            role: "system",
+            content: "너는 유아 발달 분석 전문가입니다.",
+          },
+          { role: "user", content: TipsPrompt },
+        ],
+        temperature: 0.7,
+      });
+      responses.push({ type: "tips", text: tipsResponse.output_text });
+      tips = tipsResponse.output_text;
+    }
+    
+    
+    //종합 평가
+    const combinedPrompt = getCombinedPrompt(kdst, kicce, tips);
 
     const combinedResponse = await client.responses.create({
       model: "gpt-4o",

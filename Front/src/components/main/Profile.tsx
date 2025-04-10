@@ -1,65 +1,10 @@
 import { FaBaby } from "react-icons/fa";
-import styled from "styled-components";
 import { useMainContext } from "@context/MainContext";
-import { ProfileImg } from "@styles/main/ProfileStlyes";
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from "react";
 import { usePopup } from "@hooks/UsePopup";
+import * as PS from "@styles/main/ProfileStlyes";
 import { LinkP } from "@styles/main/AbilityGraphStyles";
-
-const LeftSection = styled.div`
-  flex: 1;
-  background-color: #f0f0f0;
-  border-radius: 0;
-`;
-
-const ButtonList = styled.div`
-  display: flex;
-  gap: 10px;
-  padding: 20px;
-  flex-wrap: wrap;
-`;
-
-const ChildButton = styled.button<{ selected: boolean }>`
-  padding: 8px 12px;
-  border: none;
-  border-radius: 8px;
-  background-color: ${({ selected }) => (selected ? "#ffb9b9" : "#ccc")};
-  color: white;
-`;
-
-const ProfileContent = styled.div`
-  display: flex;
-  gap: 20px;
-  padding: 20px;
-`;
-
-const ProfileIconWrapper = styled.div`
-  position: relative;
-`;
-
-const ProfileIcon = styled.div`
-  height: 200px;
-  width: 200px;
-  margin-bottom: 10px;
-  img {
-    width: 100%;
-    height: 100%;
-    border-radius: 10px;
-  }
-`;
-
-const ProfileContainer = styled.div``;
-
-const ProfileName = styled.div`
-  font-size: 32px;
-  font-weight: 900;
-  margin-top: 5px;
-`;
-
-const EvalWrapper = styled.div`
-  padding-left: 10px;
-`;
 
 export default function Profile() {
   const { loading, childInfo, selectedChild, setSelectedChild } = useMainContext();
@@ -68,6 +13,7 @@ export default function Profile() {
   
   useEffect(() => {
     async function checkChildInfo() {
+      if (loading) return;
       if (!loading && childInfo.length === 0) {
         const confirmResponse = await showConfirm({
           message:
@@ -85,51 +31,63 @@ export default function Profile() {
   }, [loading, childInfo.length, navigate]);
 
   return (
-    <LeftSection>
-      <ButtonList>
+    <PS.LeftSection>
+      <PS.ButtonList>
         {childInfo.map((info) => (
-          <ChildButton
+          <PS.ChildButton
             key={info.uid}
             selected={info.uid === selectedChild?.uid}
             onClick={() => setSelectedChild(info)}
           >
             {info.name}
-          </ChildButton>
+          </PS.ChildButton>
         ))}
-      </ButtonList>
+      </PS.ButtonList>
 
       {selectedChild && (
         <>
-          <ProfileContent>
-            <ProfileIconWrapper>
-              <ProfileIcon>
+          <PS.ProfileContent>
+            <PS.ProfileIconWrapper>
+              <PS.ProfileIcon>
                 {selectedChild.profileUrl ? (
-                  <ProfileImg src={selectedChild.profileUrl} />
+                  <PS.ProfileImg src={selectedChild.profileUrl} />
                 ) : (
                   <FaBaby size={200} color="666" />
                 )}
-              </ProfileIcon>
-            </ProfileIconWrapper>
-            <ProfileContainer>
-              <ProfileName>{selectedChild.name}</ProfileName>
+              </PS.ProfileIcon>
+            </PS.ProfileIconWrapper>
+            <PS.ProfileContainer>
+              <PS.ProfileName>{selectedChild.name}</PS.ProfileName>
               <p>
                 {selectedChild.ageYears}세 ({selectedChild.ageMonths}개월)
               </p>
-            </ProfileContainer>
-          </ProfileContent>
-          <EvalWrapper>
-            <LinkP 
-              to="/report"
-              onClick={() => {
-                localStorage.setItem('reportId', 'all');
-              }}
-            >
-              더보기 →
-            </LinkP>
-            asdasdasdasdsa
-          </EvalWrapper>
+              <p>
+                인텔 유치원(인공지능 반)
+              </p>
+              <p>
+                마크 김 선생님
+              </p>
+            </PS.ProfileContainer>
+          </PS.ProfileContent>
+          <PS.EvalWrapper>
+            <PS.EvalHeader>
+              <LinkP 
+                to="/report"
+                onClick={() => {
+                  localStorage.setItem('reportId', 'all');
+                }}
+                style={{marginTop: '0px'}}
+                >
+                종합 보고서 보기 →
+              </LinkP>
+            </PS.EvalHeader>
+            <PS.EvalBody>
+              행돌발달 그래프 + 유아 관찰 그래프
+             <br/> 통합한 것
+            </PS.EvalBody>
+          </PS.EvalWrapper>
         </>
       )}
-    </LeftSection>
+    </PS.LeftSection>
   );
 }

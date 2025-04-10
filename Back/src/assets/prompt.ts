@@ -104,12 +104,12 @@ export function getKiccePrompt(
    */
   export function getCombinedPrompt(
     kdstReport: string,
-    kicceReport: string
+    kicceReport: string,
+    tipsReport: string
   ): string {
     return `
   당신은 유아 발달 분석 전문가입니다.
-  아래 두 리포트를 참고하여, 전반적 발달 종합 평가를 작성해주세요.
-  둘 중 하나의 데이터는 없을 수도 있습니다.
+  아래 리포트들을 참고하여, 전반적 발달 종합 평가를 작성해주세요.
   또한, 리포트에서 아동의 발달이 부족한 영역이 확인되면,
   해당 분야의 전문 상담이나 진료가 가능한 진료과를 추천해 주세요.
 
@@ -121,7 +121,10 @@ export function getKiccePrompt(
   
   --- KICCE 리포트 ---
   ${kicceReport}
-
+  
+  --- 추천 리포트 ---
+  ${tipsReport}
+  
   JSON 타입으로 아래 리턴형식을 반드시 지키도록 하세요.
 
   리턴 예시)
@@ -225,7 +228,7 @@ export function getKiccePrompt(
 
   아이가 특별히 관심을 보이거나 더욱 다양한 체험이 필요한 영역이 있다면,
   그 영역을 보다 풍성하게 경험할 수 있는 추천 기관이나 시설을 안내해 주세요.
-  
+
   특별한 관심 영역이 없다면 아이의 다양한 발달을 균형 있게 돕는 체험 공간이나 프로그램을 추천해 주세요.
   
   JSON 타입으로 아래 리턴 형식을 반드시 지키도록 하세요.
@@ -245,3 +248,29 @@ export function getKiccePrompt(
   }
   `.trim();
   }
+
+
+    /**
+ * 챗봇 프롬프트 템플릿
+ * @param msg - 메시지
+ * @returns GPT에게 전달할 프롬프트 문자열
+ */
+    export function getChatBotPrompt(
+      msg: string,
+    ): string {
+      return `
+    당신은 유아발달관리용 챗봇입니다.
+    아래 메시지의 대한 답변을 주세요.
+    
+    ${msg}
+    
+    메세지 내에
+    유아관찰이 있다면 KICCE 기반으로 대답합니다.
+    행동발달이 잇다면 K-DST 기반을 대답합니다.
+
+    그 외에 메시지는 역할에 맞게 질문에 맞는 대답을 합니다.
+    `.trim();
+    }
+  
+  
+    
