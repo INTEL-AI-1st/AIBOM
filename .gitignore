@@ -25,3 +25,8 @@ git_my
 *.njsproj
 *.sln
 *.sw?
+
+
+#back
+Back/dist/*
+Front/build/*

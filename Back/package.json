@@ -1,12 +1,21 @@
 {
   "name": "back",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "lib/index.js",
   "scripts": {
     "dev": "nodemon --exec ts-node -r tsconfig-paths/register src/index.ts",
     "build": "tsc",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "deploy": "firebase deploy --only functions:app,hosting:aibom-back"
   },
   "devDependencies": {},
-  "dependencies": {}
+  "dependencies": {
+    "firebase-admin": "^11.10.0",
+    "firebase-functions": "^4.5.0",
+    "express": "^4.21.2",
+    "cors": "^2.8.5"
+  },
+  "engines": {
+    "node": "18"
+  }
 }

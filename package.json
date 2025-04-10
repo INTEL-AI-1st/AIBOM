@@ -12,9 +12,8 @@
         "start": "concurrently \"npm run start:back\" \"npm run start:front\"",
         "build:back": "npm --prefix Back run build",
         "build:front": "npm --prefix Front run build",
-        "build": "npm run build --workspaces",
-        "lint": "npm run lint --workspaces",
-        "install:cv": "build-opencv --incDir C:\\OpenCv4.11.0\\build\\include --libDir C:\\OpenCv4.11.0\\build\\x64\\vc15\\lib --binDir C:\\OpenCv4.11.0\\build\\x64\\vc15\\bin --nobuild rebuild"
+        "build": "concurrently \"npm run build:back\" \"npm run build:front\"",
+        "lint": "npm run lint --workspaces"
     },
     "dependencies": {
         "@reduxjs/toolkit": "^2.6.1",
@@ -28,6 +27,8 @@
         "cors": "^2.8.5",
         "dotenv": "^16.4.7",
         "express": "^4.21.2",
+        "firebase-admin": "^13.2.0",
+        "firebase-functions": "^6.3.2",
         "html2canvas": "^1.4.1",
         "js-cookie": "^3.0.5",
         "jsonwebtoken": "^9.0.2",
