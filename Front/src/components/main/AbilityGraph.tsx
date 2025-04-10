@@ -177,9 +177,14 @@ const PerformanceCard = memo(function PerformanceCard({ data }: { data: Performa
   const showOverlay = useMemo(() => data.data.every(item => isNaN(item.value)), [data.data]);
 
   const headerLink = useMemo(() => {
-    if (data.id === 'A003' || data.status === '0') return null;
-    return data.id === 'A002' ? '/report' : data.id === 'A001' ? '/' : '#';
-  }, [data.id, data.status]);
+    const { id, status } = data;
+    if (id === 'A003' || status === '0') return null;
+    if (id === 'A002' || id === 'A001') {
+      localStorage.setItem('reportId', id);
+      return { pathname: '/report' };
+    }
+    return '#';
+  }, [data]);
 
   const footerLink = useMemo(() => {
     if (data.id === 'A003' || data.status === '1') return null;

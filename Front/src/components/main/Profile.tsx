@@ -4,6 +4,8 @@ import { useMainContext } from "@context/MainContext";
 import { ProfileImg } from "@styles/main/ProfileStlyes";
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from "react";
+import { usePopup } from "@hooks/UsePopup";
+import { LinkP } from "@styles/main/AbilityGraphStyles";
 
 const LeftSection = styled.div`
   flex: 1;
@@ -60,51 +62,74 @@ const EvalWrapper = styled.div`
 `;
 
 export default function Profile() {
-    const { loading, childInfo, selectedChild, setSelectedChild } = useMainContext();
-    const navigate = useNavigate();
-    
-    useEffect(() => {
-        if(!loading && childInfo.length == 0){
-          navigate('/community');
+  const { loading, childInfo, selectedChild, setSelectedChild } = useMainContext();
+  const { showConfirm } = usePopup();
+  const navigate = useNavigate();
+  
+  useEffect(() => {
+    async function checkChildInfo() {
+      if (!loading && childInfo.length === 0) {
+        const confirmResponse = await showConfirm({
+          message:
+            "아이를 먼저 등록하셔야 해당 메뉴를 확인가능합니다<br/>등록하러 가시겠습니까?",
+        });
+        if (confirmResponse) {
+          navigate("/my");
+        } else {
+          navigate("/community");
         }
-    }, [childInfo.length, navigate, loading]);
+      }
+    }
+    checkChildInfo();
+    // eslint-disable-next-line
+  }, [loading, childInfo.length, navigate]);
 
-    return (
-        <LeftSection>
-        <ButtonList>
-            {childInfo.map((info) => (
-            <ChildButton
-                key={info.uid}
-                selected={info.uid === selectedChild?.uid}
-                onClick={() => setSelectedChild(info)}
+  return (
+    <LeftSection>
+      <ButtonList>
+        {childInfo.map((info) => (
+          <ChildButton
+            key={info.uid}
+            selected={info.uid === selectedChild?.uid}
+            onClick={() => setSelectedChild(info)}
+          >
+            {info.name}
+          </ChildButton>
+        ))}
+      </ButtonList>
+
+      {selectedChild && (
+        <>
+          <ProfileContent>
+            <ProfileIconWrapper>
+              <ProfileIcon>
+                {selectedChild.profileUrl ? (
+                  <ProfileImg src={selectedChild.profileUrl} />
+                ) : (
+                  <FaBaby size={200} color="666" />
+                )}
+              </ProfileIcon>
+            </ProfileIconWrapper>
+            <ProfileContainer>
+              <ProfileName>{selectedChild.name}</ProfileName>
+              <p>
+                {selectedChild.ageYears}세 ({selectedChild.ageMonths}개월)
+              </p>
+            </ProfileContainer>
+          </ProfileContent>
+          <EvalWrapper>
+            <LinkP 
+              to="/report"
+              onClick={() => {
+                localStorage.setItem('reportId', 'all');
+              }}
             >
-                {info.name}
-            </ChildButton>
-            ))}
-        </ButtonList>
-
-        {selectedChild && (
-            <>
-            <ProfileContent>
-                <ProfileIconWrapper>
-                <ProfileIcon>
-                    {selectedChild.profileUrl ? (
-                    <ProfileImg src={selectedChild.profileUrl} />
-                    ) : (
-                    <FaBaby size={200} color="666"/>
-                    )}
-                </ProfileIcon>
-                </ProfileIconWrapper>
-                <ProfileContainer>
-                <ProfileName>{selectedChild.name}</ProfileName>
-                <p>
-                    {selectedChild.ageYears}세 ({selectedChild.ageMonths}개월)
-                </p>
-                </ProfileContainer>
-            </ProfileContent>
-            <EvalWrapper>ㅇㄹㅇㄹㅇㅁㄹㄴ</EvalWrapper>
-            </>
-        )}
-        </LeftSection>
-    );
+              더보기 →
+            </LinkP>
+            asdasdasdasdsa
+          </EvalWrapper>
+        </>
+      )}
+    </LeftSection>
+  );
 }

@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useState, useRef } from "react";
+import { useEffect, useCallback, useState, useRef, useMemo } from "react";
 import { useMainContext } from "@context/MainContext";
 import * as RS from "@services/report/ReportService";
 import * as RT from "src/types/ReportTypes";
@@ -27,15 +27,16 @@ function useSubscribers(key: string): Map<string, number> {
   const subscribersRef = useRef<Map<string, number>>(new Map());
   
   useEffect(() => {
-    const current = subscribersRef.current.get(key) || 0;
-    subscribersRef.current.set(key, current + 1);
+    const subscribers = subscribersRef.current;
+    const current = subscribers.get(key) || 0;
+    subscribers.set(key, current + 1);
     
     return () => {
-      const count = subscribersRef.current.get(key) || 0;
+      const count = subscribers.get(key) || 0;
       if (count <= 1) {
-        subscribersRef.current.delete(key);
+        subscribers.delete(key);
       } else {
-        subscribersRef.current.set(key, count - 1);
+        subscribers.set(key, count - 1);
       }
     };
   }, [key]);
@@ -270,72 +271,106 @@ export function useChildData() {
 
 /**
  * GPT API를 호출하여 요약 텍스트를 생성하는 훅
- * @param prompt GPT API에 전달할 프롬프트 텍스트 (사용자가 자유롭게 수정 가능)
- * @returns {Object} { summary, loading, error, refetch } - 생성된 요약, 로딩 상태, 에러, 재호출 함수
+ * @param reportId GPT API 호출에 필요한 리포트 아이디 (필수)
+ * @param profile 사용자 프로파일 (선택적)
+ * @param a001 A001 아이템 (선택적)
+ * @param a002 A002 아이템 (선택적)
+ * @returns {Object} { summary, a001Summary, a002Summary, reviewSummary, tipsSummary, loading, error, refetch } - 생성된 요약들, 로딩 상태, 에러, 재호출 함수
  */
 export function useGptSummary(
+  reportId: string | null,
   profile?: RT.ChildProfile,
   a001?: RT.A001Item,
   a002?: RT.A002Item
 ) {
-  const [summary, setSummary] = useState("");
-  const [a001Summary, setA001Summary] = useState("");
-  const [a002Summary, setA002Summary] = useState("");
-  const [reviewSummary, setReviewSummary] = useState("");
-  const [tipsSummary, setTipsSummary] = useState("");
+  const [summaries, setSummaries] = useState({
+    summary: "",
+    a001Summary: "",
+    a002Summary: "",
+    reviewSummary: "",
+    tipsSummary: ""
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  
+  const successfulFetchRef = useRef(false);
+  const fetchingRef = useRef(false);
+  
+  const hasRequiredData = useMemo(() => {
+    if (!reportId) return false;
+    
+    switch (reportId) {
+      case 'A001':
+        return !!profile && !!a001;
+      case 'A002':
+        return !!profile && !!a002;
+      default:
+        return !!profile && !!a001 && !!a002;
+    }
+  }, [reportId, profile, a001, a002]);
 
-  // 이미 GPT 요청이 실행되었는지 추적 (중복 호출 방지)
-  const hasFetchedRef = useRef(false);
-
-  const fetchGptSummary = useCallback(async () => {
-    // 모든 데이터가 준비되지 않았다면 호출 중단
-    if (!profile || !a001 || !a002) return;
-    // 이미 한 번 실행되었으면 다시 호출하지 않음
-    if (hasFetchedRef.current) return;
-    hasFetchedRef.current = true;
-
+  const fetchGptSummary = useCallback(async (force = false) => {
+    if (!hasRequiredData || !reportId) return;
+    if (successfulFetchRef.current && !force) return;
+    if (fetchingRef.current) return;
+    fetchingRef.current = true;
+    
     setLoading(true);
     setError(null);
-
+    
     try {
-      // 상위 컴포넌트에서 가져온 데이터를 payload로 전달
-      const payload = {
-        context: { profile, a001, a002 },
+      const context: Record<string, RT.ChildProfile | RT.A001Item | RT.A002Item | undefined> = { profile };
+      if (reportId === 'A001' || reportId === 'all') {
+        context.a001 = a001;
+      }
+      if (reportId === 'A002' || reportId === 'all') {
+        context.a002 = a002;
+      }
+
+      const response = await RS.getPrompt({ context });
+      
+      const findResponseText = (type: string): string => {
+        const item = response.responses?.find((r: RT.ResponseItem) => r.type === type);
+        return item?.text ?? "";
       };
-
-      // 실제 GPT 요청 (예시 함수 RS.getPrompt)
-      const response = await RS.getPrompt(payload);
-
-      // 응답 예시:
-      // { responses: [{ type: "K-DST", text: "..."}, { type: "KICCE", text: "..."}, { type: "Combined", text: "..."}] }
-      const kdstResponse = response.responses?.find((r: RT.ResponseItem) => r.type === "K-DST");
-      const kicceResponse = response.responses?.find((r: RT.ResponseItem) => r.type === "KICCE");
-      const reviewResponse = response.responses?.find((r: RT.ResponseItem) => r.type === "review");
-      const tipsResponse = response.responses?.find((r: RT.ResponseItem) => r.type === "tips");
-      const combinedResponse = response.responses?.find((r: RT.ResponseItem) => r.type === "Combined");
-
-      setA001Summary(kdstResponse?.text ?? "");
-      setA002Summary(kicceResponse?.text ?? "");
-      setReviewSummary(reviewResponse?.text ?? "");
-      setTipsSummary(tipsResponse?.text ?? "")
-      setSummary(combinedResponse?.text ?? "");
-
+      
+      setSummaries({
+        summary: findResponseText("Combined"),
+        a001Summary: findResponseText("K-DST"),
+        a002Summary: findResponseText("KICCE"),
+        reviewSummary: findResponseText("review"),
+        tipsSummary: findResponseText("tips")
+      });
+      
+      // 성공적으로 완료됨을 표시
+      successfulFetchRef.current = true;
     } catch (err) {
       console.error("GPT 요약 호출 오류:", err);
       setError(err instanceof Error ? err : new Error(String(err)));
     } finally {
       setLoading(false);
+      fetchingRef.current = false;
     }
-  }, [profile, a001, a002]);
+  }, [reportId, hasRequiredData, profile, a001, a002]);
 
+  // 초기 데이터 로드 및 의존성 변경 시 실행
   useEffect(() => {
-    // 모든 데이터가 준비된 경우에만 GPT 요청 실행
-    if (profile && a001 && a002) {
+    // 모든 필수 데이터가 준비된 경우에만 실행
+    if (hasRequiredData) {
       fetchGptSummary();
     }
-  }, [profile, a001, a002, fetchGptSummary]);
+  }, [hasRequiredData, fetchGptSummary]);
 
-  return { summary, a001Summary, a002Summary, reviewSummary, tipsSummary, loading, error, refetch: fetchGptSummary };
+  // 강제로 다시 호출하는 함수
+  const refetch = useCallback(() => {
+    successfulFetchRef.current = false;
+    fetchGptSummary(true);
+  }, [fetchGptSummary]);
+
+  return {
+    ...summaries,
+    loading,
+    error,
+    refetch
+  };
 }

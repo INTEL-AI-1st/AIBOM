@@ -5,7 +5,7 @@ import {
 import { FaUsers, FaRunning, FaComments, FaPalette, FaMicroscope } from 'react-icons/fa';
 import * as RE from '@styles/report/ReportStyles';
 import * as RT from 'src/types/ReportTypes';
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 
 interface A002Props {
   data: RT.A002Item | RT.A002Item[] | undefined;
@@ -22,6 +22,20 @@ interface CustomTickProps {
 }
 
 export default function A002({ data, a002Summary }: A002Props) {
+  // 모바일 사이즈 판별을 위한 state 추가 (예: 768px 이하이면 모바일)
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    // 최초 사이즈 체크
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
+
   // 1) JSON 파싱
   const parsedSummary = useMemo(() => {
     if (!a002Summary) return {};
@@ -98,9 +112,7 @@ export default function A002({ data, a002Summary }: A002Props) {
     return (
       <g transform={`translate(${newX}, ${newY})`}>
         <text textAnchor="middle" fill="#333">
-          {/* 도메인 이름 */}
           {payload.value}
-          {/* tspan으로 다음 줄에 점수를 표시 (혹은 원하시는 대로 구조 변경 가능) */}
           <tspan x="0" dy="1.6em" fontSize="12">{scoreText}</tspan>
         </text>
       </g>
@@ -141,7 +153,6 @@ export default function A002({ data, a002Summary }: A002Props) {
                   fillOpacity={0.6}
                 />
                 <PolarGrid />
-                {/* 커스텀 Tick 함수를 사용해 꼭지점에서 라벨을 띄웁니다 */}
                 <PolarAngleAxis 
                   dataKey="subject" 
                   tick={renderPolarAngleAxisTick} 
@@ -166,7 +177,8 @@ export default function A002({ data, a002Summary }: A002Props) {
                 <Tooltip formatter={(value) => [`${value}/100`, '점수']} />
                 <Legend />
                 <Bar dataKey="score" fill="#4a6fa5" name="아이 점수">
-                  <LabelList dataKey="score" position="top" fill="#333" />
+                  {/* 모바일 사이즈이면 라벨 숨김 */}
+                  {!isMobile && <LabelList dataKey="score" position="top" fill="#333" />}
                 </Bar>
                 <Bar dataKey="avg" fill="#82ca9d" name="또래 평균">
                   <LabelList dataKey="avg" position="top" fill="#333" />

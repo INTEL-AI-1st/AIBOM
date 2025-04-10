@@ -80,59 +80,59 @@ export const getPrompt = async (req: Request, res: Response): Promise<void> => {
     }
 
     //전문가 총평
-
-      const compairText = a002Data
+    let compairText = ''
+    if (payload.context.a002) {
+      compairText = a002Data
       .map((item) => {
         return `${item.domain}: { 저번 달 점수: ${item.prevSco}, 이번 달 점수: ${item.score}, 나잇대 평균: ${item.avg} }`;
       })
       .join("\n");
+    }
 
-      const reviewPrompt = getExpertReviewPrompt(name, kdstReport, compairText);
+    const reviewPrompt = getExpertReviewPrompt(name, kdst, compairText);
+    const reviewResponse = await client.responses.create({
+      model: "gpt-4o",
+      input: [
+        {
+          role: "system",
+          content: "너는 유아 발달 분석 전문가입니다.",
+        },
+        { role: "user", content: reviewPrompt },
+      ],
+      temperature: 0.7,
+    });
+    responses.push({ type: "review", text: reviewResponse.output_text });
 
-      const reviewResponse = await client.responses.create({
-        model: "gpt-4o",
-        input: [
-          {
-            role: "system",
-            content: "너는 유아 발달 분석 전문가입니다.",
-          },
-          { role: "user", content: reviewPrompt },
-        ],
-        temperature: 0.7,
-      });
-      responses.push({ type: "review", text: reviewResponse.output_text });
 
+    //발달 지원
+    const TipsPrompt = getDevelopmentTipsPrompt(name, age, gender, reviewResponse.output_text);
+    const tipsResponse = await client.responses.create({
+      model: "gpt-4o",
+      input: [
+        {
+          role: "system",
+          content: "너는 유아 발달 분석 전문가입니다.",
+        },
+        { role: "user", content: TipsPrompt },
+      ],
+      temperature: 0.7,
+    });
+    responses.push({ type: "tips", text: tipsResponse.output_text });
+    //총합 평가
+    const combinedPrompt = getCombinedPrompt(kdst, kicce);
 
-      //발달 지원
-
-      const TipsPrompt = getDevelopmentTipsPrompt(name, age, gender, reviewResponse.output_text);
-      const tipsResponse = await client.responses.create({
-        model: "gpt-4o",
-        input: [
-          {
-            role: "system",
-            content: "너는 유아 발달 분석 전문가입니다.",
-          },
-          { role: "user", content: TipsPrompt },
-        ],
-        temperature: 0.7,
-      });
-      responses.push({ type: "tips", text: tipsResponse.output_text });
-      //총합 평가
-      const combinedPrompt = getCombinedPrompt(kdst, kicce);
-
-      const combinedResponse = await client.responses.create({
-        model: "gpt-4o",
-        input: [
-          {
-            role: "system",
-            content: "너는 유아 발달 분석 전문가입니다.",
-          },
-          { role: "user", content: combinedPrompt },
-        ],
-        temperature: 0.7,
-      });
-      responses.push({ type: "Combined", text: combinedResponse.output_text });
+    const combinedResponse = await client.responses.create({
+      model: "gpt-4o",
+      input: [
+        {
+          role: "system",
+          content: "너는 유아 발달 분석 전문가입니다.",
+        },
+        { role: "user", content: combinedPrompt },
+      ],
+      temperature: 0.7,
+    });
+    responses.push({ type: "Combined", text: combinedResponse.output_text });
 
     res.json({ responses });
   } catch (error) {

@@ -10,7 +10,6 @@ interface ProfileProps {
 
 export default function Profile({ data, summary }: ProfileProps) {
   const parsedSummary = useMemo(() => {
-    console.log(summary);
     if (!summary) return {};
     let trimmedText = summary.trim();
 
