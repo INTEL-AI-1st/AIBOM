@@ -30,7 +30,6 @@ export default function Report() {
 
   const showA001 = !reportId || reportId === 'all' || reportId === 'A001';
   const showA002 = !reportId || reportId === 'all' || reportId === 'A002';
-  
   const { 
     data: profileData, 
     loading: profileLoading, 
@@ -74,9 +73,7 @@ export default function Report() {
     (showA002 && a002Error) || 
     gptError;
 
-  const isMissingData = !profileData || 
-    (showA001 && !a001Data) || 
-    (showA002 && !a002Data);
+  const isMissingData = !profileData;
 
   if (isLoading) {
     return (
@@ -181,13 +178,13 @@ export default function Report() {
               summary={reviewSummary}
             />
           </RE.Section>
-          {reportId === 'all' &&
+          {a001Data && a002Data && (
             <RE.Section>
               <Support 
                 summary={tipsSummary}
                 />
             </RE.Section>
-          }
+          )}
         </RE.ReportWrapper>
       </RE.Body>
     </RE.Container>

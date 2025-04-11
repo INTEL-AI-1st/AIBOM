@@ -68,6 +68,7 @@ export const getAuth = async (): Promise<boolean> => {
 // 로그아웃 API (토큰 삭제)
 export const logoutUser = () => {
   localStorage.removeItem("token");
+  localStorage.removeItem("selectedChild");
 };
 
 

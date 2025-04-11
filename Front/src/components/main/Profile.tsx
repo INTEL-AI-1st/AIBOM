@@ -14,7 +14,9 @@ export default function Profile() {
   useEffect(() => {
     async function checkChildInfo() {
       if (loading) return;
-      if (!loading && childInfo.length === 0) {
+      console.log(childInfo.length);
+      console.log(selectedChild);
+      if (!loading && childInfo.length === 0 && !selectedChild) {
         const confirmResponse = await showConfirm({
           message:
             "아이를 먼저 등록하셔야 해당 메뉴를 확인가능합니다<br/>등록하러 가시겠습니까?",
@@ -28,7 +30,7 @@ export default function Profile() {
     }
     checkChildInfo();
     // eslint-disable-next-line
-  }, [loading, childInfo.length, navigate]);
+  }, [loading, selectedChild, childInfo.length, navigate]);
 
   return (
     <PS.LeftSection>

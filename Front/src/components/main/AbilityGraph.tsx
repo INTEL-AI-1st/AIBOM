@@ -180,6 +180,7 @@ const PerformanceCard = memo(function PerformanceCard({ data }: { data: Performa
     const { id, status } = data;
     if (id === 'A003' || status === '0') return null;
     if (id === 'A002' || id === 'A001') {
+      localStorage.removeItem('reportId');
       localStorage.setItem('reportId', id);
       return { pathname: '/report' };
     }

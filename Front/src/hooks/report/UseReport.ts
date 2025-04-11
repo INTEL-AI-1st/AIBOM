@@ -305,7 +305,7 @@ export function useGptSummary(
       case 'A002':
         return !!profile && !!a002;
       default:
-        return !!profile && !!a001 && !!a002;
+        return !!profile;
     }
   }, [reportId, profile, a001, a002]);
 

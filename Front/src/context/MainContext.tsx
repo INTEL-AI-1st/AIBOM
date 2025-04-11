@@ -46,7 +46,7 @@ export const MainProvider = ({ children }: { children: ReactNode }) => {
     const stored = localStorage.getItem("selectedChild");
     return stored ? JSON.parse(stored) : null;
   });
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (selectedChild) {

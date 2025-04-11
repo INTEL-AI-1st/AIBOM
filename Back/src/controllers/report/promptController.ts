@@ -24,6 +24,7 @@ export const getPrompt = async (req: Request, res: Response): Promise<void> => {
     
     const a001Data: any[] = payload.context.a001;
     const a002Data: any[] = payload.context.a002;
+
     // a001이 존재할 경우: K-DST 평가 프롬프트 생성 및 호출
     if (payload.context.a001) {
 
@@ -52,7 +53,7 @@ export const getPrompt = async (req: Request, res: Response): Promise<void> => {
       kdst = kdstReport ? kdstReport : kdstResponse.output_text;
       responses.push({ type: "K-DST", text: kdstResponse.output_text });
     }
-
+    console.log(`kdst`);
 
     // a002가 존재할 경우: KICCE 평가 프롬프트 생성 및 호출
     if (payload.context.a002) {
@@ -78,7 +79,7 @@ export const getPrompt = async (req: Request, res: Response): Promise<void> => {
       kicce = kicceReport ? kicceReport : kicceResponse.output_text;
       responses.push({ type: "KICCE", text: kicceResponse.output_text });
     }
-
+    console.log(`kicce`);
     //전문가 총평
     let compairText = ''
     if (payload.context.a002) {
@@ -88,6 +89,9 @@ export const getPrompt = async (req: Request, res: Response): Promise<void> => {
       })
       .join("\n");
     }
+
+    console.log(`kdst  ${kdst}`);
+    console.log(`compairText ${compairText}`);
 
     const reviewPrompt = getExpertReviewPrompt(name, kdst, compairText);
     const reviewResponse = await client.responses.create({
@@ -102,7 +106,7 @@ export const getPrompt = async (req: Request, res: Response): Promise<void> => {
       temperature: 0.7,
     });
     responses.push({ type: "review", text: reviewResponse.output_text });
-
+    console.log(`review`);
 
     //발달 지원
     let tips = '';
@@ -125,7 +129,7 @@ export const getPrompt = async (req: Request, res: Response): Promise<void> => {
     
     
     //종합 평가
-    const combinedPrompt = getCombinedPrompt(kdst, kicce, tips);
+    const combinedPrompt = getCombinedPrompt(name, kdst, kicce, tips);
 
     const combinedResponse = await client.responses.create({
       model: "gpt-4o",

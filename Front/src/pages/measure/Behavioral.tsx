@@ -30,7 +30,6 @@ interface Ability {
 export default function Behavioral() {
   const { selectedChild } = useMainContext();
   const navigate = useNavigate();
-  // 타입이 지정된 dispatch 사용 (thunk 액션도 지원)
   const dispatch = useDispatch<AppDispatch>();
 
   // Redux 상태
@@ -46,12 +45,12 @@ export default function Behavioral() {
   const videoPreviewRef = useRef<HTMLVideoElement>(null);
   const recordingTimerRef = useRef<NodeJS.Timeout | null>(null);
 
+  // 로컬 상태
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
-
-  // 로컬 상태: 타이머 카운트다운
   const [localTime, setLocalTime] = useState(15);
-
+  const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const chunksRef = useRef<Blob[]>([]);
 
   useEffect(() => {
@@ -66,25 +65,28 @@ export default function Behavioral() {
     }
   }, [stream]);
 
+  // 타이머 업데이트 (비동기 dispatch 호출로 렌더와 분리)
   useEffect(() => {
     let timer: NodeJS.Timeout;
     if (isRecording) {
       setLocalTime(15);
-      dispatch(setRemainingTime(15));
+      // 시작 시 남은 시간 업데이트
+      setTimeout(() => dispatch(setRemainingTime(15)), 0);
       timer = setInterval(() => {
         setLocalTime((prevTime) => {
           const newTime = prevTime - 1;
           if (newTime <= 0) {
             if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-              mediaRecorder.stop();
+              setTimeout(() => mediaRecorder.stop(), 0);
             }
-            dispatch(setIsRecording(false));
+            setTimeout(() => dispatch(setIsRecording(false)), 0);
             clearInterval(timer);
-            dispatch(setRemainingTime(0));
+            setTimeout(() => dispatch(setRemainingTime(0)), 0);
             return 0;
+          } else {
+            setTimeout(() => dispatch(setRemainingTime(newTime)), 0);
+            return newTime;
           }
-          dispatch(setRemainingTime(newTime));
-          return newTime;
         });
       }, 1000);
       recordingTimerRef.current = timer;
@@ -111,7 +113,7 @@ export default function Behavioral() {
   const handleRecord = useCallback(async () => {
     if (!isRecording) {
       try {
-        // Permissions API를 통해 카메라와 마이크 권한 상태 확인
+        // 카메라와 마이크 권한 확인
         if (navigator.permissions) {
           const cameraPerm = await navigator.permissions.query({ name: 'camera' });
           const micPerm = await navigator.permissions.query({ name: 'microphone' });
@@ -121,15 +123,17 @@ export default function Behavioral() {
           }
         }
         
-        // 권한이 prompt 상태라면 getUserMedia가 자동으로 권한 요청을 수행함
+        // 후면 카메라 우선 설정
         const userStream = await navigator.mediaDevices.getUserMedia({
-          video: true,
+          video: { facingMode: { ideal: 'environment' } },
           audio: true,
         });
         
         setStream(userStream);
         chunksRef.current = [];
-  
+        setRecordedBlob(null);
+        setUploadedFile(null);
+
         const recorder = new MediaRecorder(userStream);
         setMediaRecorder(recorder);
   
@@ -141,6 +145,7 @@ export default function Behavioral() {
   
         recorder.onstop = () => {
           const blob = new Blob(chunksRef.current, { type: 'video/mp4' });
+          setRecordedBlob(blob);
           const url = URL.createObjectURL(blob);
           dispatch(setPreviewUrl(url));
           cleanupStream();
@@ -189,6 +194,10 @@ export default function Behavioral() {
       const file = files[0];
       const url = URL.createObjectURL(file);
       dispatch(setPreviewUrl(url));
+      // 업로드한 파일을 상태에 저장
+      setUploadedFile(file);
+      // 녹화 결과와는 별개로 저장
+      setRecordedBlob(null);
     }
   }, [dispatch]);
 
@@ -199,19 +208,11 @@ export default function Behavioral() {
     }
   
     const formData = new FormData();
-  
-    if (fileInputRef.current?.files?.[0]) {
-      formData.append('video', fileInputRef.current.files[0]);
-    } else if (previewUrl) {
-      try {
-        const response = await fetch(previewUrl);
-        const blob = await response.blob();
-        formData.append('video', blob, 'recorded.mp4');
-      } catch (error) {
-        console.error('비디오 블롭 생성 실패:', error);
-        alert('비디오 데이터를 처리하는데 실패했습니다.');
-        return;
-      }
+    // 업로드 파일이 있다면 우선 사용, 없으면 녹화 결과 사용
+    if (uploadedFile) {
+      formData.append('video', uploadedFile);
+    } else if (recordedBlob) {
+      formData.append('video', recordedBlob, 'recorded.mp4');
     } else {
       alert('영상 파일을 먼저 업로드 또는 녹화 해주세요.');
       return;
@@ -219,7 +220,7 @@ export default function Behavioral() {
   
     formData.append('uid', `${selectedChild.uid}`);
     formData.append('abilityLabelId', `${selectedAbility.abilityLabelId}`);
-    formData.append('data_type', `${selectedAbility.groupId}\\${selectedAbility.groupNum}`);
+    formData.append('data_type', `${selectedAbility.groupId}${selectedAbility.groupNum}`);
   
     try {
       toast.info(
@@ -229,26 +230,23 @@ export default function Behavioral() {
           잠시만 기다려주세요.
         </>
       );
-      if(!selectedChild?.uid || !selectedAbility?.abilityLabelId) return;
-      await insertBeha(selectedChild?.uid, selectedAbility?.abilityLabelId);
+      if (!selectedChild?.uid || !selectedAbility?.abilityLabelId) return;
+      await insertBeha(selectedChild.uid, selectedAbility.abilityLabelId);
       await dispatch(sendBehavioralData(formData));
-      // abilities 배열에서 현재 선택된 selectedAbility의 인덱스를 찾아 다음 아이템으로 업데이트
-      const currentIndex = abilities.findIndex(
-        (ability: Ability) => ability.abilityLabelId === selectedAbility.abilityLabelId
-      );
-      if (currentIndex !== -1 && currentIndex < abilities.length - 1) {
-        dispatch(setSelectedAbility(abilities[currentIndex + 1]));
-      }
 
+      dispatch(setSelectedAbility(selectedAbility));
+  
       dispatch(resetPreview(true));
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
       chunksRef.current = [];
+      setRecordedBlob(null);
+      setUploadedFile(null);
     } catch (error) {
       console.error('데이터 전송 오류:', error);
     }
-  }, [previewUrl, selectedAbility, selectedChild, abilities, dispatch]);  
+  }, [uploadedFile, recordedBlob, selectedAbility, selectedChild, dispatch]);
 
   const handleReRecord = useCallback(() => {
     dispatch(resetPreview(true));
@@ -256,6 +254,8 @@ export default function Behavioral() {
       fileInputRef.current.value = '';
     }
     chunksRef.current = [];
+    setRecordedBlob(null);
+    setUploadedFile(null);
   }, [dispatch]);
 
   const handleSelectAbility = useCallback((ability: Ability) => {
@@ -308,13 +308,13 @@ export default function Behavioral() {
           {selectedAbility?.score &&
             <p>저장된 데이터가 존재합니다. 재측정은 가능하지만 기존 데이터가 삭제됩니다.</p>
           }
-          {selectedAbility?.isMeas ?
+          {selectedAbility?.isMeas ? (
             <BE.BtnWrapper>
               <BE.Btn onClick={handleReRecord} disabled={isLoading}>
                 측정 중입니다..
               </BE.Btn>
-            </BE.BtnWrapper> 
-            :
+            </BE.BtnWrapper>
+          ) : (
             <>
               {!previewUrl ? (
                 <BE.BtnWrapper>
@@ -329,7 +329,7 @@ export default function Behavioral() {
                     accept="video/*"
                     ref={fileInputRef}
                     onChange={handleFileChange}
-                    />
+                  />
                 </BE.BtnWrapper>
               ) : (
                 <BE.BtnWrapper>
@@ -350,20 +350,20 @@ export default function Behavioral() {
                     autoPlay
                     muted
                     playsInline
-                    />
+                  />
                 </BE.VideoContainer>
               )}
 
-          {previewUrl && (
-            <BE.VideoContainer>
-              <video width="400" controls>
-                <source src={previewUrl} type="video/mp4" />
-                브라우저가 video 태그를 지원하지 않습니다.
-              </video>
-            </BE.VideoContainer>
+              {previewUrl && (
+                <BE.VideoContainer>
+                  <video width="400" controls>
+                    <source src={previewUrl} type="video/mp4" />
+                    브라우저가 video 태그를 지원하지 않습니다.
+                  </video>
+                </BE.VideoContainer>
+              )}
+            </>
           )}
-        </> 
-       }
         </BE.ContentContainer>
         <BE.RecordIndicator>
           촬영 동작 : {selectedAbility?.info}
@@ -371,6 +371,6 @@ export default function Behavioral() {
       </BE.SubContainer>
       
       <BE.ToastCon />
-      </BE.Container>
+    </BE.Container>
   );
 }

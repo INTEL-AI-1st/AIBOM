@@ -1,6 +1,10 @@
 import express from "express";
 import cors from "cors";
 import os from "os";
+import fs from "fs";
+import https from "https";
+import path from 'path';
+
 import authRoutes from "@routes/auth/authRoutes";
 import oauthRoutes from "@routes/auth/oauthRoutes";
 import userInfoRoutes from "@routes/userPage/userInfoRoutes";
@@ -36,8 +40,6 @@ expressApp.options('*', cors(corsOptions));
 expressApp.use(cors(corsOptions));
 expressApp.use(express.json());
 
-// CORS 커스텀 미들웨어 제거 - cors 라이브러리가 이미 처리하고 있음
-
 // Auth Routes
 expressApp.use("/auth", authRoutes);
 expressApp.use("/oauth", oauthRoutes);
@@ -69,8 +71,8 @@ expressApp.get("/health", (req, res) => {
 // ▶ 로컬 IP 구하는 함수
 function getLocalIP() {
   const interfaces = os.networkInterfaces();
-  for (const name of Object.keys(interfaces)) {
-    for (const net of interfaces[name]!) {
+  for (const name in interfaces) {
+    for (const net of interfaces[name] || []) {
       if (net.family === "IPv4" && !net.internal) {
         return net.address;
       }
@@ -79,12 +81,25 @@ function getLocalIP() {
   return "unknown";
 }
 
-// 로컬 개발 환경에서만 실행
+// HTTPS 옵션에 인증서와 개인키 파일 경로 설정 (경로는 파일이 저장된 위치에 맞게 조정)
+const httpsOptions = {
+  key: fs.readFileSync(path.join(__dirname, 'keys', 'private.pem')),
+  cert: fs.readFileSync(path.join(__dirname, 'keys', 'public.pem')), 
+};
+
+// 로컬 개발 환경에서 HTTPS 서버 실행
 if (process.env.NODE_ENV !== 'production') {
   const localIP = getLocalIP();
-  expressApp.listen(PORT, "0.0.0.0", () => {
-    console.log(`🚀 Server running at:`);
-    console.log(`👉 http://localhost:${PORT}`);
-    console.log(`👉 http://${localIP}:${PORT}`);
+  
+  // HTTPS 서버 생성
+  https.createServer(httpsOptions, expressApp).listen(PORT, "0.0.0.0", () => {
+    console.log(`🚀 HTTPS Server running at:`);
+    console.log(`👉 https://localhost:${PORT}`);
+    console.log(`👉 https://${localIP}:${PORT}`);
+  });
+} else {
+  // production 환경에서는 일반 HTTP 서버 실행 (또는 실제 인증서 사용한 HTTPS 서버 구성)
+  expressApp.listen(PORT, () => {
+    console.log(`🚀 Server running at http://localhost:${PORT}`);
   });
 }

@@ -6,6 +6,12 @@ const BannerContainer = styled.div`
   height: 100px;
 `;
 
+const StyledLink = styled.a`
+  text-decoration: none;
+  display: block;
+  height: 100%;
+`;
+
 const Img = styled.img`
   width: 100%;
   height: 100%;
@@ -14,8 +20,13 @@ const Img = styled.img`
 export default function Banner() {
   return (
     <BannerContainer>
-      {/* 가져온 bannerImg를 src로 사용 */}
-      <Img src={bannerImg} alt="Banner" />
+      <StyledLink
+        href="https://www.coupang.com/np/search?component=&q=%EA%B8%B0%EC%A0%80%EA%B7%80&channel=user"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <Img src={bannerImg} alt="Banner" />
+      </StyledLink>
     </BannerContainer>
   );
 }
