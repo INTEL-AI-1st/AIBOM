@@ -234,7 +234,10 @@ export default function Behavioral() {
       await insertBeha(selectedChild.uid, selectedAbility.abilityLabelId);
       await dispatch(sendBehavioralData(formData));
 
-      dispatch(setSelectedAbility(selectedAbility));
+      dispatch(setSelectedAbility({ 
+        ...selectedAbility, 
+        isMeas: true // 또는 다른 업데이트할 값
+      }));
   
       dispatch(resetPreview(true));
       if (fileInputRef.current) {

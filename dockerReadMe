@@ -1,0 +1,42 @@
+Docker 설정 및 이미지 관리
+bash# Docker 이미지 목록 확인
+docker images
+
+# Docker 이미지 빌드
+docker build -t aibom .
+
+# Docker 이미지 실행 (로컬)
+docker run -p 8080:8080 -p 5173:5173 -p 5000:5000 --env-file .env aibom
+
+# Docker 이미지에 GCR 태그 지정
+docker tag aibom:latest gcr.io/aibom-454801/aibom:latest
+
+# 태그된 이미지 GCR로 푸시
+docker push gcr.io/aibom-454801/aibom:latest
+
+
+
+Google Cloud 설정
+bash# Google Cloud Docker 인증 설정
+gcloud auth configure-docker
+
+# Google Cloud 초기화 (로그인 및 프로젝트 설정)
+gcloud init
+
+# 프로젝트 목록 확인
+gcloud projects list
+
+# 프로젝트 설정
+gcloud config set project aibom-454801
+
+# 현재 설정된 프로젝트 확인
+gcloud config get-value project
+
+# Cloud Run 서비스 배포
+gcloud run deploy aibom --image gcr.io/aibom-454801/aibom:latest --platform managed --region asia-northeast1
+
+# 환경 변수와 함께 Cloud Run 서비스 배포
+gcloud run deploy aibom --image gcr.io/aibom-454801/aibom:latest --platform managed --region asia-northeast1 --set-env-vars KEY1=VALUE1,KEY2=VALUE2
+
+# 환경 변수 파일을 사용하여 Cloud Run 서비스 배포
+gcloud run deploy aibom --image gcr.io/aibom-454801/aibom:latest --platform managed --region asia-northeast1 --set-env-vars-file .env
